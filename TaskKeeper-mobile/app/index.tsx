@@ -1,6 +1,17 @@
-import { Text, View } from "react-native";
+import { Text, View, Button } from "react-native";
+import { checkUserStatus, konsool, logInWithPassword, logOutUser } from "../../shared/shared";
+import { useEffect } from "react";
 
 export default function Index() {
+
+  // useEffect(() => {
+  //   //const app = adminLogin();
+  //   //const app = initializeApp();
+  //   fetch("http://127.0.0.1:5001/taskkeeper-studia/us-central1/app")
+  //     //.then(response => response.json())
+  //     .then(data => console.log(data))
+  //     .catch(error => console.error('Error fetching data:', error));
+  // }, []);
   return (
     <View
       style={{
@@ -10,6 +21,10 @@ export default function Index() {
       }}
     >
       <Text>Edit app/index.tsx to edit this screen.</Text>
+      <Button title="konsool" onPress={konsool}></Button>
+      <Button title="log IN DUDEEEE" onPress={() => logInWithPassword('abc123@gmail.com','abc123')}></Button>
+      <Button title="LOG OUT" onPress={logOutUser}></Button>
+      <Button title="check user status" onPress={checkUserStatus}></Button>
     </View>
   );
 }
