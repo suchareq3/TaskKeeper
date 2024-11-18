@@ -26,6 +26,10 @@ config.resolver.extraNodeModules = {
 };
 config.watchFolders = [
   path.resolve(__dirname, '../shared'),
-];  
+]; 
+config.resolver.nodeModulesPaths = [
+  path.resolve(path.join(__dirname, './node_modules')),
+];
+config.resolver.sourceExts.push("cjs");
 
 module.exports = config;
