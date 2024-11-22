@@ -3,8 +3,8 @@ import { useEffect } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
-import "../../shared/shared.js";
-import { checkUserStatus, konsool, logInWithPassword, logOutUser } from "../../shared/shared.js";
+//import "../../shared/shared.js";
+import { checkUserStatus, logInWithPassword, logOutUser, someSharedFunction } from "../../shared/firebaseFunctions";
 // Import the functions you need from the SDKs you need
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -12,15 +12,6 @@ import { checkUserStatus, konsool, logInWithPassword, logOutUser } from "../../s
 
 function App() {
   const [count, setCount] = useState(0);
-
-  
-
-
-// Your web app's Firebase configuration
-
-
-// Initialize Firebase
-
 
   useEffect(() => {
     fetch("http://127.0.0.1:5001/taskkeeper-studia/us-central1/app")
@@ -47,7 +38,7 @@ function App() {
         <p>
           Edit <code>src/App.jsx</code> and save to test HMR
         </p>
-        <button onClick={() => konsool()}>console log!</button>
+        <button onClick={() => someSharedFunction()}>console log!</button>
         <button onClick={() => logInWithPassword('abc123@gmail.com','abc123')}>LOG IN DUDE!</button>
         <button onClick={() => logOutUser()}>log OUT!</button>
         <button onClick={() => checkUserStatus()}>show user status!!!</button>

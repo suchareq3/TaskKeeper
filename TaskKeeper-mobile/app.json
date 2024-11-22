@@ -19,7 +19,10 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.suchareq3.TaskKeeper_studia",
+      "googleServicesFile": "./google-services.json"
+
     },
     "web": {
       "bundler": "metro",
@@ -27,10 +30,20 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "@react-native-firebase/app",
+      "@react-native-firebase/auth"
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "81eae6cb-8ba4-41a6-bc28-ce224fb79559"
+      }
     }
   }
 }
