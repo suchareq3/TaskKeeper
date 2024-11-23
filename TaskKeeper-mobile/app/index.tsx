@@ -1,7 +1,6 @@
 import { Text, View, Button } from "react-native";
-import { someSharedFunction, checkUserStatus, logInWithPassword, logOutUser} from "../../shared/firebaseFunctions";
+import { fbFunctions } from "../../shared/firebaseFunctions";
 import { useEffect } from "react";
-//import firebase from '../TaskKeeper-mobile/node_modules/@react-native-firebase/app';
 
 export default function Index() {
 
@@ -22,10 +21,10 @@ export default function Index() {
       }}
     >
       <Text>Edit app/index.tsx to edit this screen.</Text>
-      <Button title="showmepls" onPress={() => someSharedFunction()}></Button>
-      <Button title="log IN DUDEEEE" onPress={() => logInWithPassword('abc123@gmail.com','abc123')}></Button>
-      <Button title="LOG OUT" onPress={logOutUser}></Button>
-      <Button title="check user status" onPress={checkUserStatus}></Button>
+      <Button title="showmepls" onPress={() => fbFunctions.someSharedFunction()}></Button>
+      <Button title="log IN DUDEEEE" onPress={() => fbFunctions.logInWithPassword("abc123@gmail.com", "abc123")}></Button>
+      <Button title="LOG OUT" onPress={() => fbFunctions.logOutUser()}></Button>
+      <Button title="check user status" onPress={() => fbFunctions.checkUserStatus()}></Button>
     </View>
   );
 }

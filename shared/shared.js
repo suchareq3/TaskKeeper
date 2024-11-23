@@ -2,7 +2,7 @@
   without installing expo in the 'shared' project....
   ... so the 'global' & '__DEV__' checks are a workaround for that. */
 // set to either 'web', 'mobile', or 'unknown'
-const platform =
+export const platform =
   process.env.PLATFORM ||
   (typeof global !== "undefined" && global.__DEV__ ? "mobile" : "unknown");
 

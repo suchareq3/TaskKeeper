@@ -4,7 +4,7 @@ import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
 //import "../../shared/shared.js";
-import { checkUserStatus, logInWithPassword, logOutUser, someSharedFunction } from "../../shared/firebaseFunctions";
+import { fbFunctions } from "../../shared/firebaseFunctions";
 // Import the functions you need from the SDKs you need
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -38,10 +38,10 @@ function App() {
         <p>
           Edit <code>src/App.jsx</code> and save to test HMR
         </p>
-        <button onClick={() => someSharedFunction()}>console log!</button>
-        <button onClick={() => logInWithPassword('abc123@gmail.com','abc123')}>LOG IN DUDE!</button>
-        <button onClick={() => logOutUser()}>log OUT!</button>
-        <button onClick={() => checkUserStatus()}>show user status!!!</button>
+        <button onClick={() => fbFunctions.someSharedFunction()}>console log!</button>
+        <button onClick={() => fbFunctions.logInWithPassword('abc123@gmail.com','abc123')}>LOG IN DUDE!</button>
+        <button onClick={() => fbFunctions.logOutUser()}>log OUT!</button>
+        <button onClick={() => fbFunctions.checkUserStatus()}>show user status!!!</button>
       </div>
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
