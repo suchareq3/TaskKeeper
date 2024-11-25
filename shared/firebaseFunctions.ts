@@ -1,23 +1,30 @@
-import { initializeApp, getAuth, signInWithEmailAndPassword, signOut } from "../TaskKeeper-web/exportedModules"
+import {
+  initializeApp,
+  getAuth,
+  signInWithEmailAndPassword,
+  signOut,
+} from "../TaskKeeper-web/exportedModules.js";
 import firebaseConfig from "./firebaseWebConfig";
 import { appStartInfo, platform } from "./shared";
 import { FirebaseFunctions } from "./firebaseInterface";
 
 // TODO: is this network-safe? will this work even with network lag?
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app)
+const auth = getAuth(app);
 
 // TODO: delet dis later
 //connectAuthEmulator(auth, "http://192.168.1.102:9099");
 
-export const someSharedFunction = () => {
+const someSharedFunction = () => {
   console.log(`Called from shared function! Project type: ${platform}`);
 };
 
-export const logInWithPassword = (email, password) => {
-  signInWithEmailAndPassword(auth, "abc123@gmail.com", "abc123")
+const logInWithPassword = (email, password) => {
+  return signInWithEmailAndPassword(auth, "abc123@gmail.com", "abc123")
     .then((userCredential) => {
-      console.log("loooooooooooogged the fuck in! logged in user:" + userCredential.user);
+      console.log(
+        "loooooooooooogged the fuck in! logged in user:" + userCredential.user
+      );
     })
     .catch((error) => {
       const errorCode = error.code;
@@ -26,8 +33,8 @@ export const logInWithPassword = (email, password) => {
     });
 };
 
-export const logOutUser = () => {
-  signOut(auth)
+const logOutUser = () => {
+  return signOut(auth)
     .then(() => {
       console.log("logout successful!");
     })
@@ -38,13 +45,18 @@ export const logOutUser = () => {
     });
 };
 
-export const checkUserStatus = () => {
+const checkUserStatus = () => {
   console.log("current user email: " + JSON.stringify(auth.currentUser));
+};
+
+const checkUserLoginStatus = (nextOrObserver) => {
+  return auth.onAuthStateChanged(nextOrObserver);
 };
 
 export const fbFunctions: FirebaseFunctions = {
   someSharedFunction,
   logInWithPassword,
   logOutUser,
-  checkUserStatus
-}
+  checkUserStatus,
+  checkUserLoginStatus,
+};

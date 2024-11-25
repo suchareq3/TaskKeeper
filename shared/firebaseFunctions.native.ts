@@ -1,21 +1,24 @@
-import { getApp, getAuth, signInWithEmailAndPassword, signOut } from '../TaskKeeper-mobile/exportedModules.js'
+import {
+  getApp,
+  getAuth,
+  signInWithEmailAndPassword,
+  signOut,
+} from "../TaskKeeper-mobile/exportedModules.js";
 //import firebase from '@react-native-firebase/app';
 //import AsyncStorage from '@react-native-async-storage/async-storage';
-import firebaseConfig from "./firebaseWebConfig";
-import { platform } from './shared';
-import { FirebaseFunctions } from './firebaseInterface';
+//import firebaseConfig from "./firebaseWebConfig";
+import { platform } from "./shared";
+import { FirebaseFunctions } from "./firebaseInterface";
 
-// TODO: is this network-safe? will this work even with network lag?
 const app = getApp(); // gets config from google-services.json
-const auth = getAuth(app)
+const auth = getAuth(app);
 
 const someSharedFunction = () => {
   console.log(`Called from shared function! Project type: ${platform}`);
-  //console.log("gggg")
 };
 
 const logInWithPassword = (email: string, password: string) => {
-  signInWithEmailAndPassword(auth, email, password)
+  return signInWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
       console.log("lougged the fuck in! logged in user:" + userCredential.user);
     })
@@ -27,7 +30,7 @@ const logInWithPassword = (email: string, password: string) => {
 };
 
 const logOutUser = () => {
-  signOut(auth)
+  return signOut(auth)
     .then(() => {
       console.log("logout successful!");
     })
@@ -42,9 +45,14 @@ const checkUserStatus = () => {
   console.log("current user email: " + JSON.stringify(auth.currentUser));
 };
 
+const checkUserLoginStatus = (nextOrObserver) => {
+  return auth.onAuthStateChanged(nextOrObserver);
+};
+
 export const fbFunctions: FirebaseFunctions = {
   someSharedFunction,
   logInWithPassword,
   logOutUser,
-  checkUserStatus
-}
+  checkUserStatus,
+  checkUserLoginStatus,
+};
