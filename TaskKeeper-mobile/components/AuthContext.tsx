@@ -38,15 +38,15 @@ export function SessionProvider({ children }: PropsWithChildren) {
 
   // Listen for auth state changes
   useEffect(() => {
-    const unsubscribe = fbFunctions.checkUserLoginStatus(
+    const userLoginStatus = fbFunctions.checkUserLoginStatus(
       (currentUser: SetStateAction<FirebaseAuthTypes.User | null>) => {
         setSession(currentUser);
-        console.log("went into unsubscribe!");
+        console.log("went into userLoginStatus in AuthContext.tsx!");
         setIsLoading(false);
       }
     );
 
-    return () => unsubscribe(); // Cleanup listener
+    return () => userLoginStatus(); // Cleanup listener
   }, []);
 
   // Sign in with email and password
