@@ -22,9 +22,10 @@ export default function TabsLayout() {
   return (
     // This layout can be deferred because it's not the root layout.
     
-    <Tabs>
-       <Tabs.Screen name="index" />
-       <Tabs.Screen name="about" />
-    </Tabs>
+    // <Tabs>
+    //    <Tabs.Screen name="index" />
+    //    <Tabs.Screen name="about" />
+    // </Tabs>
+    <Stack/>
   );
 }

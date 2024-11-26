@@ -19,7 +19,7 @@ const AuthContext = createContext<{
   signIn: () => Promise.resolve(),
   signOut: () => Promise.resolve(),
   session: null,
-  isLoading: false,
+  isLoading: true,
 });
 
 export function useSession() {
@@ -54,6 +54,8 @@ export function SessionProvider({ children }: PropsWithChildren) {
     setIsLoading(true);
     try {
       await fbFunctions.logInWithPassword(email, password);
+    } catch (error) {
+      console.error("signIn in AuthContext.tsx has failed!: ", error);
     } finally {
       setIsLoading(false);
     }
@@ -64,6 +66,8 @@ export function SessionProvider({ children }: PropsWithChildren) {
     setIsLoading(true);
     try {
       await fbFunctions.logOutUser();
+    } catch (error) {
+      console.error("signOut in AuthContext.tsx has failed!: ", error);
     } finally {
       setIsLoading(false);
     }
