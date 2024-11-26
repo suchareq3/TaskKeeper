@@ -7,7 +7,8 @@ export default function TabsLayout() {
 
   // You can keep the splash screen open, or render a loading screen like we do here.
   if (isLoading) {
-    //todo: replace this with loading.tsx
+    //TODO: replace this with loading.tsx
+    //TODO: (even better) completely re-do this logic so that it shows an overlaying modal instead of a new screen
     return <Text>Loading...</Text>;
   }
 
@@ -20,12 +21,13 @@ export default function TabsLayout() {
   }
 
   return (
-    // This layout can be deferred because it's not the root layout.
+    // using "<Stack/>" here "defers" the layout to either 'index' or whatever's being requested/replaced by the Router
+    // however, I do want to use tabs... so I use tabs instead.
+    // TODO: perhaps move this to a separate file, for styling and stuff?
+    <Tabs>
+       <Tabs.Screen name="about" />
+       <Tabs.Screen name="index" />
+    </Tabs>
     
-    // <Tabs>
-    //    <Tabs.Screen name="index" />
-    //    <Tabs.Screen name="about" />
-    // </Tabs>
-    <Stack/>
   );
 }
