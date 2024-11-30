@@ -1,2 +1,2 @@
 export { initializeApp } from "firebase/app";
-export { getAuth, signInWithEmailAndPassword, signOut } from "firebase/auth";
+export { getAuth, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword } from "firebase/auth";

@@ -3,6 +3,7 @@ import {
   getAuth,
   signInWithEmailAndPassword,
   signOut,
+  createUserWithEmailAndPassword,
 } from "../TaskKeeper-web/exportedModules.js";
 import firebaseConfig from "./firebaseWebConfig";
 import { appStartInfo, platform } from "./shared";
@@ -51,6 +52,12 @@ const checkUserStatus = () => {
 
 const checkUserLoginStatus = (nextOrObserver) => {
   return auth.onAuthStateChanged(nextOrObserver);
+};
+
+const signUpUser = (email: string, password: string) => {
+  return createUserWithEmailAndPassword(auth, email, password).then((user) => {
+    console.log(user);
+  });
 };
 
 export const fbFunctions: FirebaseFunctions = {

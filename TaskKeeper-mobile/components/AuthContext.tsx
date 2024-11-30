@@ -13,11 +13,13 @@ import { fbFunctions } from "../../shared/firebaseFunctions";
 const AuthContext = createContext<{
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => any;
+  signUp: (email: string, password: string, extraData: { [key: string]: string }) => any;
   session?: FirebaseAuthTypes.User | null;
   isLoading: boolean;
 }>({
   signIn: () => Promise.resolve(),
   signOut: () => Promise.resolve(),
+  signUp: () => Promise.resolve(),
   session: null,
   isLoading: true,
 });
@@ -73,8 +75,20 @@ export function SessionProvider({ children }: PropsWithChildren) {
     }
   };
 
+  // Sign in with email and password
+  const signUp = async (email: string, password: string, extraData: { [key: string]: string }) => {
+    setIsLoading(true);
+    try {
+      await fbFunctions.signUpUser(email, password, extraData);
+    } catch (error) {
+      console.error("signUp in AuthContext.tsx has failed!: ", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ signIn, signOut, session, isLoading }}>
+    <AuthContext.Provider value={{ signIn, signOut, signUp, session, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

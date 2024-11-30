@@ -24,6 +24,7 @@ export default function SignIn() {
         }}
       >
       </Button>
+      <Button title="Sign Up" onPress={() => router.navigate("/sign-up")}></Button>
 
       <Button title="check user status" onPress={() => fbFunctions.checkUserStatus()}></Button>
       {/* <Button title="LOGIN WITHOUT GOING THROUGH AUTHCONTEXT" onPress={() => fbFunctions.logInWithPassword("abc123@gmail.com","abc123")}></Button>
