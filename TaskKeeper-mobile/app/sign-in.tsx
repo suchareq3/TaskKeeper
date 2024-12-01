@@ -3,6 +3,8 @@ import { KeyboardAvoidingView, TextInput, View } from "react-native";
 import { useSession } from "@/components/AuthContext";
 import { fbFunctions } from "../../shared/firebaseFunctions";
 import { useState } from "react";
+import { PortalHost } from "@rn-primitives/portal";
+
 
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
@@ -12,7 +14,7 @@ export default function SignIn() {
   const [password, setPassword] = useState("");
   const { signIn } = useSession();
   return (
-    <KeyboardAvoidingView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+    <KeyboardAvoidingView style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "red" }}>
       <TextInput onChangeText={setEmail} placeholder="type your email here" value={email} />
       <TextInput onChangeText={setPassword} placeholder="type your password here" value={password} />
       <Button
