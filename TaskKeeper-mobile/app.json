@@ -17,7 +17,11 @@
       "bundler": "metro",
       "output": "static"
     },
-    "plugins": ["expo-router", "@react-native-firebase/app", "@react-native-firebase/auth"],
+    "plugins": [
+      "expo-router",
+      "@react-native-firebase/app",
+      "@react-native-firebase/auth"
+    ],
     "experiments": {
       "typedRoutes": true
     },
@@ -28,6 +32,12 @@
       "eas": {
         "projectId": "81eae6cb-8ba4-41a6-bc28-ce224fb79559"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/81eae6cb-8ba4-41a6-bc28-ce224fb79559"
     }
   }
 }
