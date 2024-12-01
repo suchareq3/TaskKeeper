@@ -1,37 +1,72 @@
 import { useSession } from "@/components/AuthContext";
+import Logo from "@/components/Logo";
+import { Input } from "@/components/ui/input";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Button, KeyboardAvoidingView, TextInput } from "react-native";
+import { KeyboardAvoidingView, TextInput, View } from "react-native";
+import { DateTimePickerAndroid, DateTimePickerEvent } from "@react-native-community/datetimepicker";
+import { Button } from "~/components/ui/button";
+import { Text } from "~/components/ui/text";
 
 export default function SignUp() {
+  const [name, setName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [extraData, setExtraData] = useState({});
+
+  // NOTE: this works ONLY for Android! if I'll want to support iOS later, here's an important link for myself:
+  // https://github.com/react-native-datetimepicker/datetimepicker?tab=readme-ov-file#usage
+  const [date, setDate] = useState(new Date(Date.now()));
+  const onChangeDate = (event: DateTimePickerEvent, selectedDate: any) => {
+    const currentDate = selectedDate || date;
+    setDate(currentDate);
+  };
+
+  const showDatepicker = () => {
+    DateTimePickerAndroid.open({
+      value: date,
+      onChange: onChangeDate,
+      mode: "date",
+    });
+  };
+
   const { signUp, signIn } = useSession();
   return (
-    <KeyboardAvoidingView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <TextInput onChangeText={setEmail} placeholder="type your email here" value={email} />
-      <TextInput onChangeText={setPassword} placeholder="type your password here" value={password} />
-      <Button
-        title="Sign Up!"
-        onPress={() => {
-          //TODO: implement proper error handling with user-facing alerts
-          setExtraData({ displayName: "John Doe", age: "30" });
-          signUp(email, password, extraData).then(() => {
-            //router.replace("/");
-            signIn(email, password).then(() => {
-              router.replace("/");
-            });
-          });
-          // Navigate after signing up (and signing in)
-          // TODO: You may want to tweak this to ensure sign-up (and sign-in) is successful before navigating.
-        }}
-      ></Button>
-       <Button title="Go Back" onPress={() => router.back()}/>
+    <KeyboardAvoidingView className="flex-1 flex flex-col justify-between items-center bg-violet-900 h-full py-20">
+      <View className="flex">
+        <Logo className="border-black border-2" />
+      </View>
+      <View className="flex gap-3">
+        <Input placeholder="Type your NAME here please :3" value={name} onChangeText={setName} keyboardType="default" />
+        <Input placeholder="Type your LAST NAME here please :3" value={lastName} onChangeText={setLastName} keyboardType="default" />
+        {/*  */}
+        <Button onPress={showDatepicker}>
+          <Text>show date picker!</Text>
+        </Button>
+        <Text className="text-white">Date picked: {date.toLocaleDateString()}</Text>
 
-      {/* <Button title="check user status" onPress={() => fbFunctions.checkUserStatus()}></Button> */}
-      {/* <Button title="LOGIN WITHOUT GOING THROUGH AUTHCONTEXT" onPress={() => fbFunctions.logInWithPassword("abc123@gmail.com","abc123")}></Button>
-      <Button title="if you're logged out, this redirect shouldn't work!" onPress={() => router.navigate("/")}></Button> */}
+        <Input placeholder="Type your EMAIL here please :3" value={email} onChangeText={setEmail} keyboardType="email-address" />
+        <Input placeholder="Type your PASSWORD here please :3" value={password} onChangeText={setPassword} keyboardType="default" secureTextEntry={true} />
+        <Button
+          onPress={() => {
+            //TODO: implement proper error handling with user-facing alerts
+            //TODO: implement proper loading state (doesn't seem to work while Firebase is processing the sign-up)
+            signUp(email, password, { firstName: name, lastName: lastName, dateOfBirth: date.toLocaleDateString() }).then(() => {
+              //router.replace("/");
+              signIn(email, password).then(() => {
+                router.replace("/");
+              });
+            });
+            // Navigate after signing up (and signing in)
+            // TODO: You may want to tweak this to ensure sign-up (and sign-in) is successful before navigating.
+          }}
+        >
+          <Text>Sign Up!</Text>
+        </Button>
+        <Button onPress={() => router.back()}>
+          <Text>Go back...</Text>
+        </Button>
+      </View>
     </KeyboardAvoidingView>
   );
 }

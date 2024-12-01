@@ -8,6 +8,7 @@ import {
 } from "react";
 import { FirebaseAuthTypes } from "@react-native-firebase/auth";
 import { fbFunctions } from "../../shared/firebaseFunctions";
+import { SafeAreaView } from "react-native-safe-area-context";
 //TODO: refactor this to use fbFunctions instead of using auth() directly
 
 const AuthContext = createContext<{
@@ -36,6 +37,7 @@ export function useSession() {
 
 export function SessionProvider({ children }: PropsWithChildren) {
   const [session, setSession] = useState<FirebaseAuthTypes.User | null>(null);
+  // TODO: add timeout
   const [isLoading, setIsLoading] = useState(true);
 
   // Listen for auth state changes
@@ -88,8 +90,8 @@ export function SessionProvider({ children }: PropsWithChildren) {
   };
 
   return (
-    <AuthContext.Provider value={{ signIn, signOut, signUp, session, isLoading }}>
-      {children}
-    </AuthContext.Provider>
+    <SafeAreaView className="flex-1">
+      <AuthContext.Provider value={{ signIn, signOut, signUp, session, isLoading }}>{children}</AuthContext.Provider>
+    </SafeAreaView>
   );
 }
