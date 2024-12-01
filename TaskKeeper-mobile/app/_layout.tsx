@@ -1,13 +1,16 @@
 import { Slot, Stack } from "expo-router";
 import { SessionProvider } from "@/components/AuthContext";
+import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 
 export default function RootLayout() {
   // Set up the auth context and render our layout inside of it.
   return (
-    <SessionProvider>
-      <Slot/>
-    </SessionProvider>
-    
+    <GluestackUIProvider>
+      <SessionProvider>
+        <Slot />
+      </SessionProvider>
+    </GluestackUIProvider>
+
     // <Stack>
     //   <Stack.Screen name="index"/>
     // </Stack>

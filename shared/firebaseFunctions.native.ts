@@ -59,7 +59,7 @@ const signUpUser = async (email: string, password: string, extraData: { [key: st
     const registerUserFunction = functions.httpsCallable("signUpUser");
     const result = await registerUserFunction({ email, password, extraData });
     console.log("User registration successful!: ", result);
-    logInWithPassword(email, password);
+    return logInWithPassword(email, password);
   } catch (error) {
     console.error("Error registering user:", error);
   }
