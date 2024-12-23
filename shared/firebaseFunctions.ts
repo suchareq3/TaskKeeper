@@ -24,7 +24,7 @@ const logInWithPassword = (email, password) => {
   return signInWithEmailAndPassword(auth, "abc123@gmail.com", "abc123")
     .then((userCredential) => {
       console.log(
-        "loooooooooooogged the fuck in! logged in user:" + userCredential.user
+        "loooooooooooogged in! logged in user:" + userCredential.user
       );
     })
     .catch((error) => {

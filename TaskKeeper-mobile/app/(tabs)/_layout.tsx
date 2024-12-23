@@ -1,7 +1,10 @@
 import { useSession } from "@/components/AuthContext";
 import { Redirect, Stack, Tabs } from "expo-router";
-import { Text } from "react-native";
+import { Text, useColorScheme } from "react-native";
 import AntDesign from "@expo/vector-icons/AntDesign";
+import Drawer from "expo-router/drawer";
+import { createDrawerNavigator } from "@react-navigation/drawer";
+import { ThemeProvider } from "@react-navigation/native";
 
 export default function TabsLayout() {
   const { session, isLoading } = useSession();
@@ -21,10 +24,27 @@ export default function TabsLayout() {
     return <Redirect href="/sign-in" />;
   }
 
+  const Drawer = createDrawerNavigator();
+  const isDarkColorScheme = useColorScheme();
+
   return (
     // using "<Stack/>" here "defers" the layout to either 'index' or whatever's being requested/replaced by the Router
     // however, I do want to use tabs... so I use tabs instead.
     // TODO: perhaps move this to a separate file, for styling and stuff?
+    <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
+      <Drawer.Navigator>
+        <Drawer.Screen
+          name="Tabs"
+          component={TabNavigator}
+          options={{ drawerActiveBackgroundColor: "white", drawerInactiveBackgroundColor: "white", drawerActiveTintColor: "white", headerTintColor: "white", headerPressColor: "white", overlayColor: "white", drawerInactiveTintColor: "white", drawerStyle: { backgroundColor: "white" } }}
+        />
+      </Drawer.Navigator>
+    </ThemeProvider>
+  );
+}
+
+function TabNavigator() {
+  return (
     <Tabs screenOptions={{ headerShown: false, tabBarStyle: { height: 50, margin: 0, padding: 0, borderColor: "red", borderTopWidth: 0 }, tabBarActiveBackgroundColor: "rgb(200,200,200)" }}>
       <Tabs.Screen
         name="index"

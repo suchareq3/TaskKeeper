@@ -3,13 +3,7 @@
     {
       "source": "functions",
       "codebase": "default",
-      "ignore": [
-        "node_modules",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log",
-        "*.local"
-      ]
+      "ignore": ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log", "*.local"]
     }
   ],
   "firestore": {
@@ -18,12 +12,15 @@
   },
   "emulators": {
     "auth": {
+      "host": "192.168.1.103",
       "port": 9099
     },
     "functions": {
+      "host": "192.168.1.103",
       "port": 5001
     },
     "firestore": {
+      "host": "192.168.1.103",
       "port": 8080
     },
     "ui": {

@@ -8,8 +8,10 @@ import {
 } from "react";
 import { FirebaseAuthTypes } from "@react-native-firebase/auth";
 import { fbFunctions } from "../../shared/firebaseFunctions";
+import { getToken, default as messaging } from "@react-native-firebase/messaging";
 import { SafeAreaView } from "react-native-safe-area-context";
-//TODO: refactor this to use fbFunctions instead of using auth() directly
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import Drawer from "expo-router/drawer";
 
 const AuthContext = createContext<{
   signIn: (email: string, password: string) => Promise<void>;
@@ -45,7 +47,11 @@ export function SessionProvider({ children }: PropsWithChildren) {
     const userLoginStatus = fbFunctions.checkUserLoginStatus(
       (currentUser: SetStateAction<FirebaseAuthTypes.User | null>) => {
         setSession(currentUser);
-        console.log("went into userLoginStatus in AuthContext.tsx!");
+        console.log("went into userLoginStatus in AuthContext.tsx!: " + JSON.stringify(currentUser));
+        if (currentUser) {
+          //necessary for 
+          messaging().registerDeviceForRemoteMessages();
+        }
         setIsLoading(false);
       }
     );
@@ -53,11 +59,16 @@ export function SessionProvider({ children }: PropsWithChildren) {
     return () => userLoginStatus(); // Cleanup listener
   }, []);
 
+useEffect(() => {console.log("new token!")}, [getToken])
+
   // Sign in with email and password
   const signIn = async (email: string, password: string) => {
     setIsLoading(true);
     try {
       await fbFunctions.logInWithPassword(email, password);
+      // TODO: check & update fcmToken in firebase, replace 'logInWithPassword' with a cloud function (like signup)
+      // TODO for fcmTokens: introduce additional checks & a monthly(?) cloud function failcheck for expired fcmTokens,
+      // https://firebase.google.com/docs/cloud-messaging/manage-tokens
     } catch (error) {
       console.error("signIn in AuthContext.tsx has failed!: ", error);
     } finally {
@@ -82,6 +93,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
     setIsLoading(true);
     try {
       await fbFunctions.signUpUser(email, password, extraData);
+      // TODO: update the cloud function to add fcmToken & fcmToken's timestamp
     } catch (error) {
       console.error("signUp in AuthContext.tsx has failed!: ", error);
     } finally {
@@ -90,8 +102,12 @@ export function SessionProvider({ children }: PropsWithChildren) {
   };
 
   return (
-    <SafeAreaView className="flex-1">
-      <AuthContext.Provider value={{ signIn, signOut, signUp, session, isLoading }}>{children}</AuthContext.Provider>
-    </SafeAreaView>
+    <GestureHandlerRootView>
+      <SafeAreaView className="flex-1">
+        <AuthContext.Provider value={{ signIn, signOut, signUp, session, isLoading }}>
+          {children}
+        </AuthContext.Provider>
+      </SafeAreaView>
+    </GestureHandlerRootView>
   );
 }
