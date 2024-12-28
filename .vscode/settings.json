@@ -1,0 +1,11 @@
+{
+  "files.autoSave": "afterDelay",
+  "editor.tabSize": 2,
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "modificationsIfAvailable",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "prettier.endOfLine": "auto",
+  "prettier.printWidth": 200,
+  "html.format.wrapLineLength": 0,
+  "prettier.proseWrap": "never"
+}
