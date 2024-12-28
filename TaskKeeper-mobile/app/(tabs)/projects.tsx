@@ -1,39 +1,18 @@
-import { requestPermissions } from "@/components/permissionFunctions";
 import { Link } from "expo-router";
-import { Text, View, StyleSheet, Button } from "react-native";
+import {  View, StyleSheet, Button } from "react-native";
 import { fbFunctions } from "../../../shared/firebaseFunctions";
 import { useSession } from "@/components/AuthContext";
 import { useState } from "react";
+import { Text } from "@/components/ui/text";
 
 export default function ProjectsScreen() {
-  requestPermissions();
-  const [text, setText] = useState('text');
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>About screen</Text>
-
-      <Button
-        title="show messaging token!"
-        onPress={() => setText(fbFunctions.showNotification("hi there title!!!", "hello there description!"))}
-      ></Button>
-      <Text>{text}</Text>
+    <View className="flex-1 justifyitems-center bg-[#25292e] p-5">
+      <View>
+        <Text className="text-2xl" >Your projects: </Text>
+      </View>
+      {/* TODO: take info from firebase and loop over it */}
+      
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#13569e",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  text: {
-    color: "#fff",
-  },
-  goTo: {
-    fontSize: 20,
-    textDecorationLine: "underline",
-    color: "#fff",
-  },
-});

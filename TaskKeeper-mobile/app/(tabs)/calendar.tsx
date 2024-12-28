@@ -3,31 +3,15 @@ import { Text, View, StyleSheet } from "react-native";
 
 export default function CalendarScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>About screen</Text>
-      <Link
-        href="/"
-        style={styles.goTo}
-      >
-        Go to HOME screen
-      </Link>
+    <View
+      style={{
+        backgroundColor: "#25292e",
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <Text className="text-white">Calendar</Text>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#13569e",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  text: {
-    color: "#fff",
-  },
-  goTo: {
-    fontSize: 20,
-    textDecorationLine: "underline",
-    color: "#fff",
-  },
-});

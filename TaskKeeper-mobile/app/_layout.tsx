@@ -36,20 +36,14 @@ export default function RootLayout() {
     (async () => {
       const theme = await AsyncStorage.getItem("theme");
       if (!theme) {
-        AsyncStorage.setItem("theme", colorScheme);
-        setIsColorSchemeLoaded(true);
-        return;
-      }
-      const colorTheme = theme === "dark" ? "dark" : "light";
-      if (colorTheme !== colorScheme) {
-        setColorScheme(colorTheme);
-
-        setIsColorSchemeLoaded(true);
-        return;
-      }
+        await AsyncStorage.setItem("theme", colorScheme); //"system" by default
+        console.log("theme wasn't set, so it was set to: " + colorScheme);
+      } else {
+        setColorScheme(theme as "light"|"dark"|"system");
+        console.log("theme was set to: " + theme);      }
       setIsColorSchemeLoaded(true);
-    })().finally(() => {
-      SplashScreen.hideAsync();
+    })().finally(async () => {
+      await SplashScreen.hideAsync();
     });
   }, []);
 
@@ -66,13 +60,5 @@ export default function RootLayout() {
       </SessionProvider>
     </ThemeProvider>
 
-    // <Stack>
-    //   <Stack.Screen name="index"/>
-    // </Stack>
-
-    // <Stack>
-    //   <Stack.Screen name="(tabs)" options={{headerShown: false}} />
-    //   <Stack.Screen name="+not-found" />
-    // </Stack>
   );
 }
