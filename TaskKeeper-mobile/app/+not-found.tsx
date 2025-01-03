@@ -4,10 +4,13 @@ import { Link, Stack } from 'expo-router';
 export default function NotFoundScreen() {
   return (
     <>
-      <Stack.Screen options={{ title: 'Oops! 404: Not Found' }} />
+      <Stack.Screen options={{ title: "Oops! 404: Not Found", headerShown: true, headerTitleAlign: 'center'}} />
       <View style={styles.container}>
-        <Link href="/sign-in" style={styles.button}>
-          Go back to the Sign-in screen!
+        <Link
+          href="/(tabs)/"
+          style={styles.button}
+        >
+          Error! Press here to Go back to the main screen!
         </Link>
       </View>
     </>
