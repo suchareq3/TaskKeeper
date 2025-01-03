@@ -33,11 +33,6 @@ const app = initializeApp();
 const auth = getAuth();
 const db = getFirestore();
 
-// exports.helloWorld = onRequest((request, response) => {
-//   functions.logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
-
 exports.signUpUser = onCall(async (data, context) => {
   const { email, password, extraData } = data.data;
   if (!email || !password) {
@@ -70,6 +65,7 @@ exports.signUpUser = onCall(async (data, context) => {
   }
 });
 
+//TODO: this is a PLACEHOLDER function to be replaced when i'll be working on notifications
 exports.pushNotification = onCall(async (data, context) => {
   const { fcmToken, title, description } = data.data;
   if (!title || !description) {
@@ -84,6 +80,7 @@ exports.pushNotification = onCall(async (data, context) => {
   }
 });
 
+//TODO: this is a PLACEHOLDER function
 exports.pushNotificationHttp = https.onRequest(async (data, context) => { 
   const fcmToken = "dqJ3jUu_R3qLjF-ybRnata:APA91bHmWRk-uMiWu1j3rx9xsw2vlYi68e3WJG6GEa47VsXHAAtq2fdI0_qLLEHaSfRAvPCcyeQMuZlhxQFb12a5cnm6oFV6lbpirrOfdN-lGSQiBdMvUHk";
   const title = "asdfasdf";
@@ -98,6 +95,22 @@ exports.pushNotificationHttp = https.onRequest(async (data, context) => {
     //throw new HttpsError("internal", "Successful! Log: " + log);
   } catch (error) {
     console.error("Error sending push notification:", error);
+    throw new HttpsError("internal", "Error sending push notification: " + error);
+  }
+});
+
+exports.createProject = onCall(async (data, context) => {
+  const { name, description, githubUrl } = data.data;
+  try {
+    const projectData = await db.collection("projects").add({
+      name: name,
+      description: description,
+      githubUrl: githubUrl,
+    });
+
+    return { success: true, projectData: projectData };
+  } catch (error) {
+    console.error("Error creating new project: ", error);
     throw new HttpsError("internal", "Error sending push notification: " + error);
   }
 });

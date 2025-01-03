@@ -11,18 +11,21 @@ import { fbFunctions } from "../../shared/firebaseFunctions";
 import { getToken, default as messaging } from "@react-native-firebase/messaging";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import Drawer from "expo-router/drawer";
+import * as ExpoNotifications from 'expo-notifications';
+
 
 const AuthContext = createContext<{
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => any;
   signUp: (email: string, password: string, extraData: { [key: string]: string }) => any;
+  createProject: (name: string, description: string, githubUrl: string) => any;
   session?: FirebaseAuthTypes.User | null;
   isLoading: boolean;
 }>({
   signIn: () => Promise.resolve(),
   signOut: () => Promise.resolve(),
   signUp: () => Promise.resolve(),
+  createProject: () => Promise.resolve(),
   session: null,
   isLoading: true,
 });
@@ -41,9 +44,13 @@ export function SessionProvider({ children }: PropsWithChildren) {
   const [session, setSession] = useState<FirebaseAuthTypes.User | null>(null);
   // TODO: add timeout
   const [isLoading, setIsLoading] = useState(true);
+  
+  
+
 
   // Listen for auth state changes
   useEffect(() => {
+
     const userLoginStatus = fbFunctions.checkUserLoginStatus(
       (currentUser: SetStateAction<FirebaseAuthTypes.User | null>) => {
         setSession(currentUser);
@@ -101,10 +108,22 @@ useEffect(() => {console.log("new token!")}, [getToken])
     }
   };
 
+  //TODO: re-do this so it's a 3-step process!
+  const createProject = async(name: string, description: string, githubUrl: string) => {
+    setIsLoading(true);
+    try {
+      await fbFunctions.createProject(name, description, githubUrl);
+    } catch (error) {
+      console.error("createProject in AuthContext.tsx has failed!: ", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   return (
     <GestureHandlerRootView>
       <SafeAreaView className="flex-1">
-        <AuthContext.Provider value={{ signIn, signOut, signUp, session, isLoading }}>
+        <AuthContext.Provider value={{ signIn, signOut, signUp, createProject, session, isLoading }}>
           {children}
         </AuthContext.Provider>
       </SafeAreaView>

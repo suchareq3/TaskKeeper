@@ -67,6 +67,7 @@ const signUpUser = async (email: string, password: string, extraData: { [key: st
   }
 };
 
+//TODO: complete this function! right now it's a placeholder!
 const showNotification = async (title: string, description: string) => {
   try {
     //await messaging().registerDeviceForRemoteMessages();
@@ -88,6 +89,18 @@ const showNotification = async (title: string, description: string) => {
   }
 };
 
+//TODO: re-do this so it's a 3-step process!
+const createProject = async (name: string, description: string, githubUrl: string)  => {
+  try {
+    const createProjectFunction = functions.httpsCallable("createProject");
+    
+    const result = await createProjectFunction({ name, description, githubUrl })
+    console.log(result)
+  } catch (error) {
+    console.error("Error creating new project:", error);
+  }
+};
+
 export const fbFunctions: FirebaseFunctions = {
   someSharedFunction,
   logInWithPassword,
@@ -96,4 +109,5 @@ export const fbFunctions: FirebaseFunctions = {
   checkUserLoginStatus,
   signUpUser,
   showNotification,
+  createProject
 };

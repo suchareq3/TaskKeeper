@@ -21,11 +21,11 @@ export default function TabsLayout() {
   if (isLoading) {
     //TODO: replace this with loading.tsx
     //TODO: (even better) completely re-do this logic so that it shows an overlaying modal instead of a new screen
+    //TODO: (even bettererer) DO redirect to the new page, but use Skeleton components to show the loading state
     return <Text>Loading...</Text>;
   }
 
-  // Only require authentication within the (app) group's layout as users
-  // need to be able to access the (auth) group and sign in again.
+  // redirect the user to the sign-up page if they're not authenticated
   if (!session) {
     return <Redirect href="/sign-in" />;
   }
