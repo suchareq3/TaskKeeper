@@ -8,10 +8,9 @@ import ProjectTile from "@/components/ProjectTile";
 import { Button } from "@/components/ui/button";
 
 export default function ProjectsScreen() {
-  const [projects, setProjects] = useState<{ name: string; description: string; githubUrl: string }[]>([]);
-  fbFunctions.loadUserProjects()
-
-  useEffect(() => {
+  const [projects, setProjects] = useState<{
+    projectId: string; name: string; description: string; githubUrl: string 
+}[]>([]);
     const fetchProjects = async () => {
       try {
         const loadedProjects = await fbFunctions.loadUserProjects();
@@ -21,6 +20,7 @@ export default function ProjectsScreen() {
       }
     };
 
+  useEffect(() => {
     fetchProjects();
   }, [fbFunctions.loadUserProjects]); 
 
@@ -29,6 +29,13 @@ export default function ProjectsScreen() {
       <View>
         <Text className="text-2xl">Your projects: </Text>
       </View>
+      <Button
+        onPress={() => {
+          fetchProjects()
+        }}
+      >
+        <Text>Refresh projects</Text>
+      </Button>
       {projects.map((project, index) => (
         <ProjectTile
           key={index}
