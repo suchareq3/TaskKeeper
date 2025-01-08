@@ -19,8 +19,6 @@
 
 const { logger, firestore, https } = require("firebase-functions");
 const { onRequest, onCall, HttpsError } = require("firebase-functions/v2/https");
-const { onDocumentCreated } = require("firebase-functions/v2/firestore");
-
 
 // The Firebase Admin SDK to access Firestore.
 const { initializeApp } = require("firebase-admin/app");
@@ -81,7 +79,7 @@ exports.pushNotification = onCall(async (data, context) => {
 });
 
 //TODO: this is a PLACEHOLDER function
-exports.pushNotificationHttp = https.onRequest(async (data, context) => { 
+exports.pushNotificationHttp = https.onRequest(async (data, context) => {
   const fcmToken = "dqJ3jUu_R3qLjF-ybRnata:APA91bHmWRk-uMiWu1j3rx9xsw2vlYi68e3WJG6GEa47VsXHAAtq2fdI0_qLLEHaSfRAvPCcyeQMuZlhxQFb12a5cnm6oFV6lbpirrOfdN-lGSQiBdMvUHk";
   const title = "asdfasdf";
   const description = "ffffff";
@@ -100,17 +98,33 @@ exports.pushNotificationHttp = https.onRequest(async (data, context) => {
 });
 
 exports.createProject = onCall(async (data, context) => {
-  const { name, description, githubUrl } = data.data;
+  const { name, description, githubUrl, uid } = data.data;
   try {
     const projectData = await db.collection("projects").add({
       name: name,
       description: description,
       githubUrl: githubUrl,
+      member_uids: [uid],
     });
 
-    return { success: true, projectData: projectData };
+    return { success: true, projectData: { name: name, description: description, githubUrl: githubUrl, user_uid: uid } };
   } catch (error) {
     console.error("Error creating new project: ", error);
     throw new HttpsError("internal", "Error sending push notification: " + error);
+  }
+});
+
+exports.getUserProjects = onCall(async (data, context) => {
+  const { uid } = data.data;
+  try {
+    logger.log("UID: " + uid);
+    const userProjects = await db.collection("projects").where("member_uids", "array-contains", uid).get();
+    logger.log("Projects: " + userProjects);
+    const userProjectsData = userProjects.docs.map((doc) => doc.data());
+    return userProjectsData;
+
+  } catch (error) {
+    console.error("Error fetching user projects: ", error);
+    throw new HttpsError("internal", "Error fetching user projects: " + error);
   }
 });

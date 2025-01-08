@@ -46,7 +46,7 @@ export default function CreateProject() {
               // TODO: You may want to tweak this to ensure sign-up (and sign-in) is successful before navigating.
             }}
           >
-            <Text>Sign Up!</Text>
+            <Text>Create project!</Text>
           </Button>
         </View>
       </KeyboardAvoidingView>

@@ -8,9 +8,9 @@ const db = getFirestore(app);
 const functions = getFunctions();
 
 // TODO: DEV-ONLY! remove these lines when deploying to production
-//auth.useEmulator("http://localhost:9099");
-//db.useEmulator("localhost", 8080);
-//rfunctions.useEmulator("localhost", 5001);
+auth.useEmulator("http://localhost:9099");
+db.useEmulator("localhost", 8080);
+functions.useEmulator("localhost", 5001);
 //consolye.log(db.collection("users"))
 
 const someSharedFunction = () => {
@@ -46,7 +46,7 @@ const checkUserStatus = async () => {
   console.log("current user email: " + JSON.stringify(auth.currentUser));
   const fcmToken = await messaging().getToken();
   console.log("current fcmToken: " + JSON.stringify(fcmToken));
-  return JSON.stringify(auth.currentUser)
+  return JSON.stringify(auth.currentUser);
 };
 
 const checkUserLoginStatus = (nextOrObserver) => {
@@ -75,12 +75,12 @@ const showNotification = async (title: string, description: string) => {
     //TODO: remake this so that it takes the token (or tokens) as an argument
     //const fcmToken = await messaging().getToken();
     await messaging().registerDeviceForRemoteMessages();
-    const fcmToken = "cog3p2waTrSuK2V7RoAfkF:APA91bGbyBsdMfrgEFvupVLu3nkjRngfEZSghTh--L2_ZaK-eGuKSJlRCZLoAEFvupVLu3nkjRngfEZSghTh--dLPXa5NkEg8IdKPY5l7RylkO9c3qI5q5TghE5wUk34-pBc3qI5q5TghE5wUk34-pBmzguHmzguH1By-nzxM";
+    const fcmToken =
+      "cog3p2waTrSuK2V7RoAfkF:APA91bGbyBsdMfrgEFvupVLu3nkjRngfEZSghTh--L2_ZaK-eGuKSJlRCZLoAEFvupVLu3nkjRngfEZSghTh--dLPXa5NkEg8IdKPY5l7RylkO9c3qI5q5TghE5wUk34-pBc3qI5q5TghE5wUk34-pBmzguHmzguH1By-nzxM";
     console.log(await messaging().getToken());
 
-
     return await messaging().getToken();
-    
+
     //return token;
     const pushNotificationFunction = functions.httpsCallable("pushNotification");
     const result = await pushNotificationFunction({ fcmToken, title, description });
@@ -90,14 +90,37 @@ const showNotification = async (title: string, description: string) => {
 };
 
 //TODO: re-do this so it's a 3-step process!
-const createProject = async (name: string, description: string, githubUrl: string)  => {
+const createProject = async (name: string, description: string, githubUrl: string) => {
   try {
-    const createProjectFunction = functions.httpsCallable("createProject");
+    const currentUser = auth.currentUser;
+    console.log("currentUser:",currentUser);
+    if (currentUser) {
+      const uid = currentUser.uid;
+      const createProjectFunction = functions.httpsCallable("createProject");
+      const result = await createProjectFunction({ name, description, githubUrl, uid });
+      console.log(result);
+    } else {
+      console.error("createProject - logged-in user not found!")
+    }
     
-    const result = await createProjectFunction({ name, description, githubUrl })
-    console.log(result)
   } catch (error) {
     console.error("Error creating new project:", error);
+  }
+};
+
+const loadUserProjects = async () => {
+  try {
+    const uid = auth.currentUser?.uid;
+    if (!uid) {
+      throw new Error("User not authenticated");
+    }
+    const getUserProjectsFunction = functions.httpsCallable("getUserProjects");
+    const result = await getUserProjectsFunction({ uid });
+    console.log("success loading user projects!:", result);
+    return result.data;
+  } catch (error) {
+    console.error("Error loading user projects!:", error);
+    throw error; // Rethrow the error for upstream handling
   }
 };
 
@@ -109,5 +132,6 @@ export const fbFunctions: FirebaseFunctions = {
   checkUserLoginStatus,
   signUpUser,
   showNotification,
-  createProject
+  createProject,
+  loadUserProjects
 };

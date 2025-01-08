@@ -14,7 +14,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 export default function TabsLayout() {
   requestPermissions();
   const { session, isLoading, signOut } = useSession();
-  const isDarkColorScheme = useColorScheme() === "dark";
+  const currentColorScheme = useColorScheme();
+  const isDarkColorScheme = currentColorScheme === "dark";
   const { colors } = useTheme();
 
   // You can keep the splash screen open, or render a loading screen like we do here.
