@@ -1,5 +1,5 @@
 import { Link, router } from "expo-router";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, ScrollView } from "react-native";
 import { fbFunctions } from "../../../shared/firebaseFunctions";
 import { useSession } from "@/components/AuthContext";
 import { useEffect, useState } from "react";
@@ -11,21 +11,21 @@ export default function ProjectsScreen() {
   const [projects, setProjects] = useState<{
     projectId: string; name: string; description: string; githubUrl: string 
 }[]>([]);
-    const fetchProjects = async () => {
-      try {
-        const loadedProjects = await fbFunctions.loadUserProjects();
-        setProjects(loadedProjects);
-      } catch (error) {
-        console.error("Failed to fetch projects:", error);
-      }
-    };
+  const fetchProjects = async () => {
+    try {
+      const loadedProjects = await fbFunctions.loadUserProjects();
+      setProjects(loadedProjects);
+    } catch (error) {
+      console.error("Failed to fetch projects:", error);
+    }
+  };
 
   useEffect(() => {
     fetchProjects();
   }, [fbFunctions.loadUserProjects]); 
 
   return (
-    <View className="flex-1 justifyitems-center bg-[#25292e] p-5">
+    <ScrollView className="flex-1 justifyitems-center bg-[#25292e] p-5">
       <View>
         <Text className="text-2xl">Your projects: </Text>
       </View>
@@ -37,12 +37,15 @@ export default function ProjectsScreen() {
         <Text>Refresh projects</Text>
       </Button>
       {projects.map((project, index) => (
+        
         <ProjectTile
           key={index}
+          id={project.projectId}
           title={project.name}
           description={project.description}
           githubUrl={project.githubUrl}
         />
+        
       ))}
       <Button
         onPress={() => {
@@ -51,6 +54,6 @@ export default function ProjectsScreen() {
       >
         <Text>Add new project</Text>
       </Button>
-    </View>
+    </ScrollView>
   );
 }

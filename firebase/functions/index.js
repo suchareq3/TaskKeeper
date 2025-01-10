@@ -22,7 +22,7 @@ const { onRequest, onCall, HttpsError } = require("firebase-functions/v2/https")
 
 // The Firebase Admin SDK to access Firestore.
 const { initializeApp } = require("firebase-admin/app");
-const { getFirestore } = require("firebase-admin/firestore");
+const { getFirestore, Timestamp } = require("firebase-admin/firestore");
 const { getAuth } = require("firebase-admin/auth");
 const { log } = require("firebase-functions/logger");
 const { admin, messaging } = require("firebase-admin");
@@ -99,15 +99,26 @@ exports.pushNotificationHttp = https.onRequest(async (data, context) => {
 
 exports.createProject = onCall(async (data, context) => {
   const { name, description, githubUrl, uid } = data.data;
+  const createdOn = Timestamp.now();
+  const lastUpdatedOn = Timestamp.now();
   try {
-    const projectData = await db.collection("projects").add({
-      name: name,
-      description: description,
-      githubUrl: githubUrl,
-      member_uids: [uid],
-    });
-
-    return { success: true, projectData: { name: name, description: description, githubUrl: githubUrl, user_uid: uid } };
+    await db
+      .collection("projects")
+      .add({
+        name: name,
+        description: description,
+        github_url: githubUrl,
+        member_uids: [uid],
+        created_on: createdOn,
+        last_updated_on: lastUpdatedOn,
+      })
+      .then((res) => {
+        logger.log("project id:, ", res.id);
+        return { success: true, projectData: { name: name, description: description, githubUrl: githubUrl, userUid: uid, createdOn: createdOn, lastUpdatedOn: lastUpdatedOn, projectId: res.id } };
+      })
+      .catch((error) => {
+        throw "Error in createProject in cloud functions: " + error;
+      });
   } catch (error) {
     console.error("Error creating new project: ", error);
     throw new HttpsError("internal", "Error sending push notification: " + error);
@@ -120,9 +131,18 @@ exports.getUserProjects = onCall(async (data, context) => {
     logger.log("UID: " + uid);
     const userProjects = await db.collection("projects").where("member_uids", "array-contains", uid).get();
     logger.log("Projects: " + userProjects);
-    const userProjectsData = userProjects.docs.map((doc) => doc.data());
+    const userProjectsData = userProjects.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        projectId: doc.id,
+        name: data.name,
+        description: data.description,
+        githubUrl: data.github_url,
+        memberUids: data.member_uids,
+        lastUpdatedOn: data.last_updated_on,
+      };
+    });
     return userProjectsData;
-
   } catch (error) {
     console.error("Error fetching user projects: ", error);
     throw new HttpsError("internal", "Error fetching user projects: " + error);

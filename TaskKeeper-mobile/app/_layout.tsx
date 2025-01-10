@@ -1,4 +1,5 @@
 import { Slot } from "expo-router";
+import { PortalHost } from '@rn-primitives/portal';
 import { SessionProvider } from "@/components/AuthContext";
 import "~/global.css";
 
@@ -52,13 +53,14 @@ export default function RootLayout() {
   }
 
   // Set up the auth context and render our layout inside of it.
-  return (
+  return (<>
     <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
       <StatusBar style={isDarkColorScheme ? "light" : "dark"} backgroundColor={isDarkColorScheme ? "black" : undefined} animated={true} translucent={false}/>
       <SessionProvider>
         <Stack screenOptions={{ headerShown: false }} />
       </SessionProvider>
     </ThemeProvider>
-
+    <PortalHost/>
+    </>
   );
 }
