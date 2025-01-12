@@ -6,15 +6,28 @@ import { useEffect, useState } from "react";
 import { Text } from "@/components/ui/text";
 import ProjectTile from "@/components/ProjectTile";
 import { Button } from "@/components/ui/button";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function ProjectsScreen() {
-  const [projects, setProjects] = useState<{
-    projectId: string; name: string; description: string; githubUrl: string 
-}[]>([]);
+  const [projects, setProjects] = useState<
+    {
+      projectId: string;
+      name: string;
+      description: string;
+      githubUrl: string;
+      memberUids: Array<string>;
+    }[]
+  >([]);
   const fetchProjects = async () => {
     try {
+      //cached version of the data, useful for laggy networks
+      const cachedProjects = await AsyncStorage.getItem("projects");
+      console.log(JSON.stringify(cachedProjects))
+
       const loadedProjects = await fbFunctions.loadUserProjects();
+      console.log(projects)
       setProjects(loadedProjects);
+      AsyncStorage.setItem("projects", JSON.stringify(projects));
     } catch (error) {
       console.error("Failed to fetch projects:", error);
     }
@@ -22,7 +35,7 @@ export default function ProjectsScreen() {
 
   useEffect(() => {
     fetchProjects();
-  }, [fbFunctions.loadUserProjects]); 
+  }, [fbFunctions.loadUserProjects]);
 
   return (
     <ScrollView className="flex-1 justifyitems-center bg-[#25292e] p-5">
@@ -31,21 +44,20 @@ export default function ProjectsScreen() {
       </View>
       <Button
         onPress={() => {
-          fetchProjects()
+          fetchProjects();
         }}
       >
         <Text>Refresh projects</Text>
       </Button>
       {projects.map((project, index) => (
-        
         <ProjectTile
           key={index}
           id={project.projectId}
           title={project.name}
           description={project.description}
           githubUrl={project.githubUrl}
+          memberUids={project.memberUids}
         />
-        
       ))}
       <Button
         onPress={() => {

@@ -18,7 +18,7 @@ import {
 } from "./ui/dropdown-menu";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-export default function ProjectTile({ id, title, description, githubUrl }: { id: string; title: string; description: string; githubUrl: string }) {
+export default function ProjectTile({ id, title, description, githubUrl, memberUids }: { id: string; title: string; description: string; githubUrl: string; memberUids: string[]; }) {
   const insets = useSafeAreaInsets();
   const contentInsets = {
     top: insets.top,
@@ -29,7 +29,7 @@ export default function ProjectTile({ id, title, description, githubUrl }: { id:
 
   return (
     <Card className="p-0 flex-row p-0">
-      <View className="bg-red-500">
+      <View className="bg-red-500 flex-1">
         <CardHeader>
           <CardTitle>{title}</CardTitle>
           <CardDescription className="text-lg">{description}</CardDescription>
@@ -37,10 +37,11 @@ export default function ProjectTile({ id, title, description, githubUrl }: { id:
         <CardFooter className="flex flex-col items-start">
           <Text>ID: {id}</Text>
           <Text>{githubUrl}</Text>
-          <Text>TODO: user profile thumbnails here</Text>
+          {/* TODO: replace member UIDs here with member avatars */}
+          <Text>Members: {memberUids.join(", ")}</Text>
         </CardFooter>
       </View>
-      <View className="flex-1">
+      <View>
         <CardHeader className="items-end p-0">
           <DropdownMenu className="flex">
             <DropdownMenuTrigger style={{borderColor: "red", borderWidth: 2}} asChild>

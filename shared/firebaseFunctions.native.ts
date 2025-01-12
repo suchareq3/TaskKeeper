@@ -5,6 +5,9 @@ import { FirebaseFunctions } from "./firebaseInterface";
 const app = getApp(); // gets config from google-services.json
 const auth = getAuth();
 const db = getFirestore(app);
+app.firestore().settings({
+  persistence: true
+})
 const functions = getFunctions();
 
 // TODO: DEV-ONLY! remove these lines when deploying to production
