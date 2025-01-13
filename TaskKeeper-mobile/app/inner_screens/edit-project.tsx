@@ -1,18 +1,39 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { View, StyleSheet, KeyboardAvoidingView } from "react-native";
 import { fbFunctions } from "../../../shared/firebaseFunctions";
 import { useSession } from "@/components/AuthContext";
 import { Text } from "@/components/ui/text";
 import { useEffect, useState } from "react";
-import { router, useNavigation } from "expo-router";
+import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-export default function CreateProject() {
-  const { createProject } = useSession();
+export default function EditProject() {
+  const { editProject } = useSession();
+
+  const { projectId } = useLocalSearchParams();
 
   const [projectName, setProjectName] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
   const [githubUrl, setGithubUrl] = useState("");
+
+  useEffect(() => {
+    const fetchProject = async () => {
+      try {
+        const storedProjects = await AsyncStorage.getItem("projects");
+        const projects = storedProjects ? JSON.parse(storedProjects) : [];
+        const project = projects.find((project) => project.projectId === projectId);
+
+        console.log("new project loaded to edit!: ", project);
+        setProjectName(project.name);
+        setProjectDescription(project.description);
+        setGithubUrl(project.githubUrl);
+      } catch (error) {
+        console.error("Failed to fetch project: ", error);
+      }
+    };
+    fetchProject();
+  }, []);
 
   return (
     <View className="flex-1 justify-center items-center bg-[#25292e]">
@@ -41,7 +62,7 @@ export default function CreateProject() {
             onPress={() => {
               //TODO: implement proper error handling with user-facing alerts
               try {
-                createProject(projectName, projectDescription, githubUrl).then(() => {
+                editProject(projectId as string, projectName, projectDescription, githubUrl).then(() => {
                   //TODO: navigate to the 'projects' tab!
                   router.back();
                 });
@@ -50,7 +71,7 @@ export default function CreateProject() {
               }
             }}
           >
-            <Text>Create project!</Text>
+            <Text>Edit project!</Text>
           </Button>
         </View>
       </KeyboardAvoidingView>

@@ -17,8 +17,10 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { router } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export default function ProjectTile({ id, title, description, githubUrl, memberUids }: { id: string; title: string; description: string; githubUrl: string; memberUids: string[]; }) {
+export default function ProjectTile({ id, title, description, githubUrl, memberUids}: { id: string; title: string; description: string; githubUrl: string; memberUids: string[];}) {
   const insets = useSafeAreaInsets();
   const contentInsets = {
     top: insets.top,
@@ -44,15 +46,25 @@ export default function ProjectTile({ id, title, description, githubUrl, memberU
       <View>
         <CardHeader className="items-end p-0">
           <DropdownMenu className="flex">
-            <DropdownMenuTrigger style={{borderColor: "red", borderWidth: 2}} asChild>
-              <Button size={null} className="p-3   items-center justify-center rounded-none bg-transparent">
-                <Entypo name="dots-three-vertical" size={22} color="white" />
+            <DropdownMenuTrigger
+              style={{ borderColor: "red", borderWidth: 2 }}
+              asChild
+            >
+              <Button
+                size={null}
+                className="p-3   items-center justify-center rounded-none bg-transparent"
+              >
+                <Entypo
+                  name="dots-three-vertical"
+                  size={22}
+                  color="white"
+                />
               </Button>
             </DropdownMenuTrigger>
 
             <DropdownMenuContent insets={contentInsets}>
               <View>
-                <DropdownMenuItem>
+                <DropdownMenuItem onPress={() => router.push({ pathname: "/inner_screens/edit-project", params: {projectId: id}})}>
                   <Text>Edit project</Text>
                 </DropdownMenuItem>
 

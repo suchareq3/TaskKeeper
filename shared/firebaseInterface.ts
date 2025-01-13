@@ -7,5 +7,6 @@ export interface FirebaseFunctions {
   signUpUser: (email: string, password: string, extraData: { [key: string]: string }) => any;
   showNotification: (title: string, description: string) => Promise<string | undefined>;
   createProject: (name: string, description: string, githubUrl: string) => Promise<void>;
+  editProject: (projectId: string, name: string, description: string, githubUrl: string) => Promise<any>;
   loadUserProjects: () => any;
 }

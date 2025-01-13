@@ -1,4 +1,15 @@
-import { getApp, getAuth, signInWithEmailAndPassword, signOut, getFirestore, createUserWithEmailAndPassword, getFunctions, httpsCallable, messaging } from "../TaskKeeper-mobile/exportedModules.js";
+import {
+  getApp,
+  getAuth,
+  signInWithEmailAndPassword,
+  signOut,
+  getFirestore,
+  createUserWithEmailAndPassword,
+  getFunctions,
+  httpsCallable,
+  messaging,
+  runTransaction,
+} from "../TaskKeeper-mobile/exportedModules.js";
 import { platform } from "./shared";
 import { FirebaseFunctions } from "./firebaseInterface";
 
@@ -6,8 +17,8 @@ const app = getApp(); // gets config from google-services.json
 const auth = getAuth();
 const db = getFirestore(app);
 app.firestore().settings({
-  persistence: true
-})
+  persistence: true,
+});
 const functions = getFunctions();
 
 // TODO: DEV-ONLY! remove these lines when deploying to production
@@ -56,6 +67,8 @@ const checkUserLoginStatus = (nextOrObserver) => {
   return auth.onAuthStateChanged(nextOrObserver);
 };
 
+//TODO: this doesn't need to be a cloud function
+//TODO: also, wrap this in a transaction or batched write
 const signUpUser = async (email: string, password: string, extraData: { [key: string]: string }) => {
   try {
     //await messaging().registerDeviceForRemoteMessages();
@@ -92,22 +105,45 @@ const showNotification = async (title: string, description: string) => {
   }
 };
 
-//TODO: re-do this so it's a 3-step process!
+//TODO: this doesn't need to be a cloud function
 const createProject = async (name: string, description: string, githubUrl: string) => {
   try {
     const currentUser = auth.currentUser;
-    console.log("currentUser:",currentUser);
+    console.log("currentUser:", currentUser);
     if (currentUser) {
       const uid = currentUser.uid;
       const createProjectFunction = functions.httpsCallable("createProject");
       const result = await createProjectFunction({ name, description, githubUrl, uid });
       console.log(result);
     } else {
-      console.error("createProject - logged-in user not found!")
+      console.error("createProject - logged-in user not found!");
     }
-    
   } catch (error) {
     console.error("Error creating new project:", error);
+  }
+};
+
+const editProject = async (projectId: string, name: string, description: string, githubUrl: string) => {
+  try {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const lastUpdatedOn = Date.now();
+      await db
+        .collection("projects")
+        .doc(projectId)
+        .update({
+          name: name,
+          description: description,
+          github_url: githubUrl,
+          last_updated_on: lastUpdatedOn,
+        })
+        .then((res) => {
+          console.log("editProject response: ", res);
+          return { success: true, projectData: { name: name, description: description, githubUrl: githubUrl, lastUpdatedOn: lastUpdatedOn } };
+        });
+    }
+  } catch (error) {
+    console.error("Error editing project:", error);
   }
 };
 
@@ -136,5 +172,6 @@ export const fbFunctions: FirebaseFunctions = {
   signUpUser,
   showNotification,
   createProject,
-  loadUserProjects
+  editProject,
+  loadUserProjects,
 };

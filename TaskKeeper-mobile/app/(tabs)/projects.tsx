@@ -22,12 +22,13 @@ export default function ProjectsScreen() {
     try {
       //cached version of the data, useful for laggy networks
       const cachedProjects = await AsyncStorage.getItem("projects");
-      console.log(JSON.stringify(cachedProjects))
+      if (cachedProjects) {
+        setProjects(JSON.parse(cachedProjects));
+      }
 
       const loadedProjects = await fbFunctions.loadUserProjects();
-      console.log(projects)
       setProjects(loadedProjects);
-      AsyncStorage.setItem("projects", JSON.stringify(projects));
+      AsyncStorage.setItem("projects", JSON.stringify(loadedProjects));
     } catch (error) {
       console.error("Failed to fetch projects:", error);
     }
