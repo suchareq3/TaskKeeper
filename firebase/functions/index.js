@@ -26,6 +26,7 @@ const { getFirestore, Timestamp } = require("firebase-admin/firestore");
 const { getAuth } = require("firebase-admin/auth");
 const { log } = require("firebase-functions/logger");
 const { admin, messaging } = require("firebase-admin");
+const { generate } = require("generate-password");
 
 const app = initializeApp();
 const auth = getAuth();
@@ -101,6 +102,7 @@ exports.createProject = onCall(async (data, context) => {
   const { name, description, githubUrl, uid } = data.data;
   const createdOn = Timestamp.now();
   const lastUpdatedOn = Timestamp.now();
+  const inviteCode = await generateInviteCode();
   try {
     await db
       .collection("projects")
@@ -111,6 +113,7 @@ exports.createProject = onCall(async (data, context) => {
         member_uids: [uid],
         created_on: createdOn,
         last_updated_on: lastUpdatedOn,
+        invite_code: inviteCode,
       })
       .then((res) => {
         logger.log("project id:, ", res.id);
@@ -148,3 +151,21 @@ exports.getUserProjects = onCall(async (data, context) => {
     throw new HttpsError("internal", "Error fetching user projects: " + error);
   }
 });
+
+
+
+// TODO: there's an edge case where someone may be able to re-use someone's old invite code after it re-generates. is this OK?
+const generateInviteCode = async () => {
+  const codeGen = () => generate({ length: 8, numbers: true, lowercase: false, uppercase: true, excludeSimilarCharacters: true });
+  const codeCheckQuery = (invCode) => db.collection("projects").where("invite_code", "array-contains", invCode);
+
+  let inviteCode = codeGen();
+  let userProjects = await codeCheckQuery(inviteCode).get();
+  //if inviteCode is already taken by a project, keep re-generating it until you find an available inviteCode
+  while (!userProjects.empty) {
+    inviteCode = codeGen();
+    userProjects = await codeCheckQuery(inviteCode).get();
+  }
+
+  return inviteCode;
+};
