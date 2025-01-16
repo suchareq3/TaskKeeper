@@ -143,6 +143,7 @@ exports.getUserProjects = onCall(async (data, context) => {
         githubUrl: data.github_url,
         memberUids: data.member_uids,
         lastUpdatedOn: data.last_updated_on,
+        inviteCode: data.invite_code
       };
     });
     return userProjectsData;

@@ -64,14 +64,10 @@ export default function ProjectTile({ id, title, description, githubUrl, memberU
 
             <DropdownMenuContent insets={contentInsets}>
               <View>
-                <DropdownMenuItem onPress={() => router.push({ pathname: "/inner_screens/edit-project", params: {projectId: id}})}>
+                <DropdownMenuItem onPress={() => router.push({ pathname: "/inner_screens/edit-project", params: { projectId: id } })}>
                   <Text>Edit project</Text>
                 </DropdownMenuItem>
 
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Text>Add/remove members</Text>
-                </DropdownMenuItem>
               </View>
             </DropdownMenuContent>
           </DropdownMenu>
