@@ -9,4 +9,5 @@ export interface FirebaseFunctions {
   createProject: (name: string, description: string, githubUrl: string) => Promise<void>;
   editProject: (projectId: string, name: string, description: string, githubUrl: string) => Promise<any>;
   loadUserProjects: () => any;
+  addUserToProjectViaInviteCode: (inviteCode: string) => Promise<any>;
 }

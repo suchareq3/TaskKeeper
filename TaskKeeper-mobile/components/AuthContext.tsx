@@ -20,6 +20,7 @@ const AuthContext = createContext<{
   signUp: (email: string, password: string, extraData: { [key: string]: string }) => any;
   createProject: (name: string, description: string, githubUrl: string) => any;
   editProject: (projectId: string, name: string, description: string, githubUrl: string) => any;
+  addUserToProjectViaInviteCode: (inviteCode: string) => any;
   session?: FirebaseAuthTypes.User | null;
   isLoading: boolean;
 }>({
@@ -28,6 +29,7 @@ const AuthContext = createContext<{
   signUp: () => Promise.resolve(),
   createProject: () => Promise.resolve(),
   editProject: () => Promise.resolve(),
+  addUserToProjectViaInviteCode: () => Promise.resolve(),
   session: null,
   isLoading: true,
 });
@@ -133,10 +135,21 @@ useEffect(() => {console.log("new token!")}, [getToken])
     }
   }
 
+  const addUserToProjectViaInviteCode = async (inviteCode: string) => {
+    setIsLoading(true);
+    try {
+      await fbFunctions.addUserToProjectViaInviteCode(inviteCode);
+    } catch (error) {
+      console.error("addUserToProjectViaInviteCode in AuthContext.tsx has failed!: ", error)
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   return (
     <GestureHandlerRootView>
       <SafeAreaView className="flex-1">
-        <AuthContext.Provider value={{ signIn, signOut, signUp, createProject, editProject, session, isLoading }}>
+        <AuthContext.Provider value={{ signIn, signOut, signUp, createProject, editProject, addUserToProjectViaInviteCode, session, isLoading }}>
           {children}
         </AuthContext.Provider>
       </SafeAreaView>

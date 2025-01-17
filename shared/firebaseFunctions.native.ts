@@ -9,6 +9,7 @@ import {
   httpsCallable,
   messaging,
   runTransaction,
+  arrayUnion,
 } from "../TaskKeeper-mobile/exportedModules.js";
 import { platform } from "./shared";
 import { FirebaseFunctions } from "./firebaseInterface";
@@ -80,6 +81,7 @@ const signUpUser = async (email: string, password: string, extraData: { [key: st
     logInWithPassword(email, password);
   } catch (error) {
     console.error("Error registering user:", error);
+    throw error;
   }
 };
 
@@ -102,6 +104,7 @@ const showNotification = async (title: string, description: string) => {
     const result = await pushNotificationFunction({ fcmToken, title, description });
   } catch (error) {
     console.error("Error showing notification:", error);
+    throw error;
   }
 };
 
@@ -120,6 +123,7 @@ const createProject = async (name: string, description: string, githubUrl: strin
     }
   } catch (error) {
     console.error("Error creating new project:", error);
+    throw error;
   }
 };
 
@@ -141,9 +145,12 @@ const editProject = async (projectId: string, name: string, description: string,
           console.log("editProject response: ", res);
           return { success: true, projectData: { name: name, description: description, githubUrl: githubUrl, lastUpdatedOn: lastUpdatedOn } };
         });
+    } else {
+      throw new Error("User not authenticated");
     }
   } catch (error) {
     console.error("Error editing project:", error);
+    throw error;
   }
 };
 
@@ -159,7 +166,27 @@ const loadUserProjects = async () => {
     return result.data;
   } catch (error) {
     console.error("Error loading user projects!:", error);
-    throw error; // Rethrow the error for upstream handling
+    throw error;
+  }
+};
+
+const addUserToProjectViaInviteCode = async (inviteCode: string) => {
+  try {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const project = await db.collection("projects").where("invite_code", "==", inviteCode).limit(1).get();
+      const projectDoc = project.docs[0];
+      await projectDoc.ref
+        .update({
+          member_uids: arrayUnion(currentUser.uid),
+        })
+        .then(() => {
+          console.log("success adding user to project via invite code!");
+        });
+    }
+  } catch (error) {
+    console.error("Error adding user to project via invite code!:", error);
+    throw error;
   }
 };
 
@@ -174,4 +201,5 @@ export const fbFunctions: FirebaseFunctions = {
   createProject,
   editProject,
   loadUserProjects,
+  addUserToProjectViaInviteCode,
 };

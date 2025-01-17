@@ -6,33 +6,35 @@ import { useEffect, useState } from "react";
 import { router, useNavigation } from "expo-router";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 export default function CreateProject() {
-  const { createProject } = useSession();
+  const { createProject, addUserToProjectViaInviteCode } = useSession();
 
   const [projectName, setProjectName] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
   const [githubUrl, setGithubUrl] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
 
   return (
     <View className="flex-1 justify-center items-center bg-[#25292e]">
-      <KeyboardAvoidingView className="flex-1 flex flex-col justify-between items-center bg-violet-900 w-full p-5">
-        <View className="flex flex-col w-full">
+      <KeyboardAvoidingView className="flex-1 items-center w-full p-5">
+        <View className=" w-full">
           <Input
             className=""
-            placeholder="Project name here please!"
+            placeholder="Project name"
             value={projectName}
             onChangeText={setProjectName}
             keyboardType="default"
           />
           <Input
-            placeholder="Project description here please!"
+            placeholder="Project description"
             value={projectDescription}
             onChangeText={setProjectDescription}
             keyboardType="default"
           />
           <Input
-            placeholder="Github URL here please!"
+            placeholder="Github URL"
             value={githubUrl}
             onChangeText={setGithubUrl}
             keyboardType="default"
@@ -50,8 +52,24 @@ export default function CreateProject() {
               }
             }}
           >
-            <Text>Create project!</Text>
+            <Text>Create new project!</Text>
           </Button>
+        </View>
+        <Separator className="my-5" />
+        <Text className="text-5xl">OR...</Text>
+        <Separator className="my-5" />
+        <View className="w-full">
+          <Input
+            placeholder="Type in your invite code here"
+            value={inviteCode}
+            onChangeText={setInviteCode}
+            keyboardType="default"
+          />
+          <Button onPress={() => {
+            addUserToProjectViaInviteCode(inviteCode).then(() => {
+              router.back();
+            })
+          }}><Text>Join an existing project!</Text></Button>
         </View>
       </KeyboardAvoidingView>
     </View>
