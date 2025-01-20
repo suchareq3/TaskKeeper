@@ -1,6 +1,6 @@
 import { useSession } from "@/components/AuthContext";
 import { Redirect, Stack, Tabs } from "expo-router";
-import { Text, View, useColorScheme } from "react-native";
+import { PermissionsAndroid, Text, View, useColorScheme } from "react-native";
 
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerItemList } from "@react-navigation/drawer";
@@ -8,11 +8,10 @@ import { useTheme } from "@react-navigation/native";
 import { colorScheme } from "nativewind";
 import { Button } from "@/components/ui/button";
 import { fbFunctions } from "../../../shared/firebaseFunctions";
-import { requestPermissions } from "@/components/permissionFunctions";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function TabsLayout() {
-  requestPermissions();
+  PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
   const { session, isLoading, signOut } = useSession();
   const currentColorScheme = useColorScheme();
   const isDarkColorScheme = currentColorScheme === "dark";

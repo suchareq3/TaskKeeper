@@ -11,6 +11,10 @@ export default function InnerScreensLayout() {
         name="edit-project"
         options={{ title: "Editing project", headerShown: true }}
       />
+      <Stack.Screen
+        name="add-task"
+        options={{ title: "Adding task", headerShown: true }}
+      />
     </Stack>
   );
 }
