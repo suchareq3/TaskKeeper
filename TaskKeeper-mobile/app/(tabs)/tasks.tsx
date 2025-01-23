@@ -52,19 +52,9 @@ export default function TasksScreen() {
         <Text>Refresh tasks</Text>
       </Button>
       {projects.map((project, index) => (
-        <TaskTile
-          key={index}
-          id={"123"}
-          title={"Sweep the floor sweep the floor sweep the floor the floor the floor sweep"}
-          subtaskDoneCount={1}
-          subtaskTodoCount={6}
-        />
+        <TaskTile key={index} id={"123"} title={"Sweep the floor sweep the floor sweep the floor the floor the floor sweep"} subtaskDoneCount={1} subtaskTodoCount={6} />
       ))}
-      <Button
-        onPress={() => {
-          router.push("/inner_screens/add-task");
-        }}
-      >
+      <Button onPress={() => router.push({ pathname: "/inner_screens/add-task", params: { projects: JSON.stringify(projects) } })}>
         <Text>Add new task</Text>
       </Button>
     </ScrollView>

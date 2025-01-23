@@ -21,6 +21,7 @@ const AuthContext = createContext<{
   createProject: (name: string, description: string, githubUrl: string) => any;
   editProject: (projectId: string, name: string, description: string, githubUrl: string) => any;
   addUserToProjectViaInviteCode: (inviteCode: string) => any;
+  createTask: (projectId: string, taskName: string, taskDescription: string, isTimed: boolean, date: Date, hasSubtasks: boolean, data: { key: string; label: string; completed: boolean }[]) => any;
   session?: FirebaseAuthTypes.User | null;
   isLoading: boolean;
 }>({
@@ -30,6 +31,7 @@ const AuthContext = createContext<{
   createProject: () => Promise.resolve(),
   editProject: () => Promise.resolve(),
   addUserToProjectViaInviteCode: () => Promise.resolve(),
+  createTask: () => Promise.resolve(),
   session: null,
   isLoading: true,
 });
@@ -146,10 +148,28 @@ useEffect(() => {console.log("new token!")}, [getToken])
     }
   }
 
+
+  type Item = {
+    key: string;
+    label: string;
+    completed: boolean;
+  };
+
+  const createTask = async (projectId: string, taskName: string, taskDescription: string, isTimed: boolean, date: Date, hasSubtasks: boolean, data: string) => {
+    setIsLoading(true);
+    try {
+      await fbFunctions.createTask(projectId, taskName, taskDescription, isTimed, date, hasSubtasks, data);
+    } catch (error) {
+      console.error("createTask in AuthContext.tsx has failed!: ", error)
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <GestureHandlerRootView>
       <SafeAreaView className="flex-1">
-        <AuthContext.Provider value={{ signIn, signOut, signUp, createProject, editProject, addUserToProjectViaInviteCode, session, isLoading }}>
+        <AuthContext.Provider value={{ signIn, signOut, signUp, createProject, editProject, addUserToProjectViaInviteCode, createTask, session, isLoading }}>
           {children}
         </AuthContext.Provider>
       </SafeAreaView>

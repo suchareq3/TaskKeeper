@@ -10,4 +10,5 @@ export interface FirebaseFunctions {
   editProject: (projectId: string, name: string, description: string, githubUrl: string) => Promise<any>;
   loadUserProjects: () => any;
   addUserToProjectViaInviteCode: (inviteCode: string) => Promise<any>;
+  createTask: (projectId: string, taskName: string, taskDescription: string, isTimed: boolean, date: Date, hasSubtasks: boolean, data: string) => Promise<any>;
 }

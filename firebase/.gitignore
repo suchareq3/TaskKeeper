@@ -19,6 +19,7 @@ firebase-debug.*.log*
 
 # Firebase data
 example_data/
+firebase-export*/
 
 # Runtime data
 pids
