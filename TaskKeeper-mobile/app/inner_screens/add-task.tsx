@@ -16,6 +16,7 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Crypto from "expo-crypto";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from '~/components/ui/textarea';
 
 export default function CreateProject() {
   const { createTask } = useSession();
@@ -108,8 +109,8 @@ export default function CreateProject() {
           </Select>
           {selectedProject.value && (
             <>
-              <Input className="" placeholder="Task name" value={taskName} onChangeText={setTaskName} keyboardType="default" />
-              <Input placeholder="Task description (optional)" value={taskDescription} onChangeText={setTaskDescription} keyboardType="default" />
+              <Input placeholder="Task name" value={taskName} onChangeText={setTaskName} keyboardType="default" />
+              <Textarea className="max-h-[120]" numberOfLines={2} placeholder="Task description (optional)" value={taskDescription} onChangeText={setTaskDescription} keyboardType="default" />
               <View className="flex-row items-center !m-0">
                 <Checkbox className="p-5 !m-0" checked={isTimed} onCheckedChange={setIsTimed} />
                 <Label className="!text-xl h-auto p-3 pr-8 !m-0" nativeID="terms" onPress={() => setIsTimed((prev) => !prev)}>
