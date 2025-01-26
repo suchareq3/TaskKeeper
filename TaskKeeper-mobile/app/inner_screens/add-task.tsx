@@ -56,13 +56,17 @@ export default function CreateProject() {
       setData((prevData) => prevData.filter((dataItem) => dataItem.key !== key));
     };
 
+    const handleTextChange = (key: string, newText: string) => {
+      setData((prevData) => prevData.map((dataItem) => (dataItem.key === key ? { ...dataItem, label: newText } : dataItem)));
+    };
+
     return (
       <View className="relative">
         <ScaleDecorator>
           <View className="flex w-full max-h-[50] bg-gray-600 scroll">
             <TouchableOpacity delayLongPress={250} onLongPress={drag} className="h-20">
               <MaterialIcons name="drag-indicator" size={32} color="black" className="absolute opacity-50 left-[5] top-[4] bottom-0 z-[50]" />
-              <Input className="text-white !text-xl text-left ml-12 mr-[88] !bg-transparent bg-red-500" editable={true}>
+              <Input className="text-white !text-xl text-left ml-12 mr-[88] !bg-transparent bg-red-500" editable={true} onChangeText={(text) => handleTextChange(item.key, text)}>
                 {item.label}
               </Input>
             </TouchableOpacity>
@@ -84,74 +88,85 @@ export default function CreateProject() {
     <View className="flex-1 justify-center items-center bg-[#25292e]">
       <KeyboardAvoidingView className="flex-1 items-center w-full p-5">
         <View className="w-full ">
-          <Select onValueChange={(value) => {setSelectedProject(value!.value); console.log(value)}}>
+          <Select
+            onValueChange={(value) => {
+              setSelectedProject(value);
+              console.log(selectedProject);
+            }}
+          >
             <SelectTrigger className="w-[250px]">
               <SelectValue className="text-foreground text-sm native:text-lg" placeholder="Pick a project" />
             </SelectTrigger>
             <SelectContent className="w-[250px]">
               <SelectGroup>
                 <SelectLabel>Your projects</SelectLabel>
-                {parsedProjects.map((project) => <SelectItem key={project.projectId} label={project.name} value={project.projectId} />)}
+                {parsedProjects.map((project) => (
+                  <SelectItem key={project.projectId} label={project.name} value={project.projectId} />
+                ))}
               </SelectGroup>
             </SelectContent>
           </Select>
-          <Input className="" placeholder="Task name" value={taskName} onChangeText={setTaskName} keyboardType="default" />
-          <Input placeholder="Task description (optional)" value={taskDescription} onChangeText={setTaskDescription} keyboardType="default" />
-          <View className="flex-row items-center !m-0">
-            <Checkbox className="p-5 !m-0" checked={isTimed} onCheckedChange={setIsTimed} />
-            <Label className="!text-xl h-auto p-3 pr-8 !m-0" nativeID="terms" onPress={() => setIsTimed((prev) => !prev)}>
-              Deadline
-            </Label>
-          </View>
-          <View className="flex-row items-center !m-0">
-            <Checkbox className="p-5 !m-0" checked={hasSubtasks} onCheckedChange={setHasSubtasks} />
-            <Label className="!text-xl h-auto p-3 pr-8 !m-0" nativeID="terms" onPress={() => setHasSubtasks((prev) => !prev)}>
-              Add subtasks
-            </Label>
-          </View>
-
-          {isTimed && (
+          {selectedProject.value && (
             <>
-              <Button onPress={showDatepicker}>
-                <Text>show date picker!</Text>
-              </Button>
-              <Text className="text-white">ETA: {date.toLocaleDateString()}</Text>
-            </>
-          )}
+              <Input className="" placeholder="Task name" value={taskName} onChangeText={setTaskName} keyboardType="default" />
+              <Input placeholder="Task description (optional)" value={taskDescription} onChangeText={setTaskDescription} keyboardType="default" />
+              <View className="flex-row items-center !m-0">
+                <Checkbox className="p-5 !m-0" checked={isTimed} onCheckedChange={setIsTimed} />
+                <Label className="!text-xl h-auto p-3 pr-8 !m-0" nativeID="terms" onPress={() => setIsTimed((prev) => !prev)}>
+                  Deadline
+                </Label>
+              </View>
+              <View className="flex-row items-center !m-0">
+                <Checkbox className="p-5 !m-0" checked={hasSubtasks} onCheckedChange={setHasSubtasks} />
+                <Label className="!text-xl h-auto p-3 pr-8 !m-0" nativeID="terms" onPress={() => setHasSubtasks((prev) => !prev)}>
+                  Add subtasks
+                </Label>
+              </View>
 
-          {hasSubtasks && (
-            <>
-              <Button onPress={() => setData([...data, { key: Crypto.randomUUID(), label: "Edit me!", completed: false }])}>
-                <Text>Add new subtask</Text>
-              </Button>
-              <DraggableFlatList
-                data={data}
-                onDragEnd={({ data }) => {
-                  setData(data);
-                  console.log("new data:", data);
+              {isTimed && (
+                <>
+                  <Button onPress={showDatepicker}>
+                    <Text>show date picker!</Text>
+                  </Button>
+                  <Text className="text-white">ETA: {date.toLocaleDateString()}</Text>
+                </>
+              )}
+
+              {hasSubtasks && (
+                <>
+                  <Button onPress={() => setData([...data, { key: Crypto.randomUUID(), label: "Edit me!", completed: false }])}>
+                    <Text>Add new subtask</Text>
+                  </Button>
+                  <DraggableFlatList
+                    data={data}
+                    onDragEnd={({ data }) => {
+                      setData(data);
+                      console.log("new data:", data);
+                    }}
+                    keyExtractor={(item) => item.key}
+                    renderItem={renderItem}
+                  />
+                </>
+              )}
+
+              <Separator className="my-4" />
+              <Button
+                onPress={() => {
+                  //TODO: implement proper error handling with user-facing alerts
+                  try {
+                    createTask(selectedProject.value, taskName, taskDescription, isTimed, date, hasSubtasks, data).then(() => {
+                      //TODO: navigate to the 'tasks' tab!
+                      router.back();
+                    });
+                  } catch (e) {
+                    console.log("smth went wrong: ", e);
+                  }
                 }}
-                keyExtractor={(item) => item.key}
-                renderItem={renderItem}
-              />
+              >
+                <Text>Create new task!</Text>
+              </Button>
             </>
           )}
-
-          <Separator className="my-4" />
-          <Button
-            onPress={() => {
-              //TODO: implement proper error handling with user-facing alerts
-              try {
-                createTask(selectedProject.value, taskName, taskDescription, isTimed, date, hasSubtasks, data).then(() => {
-                  //TODO: navigate to the 'tasks' tab!
-                  router.back();
-                });
-              } catch (e) {
-                console.log("smth went wrong: ", e);
-              }
-            }}
-          >
-            <Text>Create new task!</Text>
-          </Button>
         </View>
       </KeyboardAvoidingView>
     </View>
