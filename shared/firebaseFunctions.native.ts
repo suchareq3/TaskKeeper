@@ -196,7 +196,7 @@ type Item = {
   completed: boolean;
 };
 
-const createTask = async (projectId: string, taskName: string, taskDescription: string, isTimed: boolean, date: Date, hasSubtasks: boolean, data: string) => {
+const createTask = async (projectId: string, taskName: string, taskDescription: string, priorityLevel: string, taskType: string, subTaskdata: { key: string; label: string; completed: boolean }[]) => {
   try {
     const currentUser = auth.currentUser;
     if (currentUser) {
@@ -204,25 +204,23 @@ const createTask = async (projectId: string, taskName: string, taskDescription: 
         project_id: projectId,
         task_name: taskName,
         task_description: taskDescription,
-        is_timed: isTimed,
-        has_subtasks: hasSubtasks,
+        priority_level: priorityLevel,
+        task_type: taskType,
+        subtasks: subTaskdata,
+
+        task_state: "in-progress",
         created_on: Date.now(),
         last_updated_on: Date.now(),
         assigned_user_uid: currentUser.uid,
       };
-      if (isTimed) {
-        taskData["date"] = date;
-      }
-      if (hasSubtasks) {
-        taskData["subtasks"] = data;
-      }
+
       await db.collection("tasks").add(taskData);
     }
   } catch (error) {
     console.error("Error creating new task:", error);
     throw error;
   }
-}
+};
 
 export const fbFunctions: FirebaseFunctions = {
   someSharedFunction,
@@ -236,5 +234,5 @@ export const fbFunctions: FirebaseFunctions = {
   editProject,
   loadUserProjects,
   addUserToProjectViaInviteCode,
-  createTask
+  createTask,
 };

@@ -1,18 +1,10 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  PropsWithChildren,
-  SetStateAction,
-} from "react";
+import { createContext, useContext, useState, useEffect, PropsWithChildren, SetStateAction } from "react";
 import { FirebaseAuthTypes } from "@react-native-firebase/auth";
 import { fbFunctions } from "../../shared/firebaseFunctions";
 import { getToken, default as messaging } from "@react-native-firebase/messaging";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import * as ExpoNotifications from 'expo-notifications';
-
+import * as ExpoNotifications from "expo-notifications";
 
 const AuthContext = createContext<{
   signIn: (email: string, password: string) => Promise<void>;
@@ -21,7 +13,7 @@ const AuthContext = createContext<{
   createProject: (name: string, description: string, githubUrl: string) => any;
   editProject: (projectId: string, name: string, description: string, githubUrl: string) => any;
   addUserToProjectViaInviteCode: (inviteCode: string) => any;
-  createTask: (projectId: string, taskName: string, taskDescription: string, isTimed: boolean, date: Date, hasSubtasks: boolean, data: { key: string; label: string; completed: boolean }[]) => any;
+  createTask: (projectId: string, taskName: string, taskDescription: string, priorityLevel: string, taskType: string, subTaskdata: { key: string; label: string; completed: boolean }[]) => any;
   session?: FirebaseAuthTypes.User | null;
   isLoading: boolean;
 }>({
@@ -50,29 +42,25 @@ export function SessionProvider({ children }: PropsWithChildren) {
   const [session, setSession] = useState<FirebaseAuthTypes.User | null>(null);
   // TODO: add timeout
   const [isLoading, setIsLoading] = useState(true);
-  
-  
-
 
   // Listen for auth state changes
   useEffect(() => {
-
-    const userLoginStatus = fbFunctions.checkUserLoginStatus(
-      (currentUser: SetStateAction<FirebaseAuthTypes.User | null>) => {
-        setSession(currentUser);
-        console.log("went into userLoginStatus in AuthContext.tsx!: " + JSON.stringify(currentUser));
-        if (currentUser) {
-          //necessary for 
-          messaging().registerDeviceForRemoteMessages();
-        }
-        setIsLoading(false);
+    const userLoginStatus = fbFunctions.checkUserLoginStatus((currentUser: SetStateAction<FirebaseAuthTypes.User | null>) => {
+      setSession(currentUser);
+      console.log("went into userLoginStatus in AuthContext.tsx!: " + JSON.stringify(currentUser));
+      if (currentUser) {
+        //necessary for
+        messaging().registerDeviceForRemoteMessages();
       }
-    );
+      setIsLoading(false);
+    });
 
     return () => userLoginStatus(); // Cleanup listener
   }, []);
 
-useEffect(() => {console.log("new token!")}, [getToken])
+  useEffect(() => {
+    console.log("new token!");
+  }, [getToken]);
 
   // Sign in with email and password
   const signIn = async (email: string, password: string) => {
@@ -115,7 +103,7 @@ useEffect(() => {console.log("new token!")}, [getToken])
   };
 
   //TODO: re-do this so it's a 3-step process!
-  const createProject = async(name: string, description: string, githubUrl: string) => {
+  const createProject = async (name: string, description: string, githubUrl: string) => {
     setIsLoading(true);
     try {
       await fbFunctions.createProject(name, description, githubUrl);
@@ -124,9 +112,9 @@ useEffect(() => {console.log("new token!")}, [getToken])
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
-  const editProject = async(projectId: string, name: string, description: string, githubUrl: string) => {
+  const editProject = async (projectId: string, name: string, description: string, githubUrl: string) => {
     setIsLoading(true);
     try {
       await fbFunctions.editProject(projectId, name, description, githubUrl);
@@ -135,19 +123,18 @@ useEffect(() => {console.log("new token!")}, [getToken])
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   const addUserToProjectViaInviteCode = async (inviteCode: string) => {
     setIsLoading(true);
     try {
       await fbFunctions.addUserToProjectViaInviteCode(inviteCode);
     } catch (error) {
-      console.error("addUserToProjectViaInviteCode in AuthContext.tsx has failed!: ", error)
+      console.error("addUserToProjectViaInviteCode in AuthContext.tsx has failed!: ", error);
     } finally {
       setIsLoading(false);
     }
-  }
-
+  };
 
   type Item = {
     key: string;
@@ -155,12 +142,19 @@ useEffect(() => {console.log("new token!")}, [getToken])
     completed: boolean;
   };
 
-  const createTask = async (projectId: string, taskName: string, taskDescription: string, isTimed: boolean, date: Date, hasSubtasks: boolean, data: string) => {
+  const createTask = async (
+    projectId: string,
+    taskName: string,
+    taskDescription: string,
+    priorityLevel: string,
+    taskType: string,
+    subTaskdata: { key: string; label: string; completed: boolean }[]
+  ) => {
     setIsLoading(true);
     try {
-      await fbFunctions.createTask(projectId, taskName, taskDescription, isTimed, date, hasSubtasks, data);
+      await fbFunctions.createTask(projectId, taskName, taskDescription, priorityLevel, taskType, subTaskdata);
     } catch (error) {
-      console.error("createTask in AuthContext.tsx has failed!: ", error)
+      console.error("createTask in AuthContext.tsx has failed!: ", error);
     } finally {
       setIsLoading(false);
     }
@@ -169,9 +163,7 @@ useEffect(() => {console.log("new token!")}, [getToken])
   return (
     <GestureHandlerRootView>
       <SafeAreaView className="flex-1">
-        <AuthContext.Provider value={{ signIn, signOut, signUp, createProject, editProject, addUserToProjectViaInviteCode, createTask, session, isLoading }}>
-          {children}
-        </AuthContext.Provider>
+        <AuthContext.Provider value={{ signIn, signOut, signUp, createProject, editProject, addUserToProjectViaInviteCode, createTask, session, isLoading }}>{children}</AuthContext.Provider>
       </SafeAreaView>
     </GestureHandlerRootView>
   );
