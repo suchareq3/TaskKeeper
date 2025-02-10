@@ -16,20 +16,25 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Crypto from "expo-crypto";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from '~/components/ui/textarea';
+import { Textarea } from "~/components/ui/textarea";
+import { Option } from "@rn-primitives/select";
 
 export default function CreateProject() {
   const { createTask } = useSession();
   const { projects } = useLocalSearchParams();
-  const parsedProjects = projects ? JSON.parse(projects) : [];
+  const parsedProjects = projects ? JSON.parse(projects as string) : [];
 
-  const [selectedProject, setSelectedProject] = useState({ value: "", label: "" });
+  const [selectedProject, setSelectedProject] = useState({ value: {projectId: ""}, label: "" } );
+  const [priorityLevel, setPriorityLevel] = useState({ value: "", label: "" } as Option);
+  // const [taskState, setTaskState] = useState({value: "", label: ""});
+  const [taskType, setTaskType] = useState({ value: "", label: "" } as Option);
   const [taskName, setTaskName] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
-  const [hasSubtasks, setHasSubtasks] = useState(false);
+  const DEFAULT_PRIORITY_LEVEL = { label: "3", value: "3" };
+  const DEFAULT_TASK_TYPE = { label: "New feature", value: "new-feature" };
 
-  const initialData: Item[] = [{ key: Crypto.randomUUID(), label: "New subtask name", completed: false }];
-  const [data, setData] = useState(initialData);
+  const initialData: Item[] = [];
+  const [subtaskData, setSubtaskData] = useState(initialData);
 
   type Item = {
     key: string;
@@ -39,11 +44,11 @@ export default function CreateProject() {
 
   const renderItem = ({ item, drag, isActive }: RenderItemParams<Item>) => {
     const handleRemoveItem = (key: string) => {
-      setData((prevData) => prevData.filter((dataItem) => dataItem.key !== key));
+      setSubtaskData((prevData) => prevData.filter((dataItem) => dataItem.key !== key));
     };
 
     const handleTextChange = (key: string, newText: string) => {
-      setData((prevData) => prevData.map((dataItem) => (dataItem.key === key ? { ...dataItem, label: newText } : dataItem)));
+      setSubtaskData((prevData) => prevData.map((dataItem) => (dataItem.key === key ? { ...dataItem, label: newText } : dataItem)));
     };
 
     return (
@@ -72,7 +77,7 @@ export default function CreateProject() {
             <Checkbox
               className="absolute right-[48] top-[2] border-2 p-5"
               checked={item.completed}
-              onCheckedChange={(checked) => setData((prevData) => prevData.map((dataItem) => (dataItem.key === item.key ? { ...dataItem, completed: checked } : dataItem)))}
+              onCheckedChange={(checked) => setSubtaskData((prevData) => prevData.map((dataItem) => (dataItem.key === item.key ? { ...dataItem, completed: checked } : dataItem)))}
             />
             <Button
               className="absolute right-0 bg-red-500"
@@ -89,7 +94,7 @@ export default function CreateProject() {
   return (
     <View className="flex-1 justify-center items-center bg-[#25292e]">
       <KeyboardAvoidingView className="flex-1 items-center w-full p-5">
-        <View className="w-full gap-5">
+        <View className="w-full">
           <Select
             onValueChange={(value) => {
               setSelectedProject(value);
@@ -109,15 +114,16 @@ export default function CreateProject() {
                   <SelectItem
                     key={project.projectId}
                     label={project.name}
-                    value={project.projectId}
+                    value={project}
                   />
                 ))}
               </SelectGroup>
             </SelectContent>
           </Select>
-          {selectedProject.value && (
+          {selectedProject.value.projectId && (
             <>
-              <Separator />
+              <Separator className="my-5"/>
+
               <View className="gap-2">
                 <Input
                   placeholder="Task name"
@@ -134,44 +140,134 @@ export default function CreateProject() {
                   keyboardType="default"
                 />
 
-                <View className="flex-row items-center !m-0">
-                  <Checkbox
-                    className="p-5 !m-0"
-                    checked={hasSubtasks}
-                    onCheckedChange={setHasSubtasks}
-                  />
-                  <Label
-                    className="!text-xl h-auto p-3 pr-8 !m-0"
-                    nativeID="terms"
-                    onPress={() => setHasSubtasks((prev) => !prev)}
+                <View>
+                  <Label nativeID="priority-level">Priority level</Label>
+                  <Select
+                    aria-labelledby="priority-level"
+                    onValueChange={(value) => {
+                      setPriorityLevel(value);
+                    }}
+                    onLayout={() => setPriorityLevel(DEFAULT_PRIORITY_LEVEL)}
+                    defaultValue={DEFAULT_PRIORITY_LEVEL}
                   >
-                    Add subtasks
-                  </Label>
+                    <SelectTrigger className="w-[250px]">
+                      <SelectValue
+                        className="text-foreground text-sm native:text-lg"
+                        placeholder="Set priority level"
+                      />
+                    </SelectTrigger>
+                    <SelectContent className="w-[250px]">
+                      <SelectGroup>
+                        <SelectItem
+                          key={1}
+                          label="1 (highest)"
+                          value="1"
+                        />
+                        <SelectItem
+                          key={2}
+                          label="2"
+                          value="2"
+                        />
+                        <SelectItem
+                          key={3}
+                          label="3"
+                          value="3"
+                        />
+                        <SelectItem
+                          key={4}
+                          label="4"
+                          value="4"
+                        />
+                        <SelectItem
+                          key={5}
+                          label="5 (lowest)"
+                          value="5"
+                        />
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
                 </View>
 
-                {hasSubtasks && (
-                  <>
-                    <Button onPress={() => setData([...data, { key: Crypto.randomUUID(), label: "Edit me!", completed: false }])}>
-                      <Text>Add new subtask</Text>
-                    </Button>
-                    <DraggableFlatList
-                      data={data}
-                      onDragEnd={({ data }) => {
-                        setData(data);
-                        console.log("new data:", data);
-                      }}
-                      keyExtractor={(item) => item.key}
-                      renderItem={renderItem}
-                    />
-                  </>
-                )}
+                <View>
+                  <Label nativeID="task-type">Task type</Label>
+                  <Select
+                    aria-labelledby="task-type"
+                    onValueChange={(value) => {
+                      setTaskType(value);
+                    }}
+                    onLayout={() => setTaskType(DEFAULT_TASK_TYPE)}
+                    defaultValue={DEFAULT_TASK_TYPE}
+                  >
+                    <SelectTrigger className="w-[250px]">
+                      <SelectValue
+                        className="text-foreground text-sm native:text-lg"
+                        placeholder="Set priority level"
+                      />
+                    </SelectTrigger>
+                    <SelectContent className="w-[250px]">
+                      <SelectGroup>
+                        <SelectItem
+                          key={1}
+                          label="New feature"
+                          value="new-feature"
+                        />
+                        <SelectItem
+                          key={2}
+                          label="Change"
+                          value="change"
+                        />
+                        <SelectItem
+                          key={3}
+                          label="Bug fix"
+                          value="bug-fix"
+                        />
+                        <SelectItem
+                          key={4}
+                          label="Testing"
+                          value="testing"
+                        />
+                        <SelectItem
+                          key={5}
+                          label="Documentation"
+                          value="documentation"
+                        />
+                        <SelectItem
+                          key={6}
+                          label="Research"
+                          value="research"
+                        />
+                        <SelectItem
+                          key={7}
+                          label="Other"
+                          value="other"
+                        />
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </View>
 
-                <Separator className="my-4" />
+                <Separator />
+
+                <Button onPress={() => setSubtaskData([...subtaskData, { key: Crypto.randomUUID(), label: "Edit me!", completed: false }])}>
+                  <Text>Add new subtask</Text>
+                </Button>
+                <DraggableFlatList
+                  data={subtaskData}
+                  onDragEnd={({ data }) => {
+                    setSubtaskData(data);
+                    console.log("new data:", data);
+                  }}
+                  keyExtractor={(item) => item.key}
+                  renderItem={renderItem}
+                />
+
+                <Separator className="my-5" />
+
                 <Button
                   onPress={() => {
                     //TODO: implement proper error handling with user-facing alerts
                     try {
-                      createTask(selectedProject.value, taskName, taskDescription, hasSubtasks, data).then(() => {
+                      createTask(selectedProject.value.projectId, taskName, taskDescription, priorityLevel.value, taskType.value, subtaskData).then(() => {
                         //TODO: navigate to the 'tasks' tab!
                         router.back();
                       });
