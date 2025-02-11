@@ -40,7 +40,7 @@ export default function TaskTile({ id, title, subtaskDoneCount, subtaskTodoCount
           <View className="gap-5 flex flex-row">
             <Text className="text-3xl font-extrabold">{`${subtaskDoneCount} / ${subtaskTodoCount}`}</Text>
             <Progress
-              value={0}
+              value={calculatePercentage(subtaskDoneCount, subtaskTodoCount)}
               className="flex-1 relative top-2"
             />
           </View>
@@ -84,6 +84,5 @@ const calculatePercentage = (subtaskDoneCount: number, subtaskTodoCount: number)
   if (subtaskTodoCount === 0) {
     return 0; // Avoid division by zero
   }
-  console.log("percentage:", Math.ceil((subtaskDoneCount / subtaskTodoCount) * 100));
   return Math.ceil((subtaskDoneCount / subtaskTodoCount) * 100);
 };
