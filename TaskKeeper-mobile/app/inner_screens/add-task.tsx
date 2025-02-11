@@ -19,7 +19,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { Textarea } from "~/components/ui/textarea";
 import { Option } from "@rn-primitives/select";
 
-export default function CreateProject() {
+export default function CreateTask() {
   const { createTask } = useSession();
   const { projects } = useLocalSearchParams();
   const parsedProjects = projects ? JSON.parse(projects as string) : [];
@@ -267,7 +267,7 @@ export default function CreateProject() {
                   onPress={() => {
                     //TODO: implement proper error handling with user-facing alerts
                     try {
-                      createTask(selectedProject.value.projectId, taskName, taskDescription, priorityLevel.value, taskType.value, subtaskData).then(() => {
+                      createTask(selectedProject.value.projectId, taskName, taskDescription, priorityLevel!.value, taskType!.value, subtaskData).then(() => {
                         //TODO: navigate to the 'tasks' tab!
                         router.back();
                       });

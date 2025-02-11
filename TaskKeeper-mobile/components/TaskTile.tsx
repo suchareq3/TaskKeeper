@@ -68,7 +68,7 @@ export default function TaskTile({ id, title, subtaskDoneCount, subtaskTodoCount
 
             <DropdownMenuContent insets={contentInsets}>
               <View>
-                <DropdownMenuItem onPress={() => router.push({ pathname: "/inner_screens/edit-project", params: { projectId: id } })}>
+                <DropdownMenuItem onPress={() => router.push({ pathname: "/inner_screens/edit-task", params: { taskId: id } })}>
                   <Text>Edit task</Text>
                 </DropdownMenuItem>
               </View>

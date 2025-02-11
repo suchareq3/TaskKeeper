@@ -170,6 +170,38 @@ const loadUserProjects = async () => {
   }
 };
 
+const loadUserTasks = async () => {
+  try {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const userUid = currentUser.uid;
+      const userTasks = await db.collection("tasks").where("assigned_user_uid", "==", userUid).get();
+
+      const userTasksData = userTasks.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          taskId: doc.id,
+          projectId: data.project_id,
+          taskName: data.task_name,
+          taskDescription: data.task_description,
+          priorityLevel: data.priority_level,
+          taskType: data.task_type,
+          subtasks: data.subtasks,
+          taskStatus: data.task_status,
+          createdOn: data.created_on,
+          lastUpdatedOn: data.last_updated_on,
+        };
+      });
+
+      console.log("Success loading user tasks:", userTasksData);
+      return await userTasksData;
+    }
+  } catch (error) {
+    console.error("Error loading user tasks!");
+    throw error;
+  }
+};
+
 const addUserToProjectViaInviteCode = async (inviteCode: string) => {
   try {
     const currentUser = auth.currentUser;
@@ -208,7 +240,7 @@ const createTask = async (projectId: string, taskName: string, taskDescription: 
         task_type: taskType,
         subtasks: subTaskdata,
 
-        task_state: "in-progress",
+        task_status: "in-progress",
         created_on: Date.now(),
         last_updated_on: Date.now(),
         assigned_user_uid: currentUser.uid,
@@ -218,6 +250,38 @@ const createTask = async (projectId: string, taskName: string, taskDescription: 
     }
   } catch (error) {
     console.error("Error creating new task:", error);
+    throw error;
+  }
+};
+
+const editTask = async (
+  taskId: string,
+  name: string,
+  description: string,
+  status: string,
+  type: string,
+  priorityLevel: string,
+  subtasks: Array<{ key: string; label: string; completed: boolean }>
+) => {
+  try {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const lastUpdatedOn = Date.now();
+      await db.collection("tasks").doc(taskId).update({
+        task_name: name,
+        task_description: description,
+        task_status: status,
+        task_type: type,
+        priority_level: priorityLevel,
+        subtasks: subtasks,
+        last_updated_on: lastUpdatedOn,
+      });
+      console.log("Task updated successfully!");
+    } else {
+      throw new Error("User not authenticated");
+    }
+  } catch (error) {
+    console.error("Error updating task: ", error);
     throw error;
   }
 };
@@ -233,6 +297,8 @@ export const fbFunctions: FirebaseFunctions = {
   createProject,
   editProject,
   loadUserProjects,
+  loadUserTasks,
   addUserToProjectViaInviteCode,
   createTask,
+  editTask,
 };

@@ -9,6 +9,8 @@ export interface FirebaseFunctions {
   createProject: (name: string, description: string, githubUrl: string) => Promise<void>;
   editProject: (projectId: string, name: string, description: string, githubUrl: string) => Promise<any>;
   loadUserProjects: () => any;
+  loadUserTasks: () => any;
+  editTask: (taskId: string, name: string, description: string, status: string, type: string, priorityLevel: string, subtasks: Array<{ key: string; label: string; completed: boolean }>) => Promise<any>;
   addUserToProjectViaInviteCode: (inviteCode: string) => Promise<any>;
   createTask: (projectId: string, taskName: string, taskDescription: string, priorityLevel: string, taskType: string, subTaskdata: { key: string; label: string; completed: boolean }[]) => Promise<any>;
 }

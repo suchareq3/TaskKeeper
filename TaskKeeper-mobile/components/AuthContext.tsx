@@ -14,6 +14,7 @@ const AuthContext = createContext<{
   editProject: (projectId: string, name: string, description: string, githubUrl: string) => any;
   addUserToProjectViaInviteCode: (inviteCode: string) => any;
   createTask: (projectId: string, taskName: string, taskDescription: string, priorityLevel: string, taskType: string, subTaskdata: { key: string; label: string; completed: boolean }[]) => any;
+  editTask: (taskId: string, name: string, description: string, status: string, type: string, priorityLevel: string, subtasks: Array<{ key: string; label: string; completed: boolean }>) => any;
   session?: FirebaseAuthTypes.User | null;
   isLoading: boolean;
 }>({
@@ -24,6 +25,7 @@ const AuthContext = createContext<{
   editProject: () => Promise.resolve(),
   addUserToProjectViaInviteCode: () => Promise.resolve(),
   createTask: () => Promise.resolve(),
+  editTask: () => Promise.resolve(),
   session: null,
   isLoading: true,
 });
@@ -160,10 +162,21 @@ export function SessionProvider({ children }: PropsWithChildren) {
     }
   };
 
+  const editTask = async (taskId: string, name: string, description: string, status: string, type: string, priorityLevel: string, subtasks: Array<{ key: string; label: string; completed: boolean }>) => {
+    setIsLoading(true);
+    try {
+      await fbFunctions.editTask(taskId, name, description, status, type, priorityLevel, subtasks);
+    } catch (error) {
+      console.error("editTask in AuthContext.tsx has failed!: ", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <GestureHandlerRootView>
       <SafeAreaView className="flex-1">
-        <AuthContext.Provider value={{ signIn, signOut, signUp, createProject, editProject, addUserToProjectViaInviteCode, createTask, session, isLoading }}>{children}</AuthContext.Provider>
+        <AuthContext.Provider value={{ signIn, signOut, signUp, createProject, editProject, addUserToProjectViaInviteCode, createTask, editTask, session, isLoading }}>{children}</AuthContext.Provider>
       </SafeAreaView>
     </GestureHandlerRootView>
   );
