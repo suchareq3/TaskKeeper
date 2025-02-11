@@ -36,15 +36,15 @@ export default function TaskTile({ id, title, subtaskDoneCount, subtaskTodoCount
         <CardHeader>
           <CardTitle className="text-2xl">{title}</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-row ">
-          <View className="gap-0">
+        <CardContent className="flex  ">
+          <View className="gap-5 flex flex-row">
             <Text className="text-3xl font-extrabold">{`${subtaskDoneCount} / ${subtaskTodoCount}`}</Text>
-            <Text className="text-lg">tasks done</Text>
+            <Progress
+              value={0}
+              className="flex-1 relative top-2"
+            />
           </View>
-          <Progress
-            value={calculatePercentage(subtaskDoneCount, subtaskTodoCount)}
-            className="flex-1 relative top-2"
-          />
+          <Text className="text-lg font-medium">sub-tasks done</Text>
         </CardContent>
       </View>
       <View>
@@ -84,5 +84,6 @@ const calculatePercentage = (subtaskDoneCount: number, subtaskTodoCount: number)
   if (subtaskTodoCount === 0) {
     return 0; // Avoid division by zero
   }
+  console.log("percentage:", Math.ceil((subtaskDoneCount / subtaskTodoCount) * 100));
   return Math.ceil((subtaskDoneCount / subtaskTodoCount) * 100);
 };

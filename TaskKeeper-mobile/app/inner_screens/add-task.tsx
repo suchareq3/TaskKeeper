@@ -122,7 +122,7 @@ export default function CreateTask() {
           </Select>
           {selectedProject.value.projectId && (
             <>
-              <Separator className="my-5"/>
+              <Separator className="bg-primary my-5" />
 
               <View className="gap-2">
                 <Input
@@ -246,8 +246,6 @@ export default function CreateTask() {
                   </Select>
                 </View>
 
-                <Separator />
-
                 <Button onPress={() => setSubtaskData([...subtaskData, { key: Crypto.randomUUID(), label: "Edit me!", completed: false }])}>
                   <Text>Add new subtask</Text>
                 </Button>
@@ -261,7 +259,7 @@ export default function CreateTask() {
                   renderItem={renderItem}
                 />
 
-                <Separator className="my-5" />
+                <Separator className="bg-primary my-5" />
 
                 <Button
                   onPress={() => {

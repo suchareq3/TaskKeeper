@@ -62,10 +62,10 @@ export default function EditTask() {
           setTaskName(task.taskName);
           setTaskDescription(task.taskDescription);
 
-          setPriorityLevel(PRIORITY_OPTIONS.find((p) => p.value === task.priorityLevel) || PRIORITY_OPTIONS[2]);
-          setTaskType(TASK_TYPE_OPTIONS.find((t) => t.value === task.taskType) || TASK_TYPE_OPTIONS[0]);
-          setTaskStatus(TASK_STATUS_OPTIONS.find((s) => s.value === task.taskStatus) || TASK_STATUS_OPTIONS[0]);
-          
+          setPriorityLevel(PRIORITY_OPTIONS.find((p) => p.value === task.priorityLevel) || { value: "", label: ""});
+          setTaskType(TASK_TYPE_OPTIONS.find((t) => t.value === task.taskType) || { value: "", label: "" });
+          setTaskStatus(TASK_STATUS_OPTIONS.find((s) => s.value === task.taskStatus) || { value: "", label: "" });
+
           setSubtasks(task.subtasks || []);
         }
       } catch (error) {
@@ -148,7 +148,10 @@ export default function EditTask() {
               onValueChange={(value) => setPriorityLevel(value!)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Priority level" />
+                <SelectValue
+                  className="text-foreground text-sm native:text-lg"
+                  placeholder="Priority level"
+                />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
@@ -171,7 +174,10 @@ export default function EditTask() {
               onValueChange={(value) => setTaskType(value!)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Task type" />
+                <SelectValue
+                  className="text-foreground text-sm native:text-lg"
+                  placeholder="Task type"
+                />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
@@ -194,7 +200,10 @@ export default function EditTask() {
               onValueChange={(value) => setTaskStatus(value!)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Task status" />
+                <SelectValue
+                  className="text-foreground text-sm native:text-lg"
+                  placeholder="Task status"
+                />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
@@ -210,7 +219,7 @@ export default function EditTask() {
             </Select>
           </View>
 
-          <Separator />
+          <Separator className="bg-primary my-5" />
 
           <Text className="text-lg font-semibold">Subtasks</Text>
           <DraggableFlatList

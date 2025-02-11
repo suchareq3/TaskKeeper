@@ -55,9 +55,9 @@ export default function CreateProject() {
             <Text>Create new project!</Text>
           </Button>
         </View>
-        <Separator className="my-5" />
+        <Separator className="bg-primary my-5" />
         <Text className="text-5xl">OR...</Text>
-        <Separator className="my-5" />
+        <Separator className="bg-primary my-5" />
         <View className="w-full">
           <Input
             placeholder="Type in your invite code here"
@@ -65,11 +65,15 @@ export default function CreateProject() {
             onChangeText={setInviteCode}
             keyboardType="default"
           />
-          <Button onPress={() => {
-            addUserToProjectViaInviteCode(inviteCode).then(() => {
-              router.back();
-            })
-          }}><Text>Join an existing project!</Text></Button>
+          <Button
+            onPress={() => {
+              addUserToProjectViaInviteCode(inviteCode).then(() => {
+                router.back();
+              });
+            }}
+          >
+            <Text>Join an existing project!</Text>
+          </Button>
         </View>
       </KeyboardAvoidingView>
     </View>

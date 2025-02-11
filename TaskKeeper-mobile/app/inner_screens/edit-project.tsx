@@ -83,16 +83,21 @@ export default function EditProject() {
             <Text>Edit project!</Text>
           </Button>
         </View>
-        <Separator className="my-4" />
+        <Separator className="bg-primary my-4" />
         <View className="flex flex-col w-full items-center">
           <Text className="text-xl">Your project's invite code:</Text>
-          <Button size={"lg"} className="flex relative pl-3 pr-9" onPress={() => {
-            Clipboard.setStringAsync(inviteCode).then(() => {
-              ToastAndroid.show("Invite code copied!", ToastAndroid.SHORT);
-            })
-          }}>
+          <Button
+            size={"lg"}
+            className="flex relative pl-3 pr-9"
+            onPress={() => {
+              Clipboard.setStringAsync(inviteCode).then(() => {
+                ToastAndroid.show("Invite code copied!", ToastAndroid.SHORT);
+              });
+            }}
+          >
             <Text className="!text-3xl">{inviteCode}</Text>
-            <MaterialIcons className="absolute right-2 opacity-40"
+            <MaterialIcons
+              className="absolute right-2 opacity-40"
               name="content-copy"
               size={17}
               color="black"
