@@ -9,6 +9,7 @@ import { colorScheme } from "nativewind";
 import { Button } from "@/components/ui/button";
 import { fbFunctions } from "../../../shared/firebaseFunctions";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import i18n from "@/components/translations";
 
 export default function TabsLayout() {
   PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
@@ -22,7 +23,7 @@ export default function TabsLayout() {
     //TODO: replace this with loading.tsx
     //TODO: (even better) completely re-do this logic so that it shows an overlaying modal instead of a new screen
     //TODO: (even bettererer) DO redirect to the new page, but use Skeleton components to show the loading state
-    return <Text>Loading...</Text>;
+    return <Text>{i18n.t("app_tabs_layout_text_loading")}</Text>;
   }
 
   // redirect the user to the sign-up page if they're not authenticated
@@ -39,13 +40,13 @@ export default function TabsLayout() {
         <DrawerItemList {...props} />
 
         <DrawerItem
-          label="Log Out"
+          label={i18n.t("app_tabs_layout_draweritem_logOut")}
           onPress={() => {
             signOut();
           }}
         />
         <DrawerItem
-          label={"Check user status"}
+          label={"[DNT]Check user status"}
           onPress={() => {
             fbFunctions.checkUserStatus();
           }}
@@ -58,8 +59,11 @@ export default function TabsLayout() {
               AsyncStorage.setItem("theme", "light");
             }}
           >
-            <Text style={{ color: colors.background }} className={""}>
-              light
+            <Text
+              style={{ color: colors.background }}
+              className={""}
+            >
+              {i18n.t("app_tabs_layout_button_themeSwitchLight")}
             </Text>
           </Button>
 
@@ -70,8 +74,11 @@ export default function TabsLayout() {
               AsyncStorage.setItem("theme", "dark");
             }}
           >
-            <Text style={{ color: colors.background }} className={""}>
-              dark
+            <Text
+              style={{ color: colors.background }}
+              className={""}
+            >
+              {i18n.t("app_tabs_layout_button_themeSwitchDark")}
             </Text>
           </Button>
           <Button
@@ -82,8 +89,11 @@ export default function TabsLayout() {
               AsyncStorage.setItem("theme", "system");
             }}
           >
-            <Text style={{ color: colors.background }} className={""}>
-              system
+            <Text
+              style={{ color: colors.background }}
+              className={""}
+            >
+              {i18n.t("app_tabs_layout_button_themeSwitchSystem")}
             </Text>
           </Button>
         </View>
@@ -94,7 +104,7 @@ export default function TabsLayout() {
   return (
     <Drawer.Navigator drawerContent={(props) => <CustomDrawerContent {...props} />} screenOptions={{ headerStatusBarHeight: 0, headerTintColor: colors.text }}>
       {/* 'screens' for navigation go here! all other content goes in the 'CustomDrawerContent' component!*/}
-      <Drawer.Screen name="Go to Tabs" component={TabNavigator} options={{ headerStatusBarHeight: 0, headerTintColor: colors.text, headerTitle: "TaskKeeper" }} />
+      <Drawer.Screen name="[DNT]Go to Tabs" component={TabNavigator} options={{ headerStatusBarHeight: 0, headerTintColor: colors.text, headerTitle: "TaskKeeper" }} />
     </Drawer.Navigator>
   );
 }
@@ -106,7 +116,7 @@ function TabNavigator() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Dashboard",
+          title: "[DNT]Dashboard",
           tabBarLabelStyle: { fontSize: 11, fontWeight: "500", paddingBottom: 3 },
 
           tabBarIcon: ({ color }) => (
@@ -121,7 +131,7 @@ function TabNavigator() {
       <Tabs.Screen
         name="tasks"
         options={{
-          title: "Tasks",
+          title: i18n.t("app_tabs_layout_text_tasks"),
           tabBarLabelStyle: { fontSize: 11, fontWeight: "500", paddingBottom: 3 },
           tabBarIcon: ({ color }) => (
             <AntDesign
@@ -135,7 +145,7 @@ function TabNavigator() {
       <Tabs.Screen
         name="projects"
         options={{
-          title: "Projects",
+          title: i18n.t("app_tabs_layout_text_projects"),
           tabBarLabelStyle: { fontSize: 11, fontWeight: "500", paddingBottom: 3 },
           tabBarIcon: ({ color }) => (
             <AntDesign
@@ -149,7 +159,7 @@ function TabNavigator() {
       <Tabs.Screen
         name="calendar"
         options={{
-          title: "Calendar",
+          title: "[DNT]Calendar",
           tabBarLabelStyle: { fontSize: 11, fontWeight: "500", paddingBottom: 3 },
           tabBarIcon: ({ color }) => (
             <AntDesign

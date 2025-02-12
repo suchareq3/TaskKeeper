@@ -19,6 +19,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import i18n from "@/components/translations";
 
 export default function ProjectTile({ id, title, description, githubUrl, memberUids}: { id: string; title: string; description: string; githubUrl: string; memberUids: string[];}) {
   const insets = useSafeAreaInsets();
@@ -37,10 +38,14 @@ export default function ProjectTile({ id, title, description, githubUrl, memberU
           <CardDescription className="text-lg">{description}</CardDescription>
         </CardHeader>
         <CardFooter className="flex flex-col items-start">
-          <Text>ID: {id}</Text>
+          <Text>
+            {i18n.t("components_projectTile_text_id")}: {id}
+          </Text>
           <Text>{githubUrl}</Text>
           {/* TODO: replace member UIDs here with member avatars */}
-          <Text>Members: {memberUids.join(", ")}</Text>
+          <Text>
+            {i18n.t("components_projectTile_text_members")}: {memberUids.join(", ")}
+          </Text>
         </CardFooter>
       </View>
       <View>
@@ -65,9 +70,8 @@ export default function ProjectTile({ id, title, description, githubUrl, memberU
             <DropdownMenuContent insets={contentInsets}>
               <View>
                 <DropdownMenuItem onPress={() => router.push({ pathname: "/inner_screens/edit-project", params: { projectId: id } })}>
-                  <Text>Edit project</Text>
+                  <Text>{i18n.t("components_projectTile_dropdownMenuItem_editProject")}</Text>
                 </DropdownMenuItem>
-
               </View>
             </DropdownMenuContent>
           </DropdownMenu>

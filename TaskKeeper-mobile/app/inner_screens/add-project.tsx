@@ -7,6 +7,7 @@ import { router, useNavigation } from "expo-router";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import i18n from "@/components/translations";
 
 export default function CreateProject() {
   const { createProject, addUserToProjectViaInviteCode } = useSession();
@@ -22,19 +23,19 @@ export default function CreateProject() {
         <View className=" w-full">
           <Input
             className=""
-            placeholder="Project name"
+            placeholder={i18n.t("app_innerScreens_addProject_input_projectNamePlaceholder")}
             value={projectName}
             onChangeText={setProjectName}
             keyboardType="default"
           />
           <Input
-            placeholder="Project description"
+            placeholder={i18n.t("app_innerScreens_addProject_input_projectDescriptionPlaceholder")}
             value={projectDescription}
             onChangeText={setProjectDescription}
             keyboardType="default"
           />
           <Input
-            placeholder="Github URL"
+            placeholder={i18n.t("app_innerScreens_addProject_input_githubUrlPlaceholder")}
             value={githubUrl}
             onChangeText={setGithubUrl}
             keyboardType="default"
@@ -52,15 +53,15 @@ export default function CreateProject() {
               }
             }}
           >
-            <Text>Create new project!</Text>
+            <Text>{i18n.t("app_innerScreens_addProject_button_createProject")}</Text>
           </Button>
         </View>
         <Separator className="bg-primary my-5" />
-        <Text className="text-5xl">OR...</Text>
+        <Text className="text-5xl">{i18n.t("app_innerScreens_addProject_text_or")}</Text>
         <Separator className="bg-primary my-5" />
         <View className="w-full">
           <Input
-            placeholder="Type in your invite code here"
+            placeholder={i18n.t("app_innerScreens_addProject_input_inviteCodePlaceholder")}
             value={inviteCode}
             onChangeText={setInviteCode}
             keyboardType="default"
@@ -72,7 +73,7 @@ export default function CreateProject() {
               });
             }}
           >
-            <Text>Join an existing project!</Text>
+            <Text>{i18n.t("app_innerScreens_addProject_button_joinExistingProject")}</Text>
           </Button>
         </View>
       </KeyboardAvoidingView>

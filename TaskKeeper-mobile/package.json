@@ -54,6 +54,7 @@
     "expo-system-ui": "~3.0.7",
     "expo-updates": "~0.25.27",
     "expo-web-browser": "~13.0.3",
+    "i18n-js": "^4.5.1",
     "lucide-react-native": "^0.462.0",
     "nativewind": "^4.1.23",
     "react": "18.2.0",

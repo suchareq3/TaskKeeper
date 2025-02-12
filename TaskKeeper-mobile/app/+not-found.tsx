@@ -1,17 +1,18 @@
 import { View, StyleSheet } from 'react-native';
 import { Link, Stack } from 'expo-router';
 import * as React from "react";
+import i18n from "@/components/translations";
 
 export default function NotFoundScreen() {
   return (
     <>
-      <Stack.Screen options={{ title: "Oops! 404: Not Found", headerShown: true, headerTitleAlign: 'center'}} />
+      <Stack.Screen options={{ title: i18n.t("app_notFound_stack_title"), headerShown: true, headerTitleAlign: 'center' }} />
       <View style={styles.container}>
         <Link
           href="/(tabs)/"
           style={styles.button}
         >
-          Error! Press here to Go back to the main screen!
+          {i18n.t("app_notFound_button_goToMainScreen")}
         </Link>
       </View>
     </>

@@ -15,7 +15,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from "react-native-draggable-flatlist";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import * as Crypto from "expo-crypto";
+import i18n from "@/components/translations";
 
+// TODO: move these to a new "constants" file and re-use them in add-task.tsx
 const PRIORITY_OPTIONS = [
   { value: "1", label: "1 (highest)" },
   { value: "2", label: "2" },
@@ -40,6 +42,7 @@ const TASK_STATUS_OPTIONS = [
   { value: "on-hold", label: "On Hold" },
 ];
 
+
 export default function EditTask() {
   const { editTask } = useSession();
   const { taskId } = useLocalSearchParams();
@@ -51,6 +54,7 @@ export default function EditTask() {
   const [taskStatus, setTaskStatus] = useState(TASK_STATUS_OPTIONS[0]);
   const [subtasks, setSubtasks] = useState<Array<{ key: string; label: string; completed: boolean }>>([]);
 
+  // TODO: this takes roughly ~3x longer to load than 'edit-project.tsx'. Find out why & apply some optimizations if possible
   useEffect(() => {
     const fetchTask = async () => {
       try {
@@ -62,7 +66,7 @@ export default function EditTask() {
           setTaskName(task.taskName);
           setTaskDescription(task.taskDescription);
 
-          setPriorityLevel(PRIORITY_OPTIONS.find((p) => p.value === task.priorityLevel) || { value: "", label: ""});
+          setPriorityLevel(PRIORITY_OPTIONS.find((p) => p.value === task.priorityLevel) || { value: "", label: "" });
           setTaskType(TASK_TYPE_OPTIONS.find((t) => t.value === task.taskType) || { value: "", label: "" });
           setTaskStatus(TASK_STATUS_OPTIONS.find((s) => s.value === task.taskStatus) || { value: "", label: "" });
 
@@ -79,11 +83,11 @@ export default function EditTask() {
     try {
       editTask(taskId as string, taskName, taskDescription, taskStatus.value, taskType.value, priorityLevel.value, subtasks);
 
-      ToastAndroid.show("Task updated successfully!", ToastAndroid.SHORT);
+      ToastAndroid.show(i18n.t("app_innerScreens_editTask_toast_taskUpdateSuccess"), ToastAndroid.SHORT);
       router.back();
     } catch (error) {
       console.error("Failed to edit task: ", error);
-      ToastAndroid.show("Failed to update task", ToastAndroid.SHORT);
+      ToastAndroid.show(i18n.t("app_innerScreens_editTask_toast_taskUpdateFailed"), ToastAndroid.SHORT);
     }
   };
 
@@ -130,13 +134,13 @@ export default function EditTask() {
       <KeyboardAvoidingView className="flex-1 w-full p-5">
         <View className="gap-4">
           <Input
-            placeholder="Task name"
+            placeholder={i18n.t("app_innerScreens_editTask_input_taskNamePlaceholder")}
             value={taskName}
             onChangeText={setTaskName}
           />
 
           <Textarea
-            placeholder="Task description"
+            placeholder={i18n.t("app_innerScreens_editTask_input_taskDescriptionPlaceholder")}
             value={taskDescription}
             onChangeText={setTaskDescription}
           />
@@ -150,7 +154,7 @@ export default function EditTask() {
               <SelectTrigger>
                 <SelectValue
                   className="text-foreground text-sm native:text-lg"
-                  placeholder="Priority level"
+                  placeholder={i18n.t("app_innerScreens_editTask_select_priorityLevelPlaceholder")}
                 />
               </SelectTrigger>
               <SelectContent>
@@ -176,7 +180,7 @@ export default function EditTask() {
               <SelectTrigger>
                 <SelectValue
                   className="text-foreground text-sm native:text-lg"
-                  placeholder="Task type"
+                  placeholder={i18n.t("app_innerScreens_editTask_select_taskTypePlaceholder")}
                 />
               </SelectTrigger>
               <SelectContent>
@@ -202,7 +206,7 @@ export default function EditTask() {
               <SelectTrigger>
                 <SelectValue
                   className="text-foreground text-sm native:text-lg"
-                  placeholder="Task status"
+                  placeholder={i18n.t("app_innerScreens_editTask_select_taskStatusPlaceholder")}
                 />
               </SelectTrigger>
               <SelectContent>
@@ -221,7 +225,9 @@ export default function EditTask() {
 
           <Separator className="bg-primary my-5" />
 
-          <Text className="text-lg font-semibold">Subtasks</Text>
+          <Text className="text-lg font-semibold">{i18n.t("app_innerScreens_editTask_text_subtasks")}</Text>
+
+          {/* TODO: move all this 'subtasks' stuff to a new original component & re-use it in add-task.tsx */}
           <DraggableFlatList
             data={subtasks}
             onDragEnd={({ data }) => setSubtasks(data)}
@@ -229,12 +235,12 @@ export default function EditTask() {
             renderItem={renderItem}
           />
 
-          <Button onPress={() => setSubtasks((prev) => [...prev, { key: Crypto.randomUUID(), label: "New subtask", completed: false }])}>
-            <Text>Add Subtask</Text>
+          <Button onPress={() => setSubtasks((prev) => [...prev, { key: Crypto.randomUUID(), label: i18n.t("app_innerScreens_editTask_text_newSubtaskTitle"), completed: false }])}>
+            <Text>{i18n.t("app_innerScreens_editTask_button_addSubtask")}</Text>
           </Button>
 
           <Button onPress={handleEditTask}>
-            <Text>Save Changes</Text>
+            <Text>{i18n.t("app_innerScreens_editTask_button_saveChanges")}</Text>
           </Button>
         </View>
       </KeyboardAvoidingView>

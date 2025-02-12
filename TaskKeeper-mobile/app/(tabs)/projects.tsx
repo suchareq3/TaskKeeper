@@ -7,6 +7,7 @@ import { Text } from "@/components/ui/text";
 import ProjectTile from "@/components/ProjectTile";
 import { Button } from "@/components/ui/button";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import i18n from "@/components/translations";
 
 export default function ProjectsScreen() {
   const [projects, setProjects] = useState<
@@ -41,14 +42,14 @@ export default function ProjectsScreen() {
   return (
     <ScrollView className="flex-1 justifyitems-center bg-[#25292e] p-5">
       <View>
-        <Text className="text-2xl">Your projects: </Text>
+        <Text className="text-2xl">{i18n.t("app_tabs_projects_text_yourProjects")}:</Text>
       </View>
       <Button
         onPress={() => {
           fetchProjects();
         }}
       >
-        <Text>Refresh projects</Text>
+        <Text>{i18n.t("app_tabs_projects_button_refreshProjects")}</Text>
       </Button>
       {projects.map((project, index) => (
         <ProjectTile
@@ -65,7 +66,7 @@ export default function ProjectsScreen() {
           router.push("/inner_screens/add-project");
         }}
       >
-        <Text>Add new project</Text>
+        <Text>{i18n.t("app_tabs_projects_button_addProject")}</Text>
       </Button>
     </ScrollView>
   );

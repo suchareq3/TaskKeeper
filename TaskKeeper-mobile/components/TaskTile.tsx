@@ -20,6 +20,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Progress } from "./ui/progress";
+import i18n from "@/components/translations";
 
 export default function TaskTile({ id, title, subtaskDoneCount, subtaskTodoCount }: { id: string; title: string; subtaskDoneCount: number; subtaskTodoCount: number }) {
   const insets = useSafeAreaInsets();
@@ -44,7 +45,7 @@ export default function TaskTile({ id, title, subtaskDoneCount, subtaskTodoCount
               className="flex-1 relative top-2"
             />
           </View>
-          <Text className="text-lg font-medium">sub-tasks done</Text>
+          <Text className="text-lg font-medium">{i18n.t("components_taskTile_text_subtasksDone")}</Text>
         </CardContent>
       </View>
       <View>
@@ -69,7 +70,7 @@ export default function TaskTile({ id, title, subtaskDoneCount, subtaskTodoCount
             <DropdownMenuContent insets={contentInsets}>
               <View>
                 <DropdownMenuItem onPress={() => router.push({ pathname: "/inner_screens/edit-task", params: { taskId: id } })}>
-                  <Text>Edit task</Text>
+                  <Text>{i18n.t("components_taskTile_dropdownMenuItem_editTask")}</Text>
                 </DropdownMenuItem>
               </View>
             </DropdownMenuContent>

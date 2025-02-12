@@ -7,6 +7,7 @@ import { KeyboardAvoidingView, TextInput, View } from "react-native";
 import { DateTimePickerAndroid, DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
+import i18n from "@/components/translations";
 
 export default function SignUp() {
   const [name, setName] = useState("");
@@ -37,16 +38,37 @@ export default function SignUp() {
         <Logo className="border-black border-2" />
       </View>
       <View className="flex gap-3">
-        <Input placeholder="Type your NAME here please :3" value={name} onChangeText={setName} keyboardType="default" />
-        <Input placeholder="Type your LAST NAME here please :3" value={lastName} onChangeText={setLastName} keyboardType="default" />
+        <Input
+          placeholder={i18n.t("app_signUp_input_namePlaceholder")}
+          value={name}
+          onChangeText={setName}
+          keyboardType="default"
+        />
+        <Input
+          placeholder={i18n.t("app_signUp_input_lastNamePlaceholder")}
+          value={lastName}
+          onChangeText={setLastName}
+          keyboardType="default"
+        />
         {/*  */}
         <Button onPress={showDatepicker}>
-          <Text>show date picker!</Text>
+          <Text>{i18n.t("app_signUp_button_pickDateOfBirth")}</Text>
         </Button>
-        <Text className="text-white">Date picked: {date.toLocaleDateString()}</Text>
+        <Text className="text-white">{i18n.t("app_signUp_text_datePicked")}: {date.toLocaleDateString()}</Text>
 
-        <Input placeholder="Type your EMAIL here please :3" value={email} onChangeText={setEmail} keyboardType="email-address" />
-        <Input placeholder="Type your PASSWORD here please :3" value={password} onChangeText={setPassword} keyboardType="default" secureTextEntry={true} />
+        <Input
+          placeholder={i18n.t("app_signUp_input_emailPlaceholder")}
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+        />
+        <Input
+          placeholder={i18n.t("app_signUp_input_passwordPlaceholder")}
+          value={password}
+          onChangeText={setPassword}
+          keyboardType="default"
+          secureTextEntry={true}
+        />
         <Button
           onPress={() => {
             //TODO: implement proper error handling with user-facing alerts
@@ -61,10 +83,10 @@ export default function SignUp() {
             // TODO: You may want to tweak this to ensure sign-up (and sign-in) is successful before navigating.
           }}
         >
-          <Text>Sign Up!</Text>
+          <Text>{i18n.t("app_signUp_button_createAccount")}</Text>
         </Button>
         <Button onPress={() => router.back()}>
-          <Text>Go back...</Text>
+          <Text>{i18n.t("app_signUp_button_goBack")}</Text>
         </Button>
       </View>
     </KeyboardAvoidingView>

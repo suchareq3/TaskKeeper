@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import TaskTile from "@/components/TaskTile";
 import { countSubtasks } from "@/components/utilityFunctions";
+import i18n from "@/components/translations";
 
 export default function TasksScreen() {
   const [projects, setProjects] = useState<
@@ -128,8 +129,6 @@ export default function TasksScreen() {
     }
   };
 
-  
-
   useEffect(() => {
     fetchData();
   }, []);
@@ -137,21 +136,21 @@ export default function TasksScreen() {
   return (
     <ScrollView className="flex-1 justifyitems-center bg-[#25292e] p-5">
       <View>
-        <Text className="text-2xl">Your tasks: </Text>
+        <Text className="text-2xl">{i18n.t("app_tabs_tasks_text_yourTasks")}:</Text>
       </View>
       <Button
         onPress={() => {
           fetchData();
         }}
       >
-        <Text>Refresh tasks</Text>
+        <Text>{i18n.t("app_tabs_tasks_button_refreshTasks")}</Text>
       </Button>
       {Object.values(groupedTasks).map((group, index) => (
         <View
           key={index}
           className="mb-4"
         >
-          <Text className="text-xl font-bold">{"Project: " + group.project.name}</Text>
+          <Text className="text-xl font-bold">{i18n.t("app_tabs_tasks_text_project") + ": " + group.project.name}</Text>
           {group.tasks.map((task, taskIndex) => {
             const counts = countSubtasks(task.subtasks);
             return (
@@ -167,7 +166,7 @@ export default function TasksScreen() {
         </View>
       ))}
       <Button onPress={() => router.push({ pathname: "/inner_screens/add-task", params: { projects: JSON.stringify(projects) } })}>
-        <Text>Add new task</Text>
+        <Text>{i18n.t("app_tabs_tasks_button_addTask")}</Text>
       </Button>
     </ScrollView>
   );

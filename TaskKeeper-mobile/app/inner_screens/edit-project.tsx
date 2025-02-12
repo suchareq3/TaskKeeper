@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Clipboard from "expo-clipboard";
+import i18n from "@/components/translations";
 
 
 export default function EditProject() {
@@ -28,6 +29,7 @@ export default function EditProject() {
       try {
         const storedProjects = await AsyncStorage.getItem("projects");
         const projects = storedProjects ? JSON.parse(storedProjects) : [];
+        // TODO: create a custom 'project' Type for TypeScript bc it's yelling at me :( 
         const project = projects.find((project) => project.projectId === projectId);
 
         console.log("new project loaded to edit!: ", project);
@@ -50,19 +52,19 @@ export default function EditProject() {
         <View className="flex flex-col w-full">
           <Input
             className=""
-            placeholder="Project name here please!"
+            placeholder={i18n.t("app_innerScreens_editProject_input_projectNamePlaceholder")}
             value={projectName}
             onChangeText={setProjectName}
             keyboardType="default"
           />
           <Input
-            placeholder="Project description here please!"
+            placeholder={i18n.t("app_innerScreens_editProject_input_projectDescriptionPlaceholder")}
             value={projectDescription}
             onChangeText={setProjectDescription}
             keyboardType="default"
           />
           <Input
-            placeholder="Github URL here please!"
+            placeholder={i18n.t("app_innerScreens_editProject_input_githubUrlPlaceholder")}
             value={githubUrl}
             onChangeText={setGithubUrl}
             keyboardType="default"
@@ -80,18 +82,18 @@ export default function EditProject() {
               }
             }}
           >
-            <Text>Edit project!</Text>
+            <Text>{i18n.t("app_innerScreens_editProject_button_editProject")}</Text>
           </Button>
         </View>
         <Separator className="bg-primary my-4" />
         <View className="flex flex-col w-full items-center">
-          <Text className="text-xl">Your project's invite code:</Text>
+          <Text className="text-xl">{i18n.t("app_innerScreens_editProject_text_yourProjectInviteCode")}:</Text>
           <Button
             size={"lg"}
             className="flex relative pl-3 pr-9"
             onPress={() => {
               Clipboard.setStringAsync(inviteCode).then(() => {
-                ToastAndroid.show("Invite code copied!", ToastAndroid.SHORT);
+                ToastAndroid.show(i18n.t("app_innerScreens_editProject_toast_inviteCodeCopied"), ToastAndroid.SHORT);
               });
             }}
           >

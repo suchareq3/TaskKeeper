@@ -18,6 +18,7 @@ import * as Crypto from "expo-crypto";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
 import { Option } from "@rn-primitives/select";
+import i18n from "@/components/translations";
 
 export default function CreateTask() {
   const { createTask } = useSession();
@@ -31,7 +32,7 @@ export default function CreateTask() {
   const [taskName, setTaskName] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
   const DEFAULT_PRIORITY_LEVEL = { label: "3", value: "3" };
-  const DEFAULT_TASK_TYPE = { label: "New feature", value: "new-feature" };
+  const DEFAULT_TASK_TYPE = { label: i18n.t("app_innerScreens_addTask_const_defaultTaskTypeLabel"), value: "new-feature" };
 
   const initialData: Item[] = [];
   const [subtaskData, setSubtaskData] = useState(initialData);
@@ -83,7 +84,8 @@ export default function CreateTask() {
               className="absolute right-0 bg-red-500"
               onPress={() => handleRemoveItem(item.key)}
             >
-              <Text>X</Text>
+              {/* TODO: replace with a proper icon (like in edit-task). also ideally move to a separate component & re-use in edit-task. */}
+              <Text>[DNT]X</Text>
             </Button>
           </View>
         </ScaleDecorator>
@@ -104,12 +106,12 @@ export default function CreateTask() {
             <SelectTrigger className="w-[250px]">
               <SelectValue
                 className="text-foreground text-sm native:text-lg"
-                placeholder="Pick a project"
+                placeholder={i18n.t("app_innerScreens_addTask_select_pickProjectPlaceholder")}
               />
             </SelectTrigger>
             <SelectContent className="w-[250px]">
               <SelectGroup>
-                <SelectLabel>Your projects</SelectLabel>
+                <SelectLabel>{i18n.t("app_innerScreens_addTask_select_pickProjectLabel")}</SelectLabel>
                 {parsedProjects.map((project) => (
                   <SelectItem
                     key={project.projectId}
@@ -126,7 +128,7 @@ export default function CreateTask() {
 
               <View className="gap-2">
                 <Input
-                  placeholder="Task name"
+                  placeholder={i18n.t("app_innerScreens_addTask_input_taskNamePlaceholder")}
                   value={taskName}
                   onChangeText={setTaskName}
                   keyboardType="default"
@@ -134,14 +136,14 @@ export default function CreateTask() {
                 <Textarea
                   className="max-h-[120]"
                   numberOfLines={2}
-                  placeholder="Task description (optional)"
+                  placeholder={i18n.t("app_innerScreens_addTask_input_taskDescriptionPlaceholder")}
                   value={taskDescription}
                   onChangeText={setTaskDescription}
                   keyboardType="default"
                 />
 
                 <View>
-                  <Label nativeID="priority-level">Priority level</Label>
+                  <Label nativeID="priority-level">{i18n.t("app_innerScreens_addTask_select_priorityLevelLabel")}</Label>
                   <Select
                     aria-labelledby="priority-level"
                     onValueChange={(value) => {
@@ -153,7 +155,7 @@ export default function CreateTask() {
                     <SelectTrigger className="w-[250px]">
                       <SelectValue
                         className="text-foreground text-sm native:text-lg"
-                        placeholder="Set priority level"
+                        placeholder={i18n.t("app_innerScreens_addTask_select_priorityLevelPlaceholder")}
                       />
                     </SelectTrigger>
                     <SelectContent className="w-[250px]">
@@ -189,7 +191,7 @@ export default function CreateTask() {
                 </View>
 
                 <View>
-                  <Label nativeID="task-type">Task type</Label>
+                  <Label nativeID="task-type">{i18n.t("app_innerScreens_addTask_select_taskTypeLabel")}</Label>
                   <Select
                     aria-labelledby="task-type"
                     onValueChange={(value) => {
@@ -201,7 +203,7 @@ export default function CreateTask() {
                     <SelectTrigger className="w-[250px]">
                       <SelectValue
                         className="text-foreground text-sm native:text-lg"
-                        placeholder="Set priority level"
+                        placeholder={i18n.t("app_innerScreens_addTask_select_taskTypePlaceholder")}
                       />
                     </SelectTrigger>
                     <SelectContent className="w-[250px]">
@@ -247,7 +249,7 @@ export default function CreateTask() {
                 </View>
 
                 <Button onPress={() => setSubtaskData([...subtaskData, { key: Crypto.randomUUID(), label: "Edit me!", completed: false }])}>
-                  <Text>Add new subtask</Text>
+                  <Text>{i18n.t("app_innerScreens_addTask_button_createSubtask")}</Text>
                 </Button>
                 <DraggableFlatList
                   data={subtaskData}
@@ -274,7 +276,7 @@ export default function CreateTask() {
                     }
                   }}
                 >
-                  <Text>Create new task!</Text>
+                  <Text>{i18n.t("app_innerScreens_addTask_button_createTask")}</Text>
                 </Button>
               </View>
             </>
