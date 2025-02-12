@@ -1,49 +1,36 @@
-import { View, StyleSheet, KeyboardAvoidingView } from "react-native";
+import { View, KeyboardAvoidingView } from "react-native";
 import { fbFunctions } from "../../../shared/firebaseFunctions";
 import { useSession } from "@/components/AuthContext";
 import { Text } from "@/components/ui/text";
-import { useCallback, useEffect, useState } from "react";
-import { router, useLocalSearchParams, useNavigation } from "expo-router";
+import { useState } from "react";
+import { router, useLocalSearchParams } from "expo-router";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { DateTimePickerAndroid, DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "~/components/ui/label";
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from "react-native-draggable-flatlist";
-import React from "react";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Crypto from "expo-crypto";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
-import { Option } from "@rn-primitives/select";
 import i18n from "@/components/translations";
+import { PRIORITY_OPTIONS, TASK_TYPE_OPTIONS, TASK_STATUS_OPTIONS } from "@/components/constants";
 
 export default function CreateTask() {
   const { createTask } = useSession();
   const { projects } = useLocalSearchParams();
   const parsedProjects = projects ? JSON.parse(projects as string) : [];
 
-  const [selectedProject, setSelectedProject] = useState({ value: {projectId: ""}, label: "" } );
-  const [priorityLevel, setPriorityLevel] = useState({ value: "", label: "" } as Option);
-  // const [taskState, setTaskState] = useState({value: "", label: ""});
-  const [taskType, setTaskType] = useState({ value: "", label: "" } as Option);
+  const [selectedProject, setSelectedProject] = useState({ value: { projectId: "" }, label: "" });
+  const [priorityLevel, setPriorityLevel] = useState(PRIORITY_OPTIONS[2]);
+  const [taskType, setTaskType] = useState(TASK_TYPE_OPTIONS[0]);
   const [taskName, setTaskName] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
-  const DEFAULT_PRIORITY_LEVEL = { label: "3", value: "3" };
-  const DEFAULT_TASK_TYPE = { label: i18n.t("app_innerScreens_addTask_const_defaultTaskTypeLabel"), value: "new-feature" };
+  const [subtaskData, setSubtaskData] = useState<Array<{ key: string; label: string; completed: boolean }>>([]);
 
-  const initialData: Item[] = [];
-  const [subtaskData, setSubtaskData] = useState(initialData);
-
-  type Item = {
-    key: string;
-    label: string;
-    completed: boolean;
-  };
-
-  const renderItem = ({ item, drag, isActive }: RenderItemParams<Item>) => {
+  const renderItem = ({ item, drag }: RenderItemParams<{ key: string; label: string; completed: boolean }>) => {
     const handleRemoveItem = (key: string) => {
       setSubtaskData((prevData) => prevData.filter((dataItem) => dataItem.key !== key));
     };
@@ -84,7 +71,6 @@ export default function CreateTask() {
               className="absolute right-0 bg-red-500"
               onPress={() => handleRemoveItem(item.key)}
             >
-              {/* TODO: replace with a proper icon (like in edit-task). also ideally move to a separate component & re-use in edit-task. */}
               <Text>[DNT]X</Text>
             </Button>
           </View>
@@ -149,8 +135,8 @@ export default function CreateTask() {
                     onValueChange={(value) => {
                       setPriorityLevel(value);
                     }}
-                    onLayout={() => setPriorityLevel(DEFAULT_PRIORITY_LEVEL)}
-                    defaultValue={DEFAULT_PRIORITY_LEVEL}
+                    onLayout={() => setPriorityLevel(PRIORITY_OPTIONS[2])}
+                    defaultValue={PRIORITY_OPTIONS[2]}
                   >
                     <SelectTrigger className="w-[250px]">
                       <SelectValue
@@ -160,31 +146,13 @@ export default function CreateTask() {
                     </SelectTrigger>
                     <SelectContent className="w-[250px]">
                       <SelectGroup>
-                        <SelectItem
-                          key={1}
-                          label="1 (highest)"
-                          value="1"
-                        />
-                        <SelectItem
-                          key={2}
-                          label="2"
-                          value="2"
-                        />
-                        <SelectItem
-                          key={3}
-                          label="3"
-                          value="3"
-                        />
-                        <SelectItem
-                          key={4}
-                          label="4"
-                          value="4"
-                        />
-                        <SelectItem
-                          key={5}
-                          label="5 (lowest)"
-                          value="5"
-                        />
+                        {PRIORITY_OPTIONS.map((option) => (
+                          <SelectItem
+                            key={option.value}
+                            label={option.label}
+                            value={option.value}
+                          />
+                        ))}
                       </SelectGroup>
                     </SelectContent>
                   </Select>
@@ -197,8 +165,8 @@ export default function CreateTask() {
                     onValueChange={(value) => {
                       setTaskType(value);
                     }}
-                    onLayout={() => setTaskType(DEFAULT_TASK_TYPE)}
-                    defaultValue={DEFAULT_TASK_TYPE}
+                    onLayout={() => setTaskType(TASK_TYPE_OPTIONS[0])}
+                    defaultValue={TASK_TYPE_OPTIONS[0]}
                   >
                     <SelectTrigger className="w-[250px]">
                       <SelectValue
@@ -208,41 +176,13 @@ export default function CreateTask() {
                     </SelectTrigger>
                     <SelectContent className="w-[250px]">
                       <SelectGroup>
-                        <SelectItem
-                          key={1}
-                          label="New feature"
-                          value="new-feature"
-                        />
-                        <SelectItem
-                          key={2}
-                          label="Change"
-                          value="change"
-                        />
-                        <SelectItem
-                          key={3}
-                          label="Bug fix"
-                          value="bug-fix"
-                        />
-                        <SelectItem
-                          key={4}
-                          label="Testing"
-                          value="testing"
-                        />
-                        <SelectItem
-                          key={5}
-                          label="Documentation"
-                          value="documentation"
-                        />
-                        <SelectItem
-                          key={6}
-                          label="Research"
-                          value="research"
-                        />
-                        <SelectItem
-                          key={7}
-                          label="Other"
-                          value="other"
-                        />
+                        {TASK_TYPE_OPTIONS.map((option) => (
+                          <SelectItem
+                            key={option.value}
+                            label={option.label}
+                            value={option.value}
+                          />
+                        ))}
                       </SelectGroup>
                     </SelectContent>
                   </Select>
@@ -265,10 +205,8 @@ export default function CreateTask() {
 
                 <Button
                   onPress={() => {
-                    //TODO: implement proper error handling with user-facing alerts
                     try {
-                      createTask(selectedProject.value.projectId, taskName, taskDescription, priorityLevel!.value, taskType!.value, subtaskData).then(() => {
-                        //TODO: navigate to the 'tasks' tab!
+                      createTask(selectedProject.value.projectId, taskName, taskDescription, priorityLevel.value, taskType.value, subtaskData).then(() => {
                         router.back();
                       });
                     } catch (e) {

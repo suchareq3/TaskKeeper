@@ -52,6 +52,22 @@ const translations = {
     // Task Tile
     components_taskTile_text_subtasksDone: "Sub-tasks done",
     components_taskTile_dropdownMenuItem_editTask: "Edit task",
+    // Constants
+    components_constants_const_priorityOptionsLabel1: "1 (highest)",
+    components_constants_const_priorityOptionsLabel2: "2",
+    components_constants_const_priorityOptionsLabel3: "3",
+    components_constants_const_priorityOptionsLabel4: "4",
+    components_constants_const_priorityOptionsLabel5: "5 (lowest)",
+    components_constants_const_taskTypeOptionsLabelNewFeature: "New feature",
+    components_constants_const_taskTypeOptionsLabelChange: "Change",
+    components_constants_const_taskTypeOptionsLabelBugFix: "Bug fix",
+    components_constants_const_taskTypeOptionsLabelTesting: "Testing",
+    components_constants_const_taskTypeOptionsLabelDocumentation: "Documentation",
+    components_constants_const_taskTypeOptionsLabelResearch: "Research",
+    components_constants_const_taskTypeOptionsLabelOther: "Other",
+    components_constants_const_taskStatusOptionsLabelInProgress: "In Progress",
+    components_constants_const_taskStatusOptionsLabelCompleted: "Completed",
+    components_constants_const_taskStatusOptionsLabelOnHold: "On Hold",
 
     /**** Inner Screens ****/
     // Inner Screens Layout
@@ -144,6 +160,22 @@ const translations = {
     // Task Tile
     components_taskTile_text_subtasksDone: "Podzadania wykonane",
     components_taskTile_dropdownMenuItem_editTask: "Edytuj zadanie",
+    // Constants
+    components_constants_const_priorityOptionsLabel1: "1 (najwyższy)",
+    components_constants_const_priorityOptionsLabel2: "2",
+    components_constants_const_priorityOptionsLabel3: "3",
+    components_constants_const_priorityOptionsLabel4: "4",
+    components_constants_const_priorityOptionsLabel5: "5 (najniższy)",
+    components_constants_const_taskTypeOptionsLabelNewFeature: "Nowa funkcja",
+    components_constants_const_taskTypeOptionsLabelChange: "Zmiana",
+    components_constants_const_taskTypeOptionsLabelBugFix: "Naprawa błędu",
+    components_constants_const_taskTypeOptionsLabelTesting: "Testowanie",
+    components_constants_const_taskTypeOptionsLabelDocumentation: "Dokumentacja",
+    components_constants_const_taskTypeOptionsLabelResearch: "Badania",
+    components_constants_const_taskTypeOptionsLabelOther: "Inne",
+    components_constants_const_taskStatusOptionsLabelInProgress: "W trakcie",
+    components_constants_const_taskStatusOptionsLabelCompleted: "Zakończone",
+    components_constants_const_taskStatusOptionsLabelOnHold: "Wstrzymane",
 
     /**** Inner Screens ****/
     // Inner Screens Layout
@@ -192,7 +224,6 @@ const translations = {
     app_innerScreens_editTask_toast_taskUpdateFailed: "Nie udało się zaktualizować zadania",
   },
 };
-// app-SignIn-Input-
 
 const i18n = new I18n(translations);
 

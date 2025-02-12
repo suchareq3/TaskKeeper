@@ -16,31 +16,7 @@ import DraggableFlatList, { RenderItemParams, ScaleDecorator } from "react-nativ
 import { TouchableOpacity } from "react-native-gesture-handler";
 import * as Crypto from "expo-crypto";
 import i18n from "@/components/translations";
-
-// TODO: move these to a new "constants" file and re-use them in add-task.tsx
-const PRIORITY_OPTIONS = [
-  { value: "1", label: "1 (highest)" },
-  { value: "2", label: "2" },
-  { value: "3", label: "3" },
-  { value: "4", label: "4" },
-  { value: "5", label: "5 (lowest)" },
-];
-
-const TASK_TYPE_OPTIONS = [
-  { value: "new-feature", label: "New feature" },
-  { value: "change", label: "Change" },
-  { value: "bug-fix", label: "Bug fix" },
-  { value: "testing", label: "Testing" },
-  { value: "documentation", label: "Documentation" },
-  { value: "research", label: "Research" },
-  { value: "other", label: "Other" },
-];
-
-const TASK_STATUS_OPTIONS = [
-  { value: "in-progress", label: "In Progress" },
-  { value: "completed", label: "Completed" },
-  { value: "on-hold", label: "On Hold" },
-];
+import { PRIORITY_OPTIONS, TASK_TYPE_OPTIONS, TASK_STATUS_OPTIONS } from "@/components/constants";
 
 
 export default function EditTask() {
