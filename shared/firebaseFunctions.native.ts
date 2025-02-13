@@ -10,6 +10,7 @@ import {
   messaging,
   runTransaction,
   arrayUnion,
+  arrayRemove
 } from "../TaskKeeper-mobile/exportedModules.js";
 import { platform } from "./shared";
 import { FirebaseFunctions } from "./firebaseInterface";
@@ -150,6 +151,26 @@ const editProject = async (projectId: string, name: string, description: string,
     }
   } catch (error) {
     console.error("Error editing project:", error);
+    throw error;
+  }
+};
+
+const removeUserFromProject = async (projectId: string, userId: string) => {
+  try {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      await db
+        .collection("projects")
+        .doc(projectId)
+        .update({
+          member_uids: arrayRemove(userId),
+        })
+        .then(() => {
+          console.log("success removing user from project!");
+        });
+    }
+  } catch (error) {
+    console.error("Error removing user from project!:", error);
     throw error;
   }
 };
@@ -296,6 +317,7 @@ export const fbFunctions: FirebaseFunctions = {
   showNotification,
   createProject,
   editProject,
+  removeUserFromProject,
   loadUserProjects,
   loadUserTasks,
   addUserToProjectViaInviteCode,

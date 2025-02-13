@@ -12,6 +12,7 @@ const AuthContext = createContext<{
   signUp: (email: string, password: string, extraData: { [key: string]: string }) => any;
   createProject: (name: string, description: string, githubUrl: string) => any;
   editProject: (projectId: string, name: string, description: string, githubUrl: string) => any;
+  removeUserFromProject: (projectId: string, userId: string) => any;
   addUserToProjectViaInviteCode: (inviteCode: string) => any;
   createTask: (projectId: string, taskName: string, taskDescription: string, priorityLevel: string, taskType: string, subTaskdata: { key: string; label: string; completed: boolean }[]) => any;
   editTask: (taskId: string, name: string, description: string, status: string, type: string, priorityLevel: string, subtasks: Array<{ key: string; label: string; completed: boolean }>) => any;
@@ -23,6 +24,7 @@ const AuthContext = createContext<{
   signUp: () => Promise.resolve(),
   createProject: () => Promise.resolve(),
   editProject: () => Promise.resolve(),
+  removeUserFromProject: () => Promise.resolve(),
   addUserToProjectViaInviteCode: () => Promise.resolve(),
   createTask: () => Promise.resolve(),
   editTask: () => Promise.resolve(),
@@ -127,6 +129,17 @@ export function SessionProvider({ children }: PropsWithChildren) {
     }
   };
 
+  const removeUserFromProject = async (projectId: string, userId: string) => {
+    setIsLoading(true);
+    try {
+      await fbFunctions.removeUserFromProject(projectId, userId);
+    } catch (error) {
+      console.error("removeUserFromProject in AuthContext.tsx has failed!: ", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const addUserToProjectViaInviteCode = async (inviteCode: string) => {
     setIsLoading(true);
     try {
@@ -176,7 +189,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
   return (
     <GestureHandlerRootView>
       <SafeAreaView className="flex-1">
-        <AuthContext.Provider value={{ signIn, signOut, signUp, createProject, editProject, addUserToProjectViaInviteCode, createTask, editTask, session, isLoading }}>{children}</AuthContext.Provider>
+        <AuthContext.Provider value={{ signIn, signOut, signUp, createProject, editProject, removeUserFromProject, addUserToProjectViaInviteCode, createTask, editTask, session, isLoading }}>{children}</AuthContext.Provider>
       </SafeAreaView>
     </GestureHandlerRootView>
   );

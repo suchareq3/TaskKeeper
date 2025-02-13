@@ -8,6 +8,7 @@ export interface FirebaseFunctions {
   showNotification: (title: string, description: string) => Promise<string | undefined>;
   createProject: (name: string, description: string, githubUrl: string) => Promise<void>;
   editProject: (projectId: string, name: string, description: string, githubUrl: string) => Promise<any>;
+  removeUserFromProject: (projectId: string, userId: string) => Promise<any>;
   loadUserProjects: () => any;
   loadUserTasks: () => any;
   editTask: (taskId: string, name: string, description: string, status: string, type: string, priorityLevel: string, subtasks: Array<{ key: string; label: string; completed: boolean }>) => Promise<any>;

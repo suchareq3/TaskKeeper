@@ -11,6 +11,8 @@ import { Separator } from "@/components/ui/separator";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Clipboard from "expo-clipboard";
 import i18n from "@/components/translations";
+import { Card, CardContent } from "@/components/ui/card";
+import { getAuth } from "@react-native-firebase/auth";
 
 
 export default function EditProject() {
@@ -85,6 +87,35 @@ export default function EditProject() {
             <Text>{i18n.t("app_innerScreens_editProject_button_editProject")}</Text>
           </Button>
         </View>
+        <Separator className="bg-primary my-4" />
+
+        {projectMemberUids.map((value, index) => (
+          <Card
+            className="w-3/4"
+            key={index}
+          >
+            <CardContent className="flex flex-row justify-between  items-center p-3">
+              <Text>
+                {value}
+              </Text>
+              <Button
+                variant={"destructive"}
+                disabled={getAuth().currentUser?.uid === value}
+                size={"icon"}
+                onPress={() => {fbFunctions.removeUserFromProject(projectId as string, value)}}
+              >
+                <MaterialIcons
+                  className=""
+                  name="delete"
+                  size={20}
+                  color="white"
+                />
+              </Button>
+            </CardContent>
+          </Card>
+        ))}
+
+        <View></View>
         <Separator className="bg-primary my-4" />
         <View className="flex flex-col w-full items-center">
           <Text className="text-xl">{i18n.t("app_innerScreens_editProject_text_yourProjectInviteCode")}:</Text>
