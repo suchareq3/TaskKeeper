@@ -57,7 +57,7 @@ export default function ProjectTile({ id, title, description, githubUrl, memberU
             >
               <Button
                 size={null}
-                className="p-3   items-center justify-center rounded-none bg-transparent"
+                className="p-3 items-center justify-center rounded-none bg-transparent"
               >
                 <Entypo
                   name="dots-three-vertical"

@@ -26,6 +26,7 @@
     "@react-navigation/drawer": "6.7.2",
     "@react-navigation/native": "^6.0.2",
     "@rn-primitives/checkbox": "^1.1.0",
+    "@rn-primitives/dialog": "^1.1.0",
     "@rn-primitives/dropdown-menu": "^1.1.0",
     "@rn-primitives/label": "^1.1.0",
     "@rn-primitives/navigation-menu": "^1.1.0",

@@ -102,6 +102,11 @@ const translations = {
     app_innerScreens_editProject_text_yourProjectInviteCode: "Your project's invite code",
     app_innerScreens_editProject_toast_inviteCodeCopied: "Invite code copied!",
     app_innerScreens_editProject_button_editProject: "Edit project!",
+    app_innerScreens_editProject_button_leaveProject: "Leave project",
+    app_innerScreens_editProject_dialogTitle_leaveProject: "Leave project?!",
+    app_innerScreens_editProject_dialogText_leaveProject: "ARE YOU SURE you want to leave your project? This process is irreversible!",
+    app_innerScreens_editProject_button_leaveProjectRefuse: "No! Please take me back!",
+    app_innerScreens_editProject_button_leaveProjectConfirm: "Yes, I'm sure!",
     // Edit Task
     app_innerScreens_editTask_input_taskNamePlaceholder: "Task name",
     app_innerScreens_editTask_input_taskDescriptionPlaceholder: "Task description (optional)",
@@ -210,6 +215,11 @@ const translations = {
     app_innerScreens_editProject_text_yourProjectInviteCode: "Kod zaproszenia do Twojego projektu",
     app_innerScreens_editProject_toast_inviteCodeCopied: "Kod zaproszenia skopiowany!",
     app_innerScreens_editProject_button_editProject: "Edytuj projekt!",
+    app_innerScreens_editProject_button_leaveProject: "Opuść projekt",
+    app_innerScreens_editProject_dialogTitle_leaveProject: "Opuścić projekt?!",
+    app_innerScreens_editProject_dialogText_leaveProject: "CZY NA PEWNO chcesz opuścić ten projekt? Ten proces jest nieodwracalny!",
+    app_innerScreens_editProject_button_leaveProjectRefuse: "Nie, zabierz mnie stąd!",
+    app_innerScreens_editProject_button_leaveProjectConfirm: "Tak, na pewno!",
     // Edit Task
     app_innerScreens_editTask_input_taskNamePlaceholder: "Nazwa zadania",
     app_innerScreens_editTask_input_taskDescriptionPlaceholder: "Opis zadania (opcjonalnie)",

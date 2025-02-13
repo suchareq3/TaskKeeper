@@ -13,7 +13,9 @@ import * as Clipboard from "expo-clipboard";
 import i18n from "@/components/translations";
 import { Card, CardContent } from "@/components/ui/card";
 import { getAuth } from "@react-native-firebase/auth";
-
+import { useHeaderDropdown } from "@/components/utilityFunctions";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "~/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 export default function EditProject() {
   const { editProject } = useSession();
@@ -31,7 +33,7 @@ export default function EditProject() {
       try {
         const storedProjects = await AsyncStorage.getItem("projects");
         const projects = storedProjects ? JSON.parse(storedProjects) : [];
-        // TODO: create a custom 'project' Type for TypeScript bc it's yelling at me :( 
+        // TODO: create a custom 'project' Type for TypeScript bc it's yelling at me :(
         const project = projects.find((project) => project.projectId === projectId);
 
         console.log("new project loaded to edit!: ", project);
@@ -46,6 +48,48 @@ export default function EditProject() {
     };
     fetchProject();
   }, []);
+
+  useHeaderDropdown([
+    {
+      isCustom: true,
+      customOption: (
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button
+              className="flex items-start"
+              variant="destructive"
+            >
+              <Text>{i18n.t("app_innerScreens_editProject_button_leaveProject")}</Text>
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="!text-lg">
+            <DialogHeader>
+              <DialogTitle className="!text-[20px]">{i18n.t("app_innerScreens_editProject_dialogTitle_leaveProject")}</DialogTitle>
+              <DialogDescription className="!text-[16px]">{i18n.t("app_innerScreens_editProject_dialogText_leaveProject")}</DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="flex flex-row justify-between mt-5">
+              <DialogClose asChild>
+                <Button>
+                  <Text>{i18n.t("app_innerScreens_editProject_button_leaveProjectRefuse")}</Text>
+                </Button>
+              </DialogClose>
+              <DialogClose asChild>
+                {/* TODO: implement onTrigger (or periodical?) logic for firebase that removes projects with no members in them */}
+                <Button
+                  variant={"destructive"}
+                  onPress={() => {
+                    fbFunctions.removeUserFromProject(projectId as string, getAuth().currentUser!.uid).then(() => router.back());
+                  }}
+                >
+                  <Text>{i18n.t("app_innerScreens_editProject_button_leaveProjectConfirm")}</Text>
+                </Button>
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      ),
+    },
+  ]);
 
   return (
     <View className="flex-1 justify-center items-center bg-[#25292e]">
@@ -94,15 +138,15 @@ export default function EditProject() {
             className="w-3/4"
             key={index}
           >
-            <CardContent className="flex flex-row justify-between  items-center p-3">
-              <Text>
-                {value}
-              </Text>
+            <CardContent className="flex flex-row justify-between items-center p-3">
+              <Text>{value}</Text>
               <Button
                 variant={"destructive"}
                 disabled={getAuth().currentUser?.uid === value}
                 size={"icon"}
-                onPress={() => {fbFunctions.removeUserFromProject(projectId as string, value)}}
+                onPress={() => {
+                  fbFunctions.removeUserFromProject(projectId as string, value);
+                }}
               >
                 <MaterialIcons
                   className=""
