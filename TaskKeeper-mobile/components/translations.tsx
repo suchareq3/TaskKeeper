@@ -107,6 +107,11 @@ const translations = {
     app_innerScreens_editProject_dialogText_leaveProject: "ARE YOU SURE you want to leave your project? This process is irreversible!",
     app_innerScreens_editProject_button_leaveProjectRefuse: "No! Please take me back!",
     app_innerScreens_editProject_button_leaveProjectConfirm: "Yes, I'm sure!",
+    app_innerScreens_editProject_button_deleteProject: "Delete project",
+    app_innerScreens_editProject_dialogTitle_deleteProject: "Delete project?!",
+    app_innerScreens_editProject_dialogText_deleteProject: "ARE YOU SURE you want to delete your project? This will also remove all its tasks. This process is irreversible!",
+    app_innerScreens_editProject_button_deleteProjectRefuse: "No! Please take me back!",
+    app_innerScreens_editProject_button_deleteProjectConfirm: "Yes, I'm sure!",
     // Edit Task
     app_innerScreens_editTask_input_taskNamePlaceholder: "Task name",
     app_innerScreens_editTask_input_taskDescriptionPlaceholder: "Task description (optional)",
@@ -220,6 +225,11 @@ const translations = {
     app_innerScreens_editProject_dialogText_leaveProject: "CZY NA PEWNO chcesz opuścić ten projekt? Ten proces jest nieodwracalny!",
     app_innerScreens_editProject_button_leaveProjectRefuse: "Nie, zabierz mnie stąd!",
     app_innerScreens_editProject_button_leaveProjectConfirm: "Tak, na pewno!",
+    app_innerScreens_editProject_button_deleteProject: "Usuń projekt",
+    app_innerScreens_editProject_dialogTitle_deleteProject: "Usunąć projekt?!",
+    app_innerScreens_editProject_dialogText_deleteProject: "CZY NA PEWNO chcesz usunąć ten projekt? To również usunie wszystkie jego zadania. Ten proces jest nieodwracalny!",
+    app_innerScreens_editProject_button_deleteProjectRefuse: "Nie, zabierz mnie stąd!",
+    app_innerScreens_editProject_button_deleteProjectConfirm: "Tak, na pewno!",
     // Edit Task
     app_innerScreens_editTask_input_taskNamePlaceholder: "Nazwa zadania",
     app_innerScreens_editTask_input_taskDescriptionPlaceholder: "Opis zadania (opcjonalnie)",

@@ -109,6 +109,7 @@ export default function TasksScreen() {
 
           if (!project) {
             console.warn(`Project not found for task: ${task.taskId}`);
+            
             continue; // Skip this task if the project is not found
           }
 

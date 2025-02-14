@@ -175,6 +175,37 @@ const removeUserFromProject = async (projectId: string, userId: string) => {
   }
 };
 
+const deleteProject = async (projectId: string) => {
+  try {
+    // NOTE: batch deletes are limited to 500 writes, so only 499 tasks. 
+    // this should be fine for now but should be re-considered for future scalability 
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+
+    const batch = db.batch();
+
+    const projectRef = db.collection("projects").doc(projectId);
+
+    const tasksSnapshot = await db.collection("tasks").where("project_id", "==", projectId).get();
+
+    // Add each task deletion to the batch
+    tasksSnapshot.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+
+    // Delete the project itself
+    batch.delete(projectRef);
+
+    // Commit the batch (atomic operation)
+    await batch.commit();
+
+    console.log("Project and all associated tasks deleted successfully.");
+  } catch (error) {
+    console.error("Error deleting project:", error);
+    throw error;
+  }
+};
+
 const loadUserProjects = async () => {
   try {
     const uid = auth.currentUser?.uid;
@@ -318,6 +349,7 @@ export const fbFunctions: FirebaseFunctions = {
   createProject,
   editProject,
   removeUserFromProject,
+  deleteProject,
   loadUserProjects,
   loadUserTasks,
   addUserToProjectViaInviteCode,

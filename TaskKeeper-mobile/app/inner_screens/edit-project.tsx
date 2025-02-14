@@ -78,10 +78,51 @@ export default function EditProject() {
                 <Button
                   variant={"destructive"}
                   onPress={() => {
+                    // TODO: use AuthProvider/AuthContext instead!
                     fbFunctions.removeUserFromProject(projectId as string, getAuth().currentUser!.uid).then(() => router.back());
                   }}
                 >
                   <Text>{i18n.t("app_innerScreens_editProject_button_leaveProjectConfirm")}</Text>
+                </Button>
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      ),
+    },
+    {
+      isCustom: true,
+      customOption: (
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button
+              className="flex items-start"
+              variant="destructive"
+            >
+              <Text>{i18n.t("app_innerScreens_editProject_button_deleteProject")}</Text>
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="!text-lg">
+            <DialogHeader>
+              <DialogTitle className="!text-[20px]">{i18n.t("app_innerScreens_editProject_dialogTitle_deleteProject")}</DialogTitle>
+              <DialogDescription className="!text-[16px]">{i18n.t("app_innerScreens_editProject_dialogText_deleteProject")}</DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="flex flex-row justify-between mt-5">
+              <DialogClose asChild>
+                <Button>
+                  <Text>{i18n.t("app_innerScreens_editProject_button_deleteProjectRefuse")}</Text>
+                </Button>
+              </DialogClose>
+              <DialogClose asChild>
+                {/* TODO: implement onTrigger (or periodical?) logic for firebase that removes projects with no members in them */}
+                <Button
+                  variant={"destructive"}
+                  onPress={() => {
+                    // TODO: use AuthProvider/AuthContext instead!
+                    fbFunctions.deleteProject(projectId as string).then(() => router.back());
+                  }}
+                >
+                  <Text>{i18n.t("app_innerScreens_editProject_button_deleteProjectConfirm")}</Text>
                 </Button>
               </DialogClose>
             </DialogFooter>
