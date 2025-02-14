@@ -26,7 +26,7 @@ export default function EditProject() {
   const [projectDescription, setProjectDescription] = useState("");
   const [githubUrl, setGithubUrl] = useState("");
   const [inviteCode, setInviteCode] = useState("");
-  const [projectMemberUids, setProjectMemberUids] = useState([]);
+  const [projectMembers, setProjectMembers] = useState({});
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -40,7 +40,7 @@ export default function EditProject() {
         setProjectName(project.name);
         setProjectDescription(project.description);
         setGithubUrl(project.githubUrl);
-        setProjectMemberUids(project.memberUids);
+        setProjectMembers(project.members || {});
         setInviteCode(project.inviteCode);
       } catch (error) {
         console.error("Failed to fetch project: ", error);
@@ -174,23 +174,20 @@ export default function EditProject() {
         </View>
         <Separator className="bg-primary my-4" />
 
-        {projectMemberUids.map((value, index) => (
+        {Object.entries(projectMembers).map(([uid, permissions]) => (
           <Card
             className="w-3/4"
-            key={index}
+            key={uid}
           >
             <CardContent className="flex flex-row justify-between items-center p-3">
-              <Text>{value}</Text>
+              <Text>{uid}</Text>
               <Button
                 variant={"destructive"}
-                disabled={getAuth().currentUser?.uid === value}
+                disabled={getAuth().currentUser?.uid === uid}
                 size={"icon"}
-                onPress={() => {
-                  fbFunctions.removeUserFromProject(projectId as string, value);
-                }}
+                onPress={() => fbFunctions.removeUserFromProject(projectId as string, uid)}
               >
                 <MaterialIcons
-                  className=""
                   name="delete"
                   size={20}
                   color="white"

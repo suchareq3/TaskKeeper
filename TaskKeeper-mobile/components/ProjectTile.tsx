@@ -21,7 +21,7 @@ import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import i18n from "@/components/translations";
 
-export default function ProjectTile({ id, title, description, githubUrl, memberUids}: { id: string; title: string; description: string; githubUrl: string; memberUids: string[];}) {
+export default function ProjectTile({ id, title, description, githubUrl, members }: { id: string; title: string; description: string; githubUrl: string; members: { [uid: string]: { permissions: { [permission: string]: boolean } } } }) {
   const insets = useSafeAreaInsets();
   const contentInsets = {
     top: insets.top,
@@ -44,7 +44,7 @@ export default function ProjectTile({ id, title, description, githubUrl, memberU
           <Text>{githubUrl}</Text>
           {/* TODO: replace member UIDs here with member avatars */}
           <Text>
-            {i18n.t("components_projectTile_text_members")}: {memberUids.join(", ")}
+            {i18n.t("components_projectTile_text_members")}: {Object.keys(members).join(", ")}
           </Text>
         </CardFooter>
       </View>

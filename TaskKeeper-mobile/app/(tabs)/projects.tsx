@@ -16,7 +16,13 @@ export default function ProjectsScreen() {
       name: string;
       description: string;
       githubUrl: string;
-      memberUids: Array<string>;
+      members: {
+        [uid: string]: {
+          permissions: {
+            [permission: string]: boolean;
+          };
+        };
+      };
     }[]
   >([]);
   const fetchProjects = async () => {
@@ -58,7 +64,7 @@ export default function ProjectsScreen() {
           title={project.name}
           description={project.description}
           githubUrl={project.githubUrl}
-          memberUids={project.memberUids}
+          members={project.members}
         />
       ))}
       <Button

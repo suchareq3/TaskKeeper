@@ -110,7 +110,18 @@ exports.createProject = onCall(async (data, context) => {
         name: name,
         description: description,
         github_url: githubUrl,
-        member_uids: [uid],
+        members: {
+          [uid]: {
+            can_delete_project: true,
+            can_edit_project: true,
+            can_create_tasks: true,
+            can_edit_task_details: true,
+            can_edit_task_priorityAndType: true,
+            can_edit_task_assignee: true,
+            can_edit_task_status: true,
+            can_delete_task: true,
+          },
+        },
         created_on: createdOn,
         last_updated_on: lastUpdatedOn,
         invite_code: inviteCode,
@@ -127,33 +138,6 @@ exports.createProject = onCall(async (data, context) => {
     throw new HttpsError("internal", "Error sending push notification: " + error);
   }
 });
-
-exports.getUserProjects = onCall(async (data, context) => {
-  const { uid } = data.data;
-  try {
-    logger.log("UID: " + uid);
-    const userProjects = await db.collection("projects").where("member_uids", "array-contains", uid).get();
-    logger.log("Projects: " + userProjects);
-    const userProjectsData = userProjects.docs.map((doc) => {
-      const data = doc.data();
-      return {
-        projectId: doc.id,
-        name: data.name,
-        description: data.description,
-        githubUrl: data.github_url,
-        memberUids: data.member_uids,
-        lastUpdatedOn: data.last_updated_on,
-        inviteCode: data.invite_code
-      };
-    });
-    return userProjectsData;
-  } catch (error) {
-    console.error("Error fetching user projects: ", error);
-    throw new HttpsError("internal", "Error fetching user projects: " + error);
-  }
-});
-
-
 
 // TODO: there's an edge case where someone may be able to re-use someone's old invite code after it re-generates. is this OK?
 const generateInviteCode = async () => {

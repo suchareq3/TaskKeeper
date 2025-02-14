@@ -110,6 +110,8 @@ const showNotification = async (title: string, description: string) => {
 };
 
 //TODO: this doesn't need to be a cloud function
+//TODO: also, wrap this in a transaction or batched write
+//TODO: also also, write a separate onTrigger daily/weekly/monthly function for regenerating invite codes. users with invite code permissions should be able to see the remaining time until the invite code expires
 const createProject = async (name: string, description: string, githubUrl: string) => {
   try {
     const currentUser = auth.currentUser;
@@ -212,10 +214,29 @@ const loadUserProjects = async () => {
     if (!uid) {
       throw new Error("User not authenticated");
     }
-    const getUserProjectsFunction = functions.httpsCallable("getUserProjects");
-    const result = await getUserProjectsFunction({ uid });
-    console.log("success loading user projects!:", result);
-    return result.data;
+
+    const userProjects = await db.collection("projects").where(`members.${uid}`, "!=", null).get();
+    const userProjectsData = userProjects.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        projectId: doc.id,
+        name: data.name,
+        description: data.description,
+        githubUrl: data.github_url,
+        members: data.members,
+        userPermissions: data.members[uid],
+        lastUpdatedOn: data.last_updated_on,
+        inviteCode: data.invite_code,
+      };
+    });
+    console.log("success loading user projects!:", userProjectsData);
+    return userProjectsData;
+
+
+    // const getUserProjectsFunction = functions.httpsCallable("getUserProjects");
+    // const result = await getUserProjectsFunction({ uid });
+    // console.log("success loading user projects!:", result);
+    // return result.data;
   } catch (error) {
     console.error("Error loading user projects!:", error);
     throw error;
