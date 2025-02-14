@@ -18,7 +18,13 @@ export default function TasksScreen() {
       name: string;
       description: string;
       githubUrl: string;
-      memberUids: Array<string>;
+      members: {
+        [uid: string]: {
+          permissions: {
+            [permission: string]: boolean;
+          };
+        };
+      };
     }[]
   >([]);
 
@@ -42,7 +48,13 @@ export default function TasksScreen() {
         name: string;
         description: string;
         githubUrl: string;
-        memberUids: Array<string>;
+        members: {
+          [uid: string]: {
+            permissions: {
+              [permission: string]: boolean;
+            };
+          };
+        };
       };
       tasks: Array<{
         taskId: string;
@@ -87,7 +99,13 @@ export default function TasksScreen() {
             name: string;
             description: string;
             githubUrl: string;
-            memberUids: Array<string>;
+            members: {
+              [uid: string]: {
+                permissions: {
+                  [permission: string]: boolean;
+                };
+              };
+            };
           };
           tasks: Array<{
             taskId: string;

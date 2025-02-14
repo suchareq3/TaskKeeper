@@ -2,7 +2,7 @@ import { View, KeyboardAvoidingView } from "react-native";
 import { fbFunctions } from "../../../shared/firebaseFunctions";
 import { useSession } from "@/components/AuthContext";
 import { Text } from "@/components/ui/text";
-import { useState } from "react";
+import { useState, React } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,10 +13,11 @@ import DraggableFlatList, { RenderItemParams, ScaleDecorator } from "react-nativ
 import { TouchableOpacity } from "react-native-gesture-handler";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Crypto from "expo-crypto";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Option, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
 import i18n from "@/components/translations";
 import { PRIORITY_OPTIONS, TASK_TYPE_OPTIONS, TASK_STATUS_OPTIONS } from "@/components/constants";
+import { getAuth } from "@react-native-firebase/auth";
 
 export default function CreateTask() {
   const { createTask } = useSession();
@@ -25,10 +26,16 @@ export default function CreateTask() {
 
   const [selectedProject, setSelectedProject] = useState({ value: { projectId: "" }, label: "" });
   const [priorityLevel, setPriorityLevel] = useState(PRIORITY_OPTIONS[2]);
-  const [taskType, setTaskType] = useState(TASK_TYPE_OPTIONS[0]);
+  const [taskType, setTaskType] = useState(TASK_TYPE_OPTIONS[0] );
   const [taskName, setTaskName] = useState("");
+  const [taskAssignee, setTaskAssignee] = useState({
+    value: getAuth().currentUser!.uid,
+    label: getAuth().currentUser!.uid + ` ${i18n.t("app_innerScreens_addTask_select_taskAssigneeYou")}`,
+  } as Option);
   const [taskDescription, setTaskDescription] = useState("");
   const [subtaskData, setSubtaskData] = useState<Array<{ key: string; label: string; completed: boolean }>>([]);
+
+  const memberOptions = selectedProject.value.projectId ? Object.keys(parsedProjects.find((p) => p.projectId === selectedProject.value.projectId)?.members || {}) : [];
 
   const renderItem = ({ item, drag }: RenderItemParams<{ key: string; label: string; completed: boolean }>) => {
     const handleRemoveItem = (key: string) => {
@@ -133,7 +140,7 @@ export default function CreateTask() {
                   <Select
                     aria-labelledby="priority-level"
                     onValueChange={(value) => {
-                      setPriorityLevel(value);
+                      setPriorityLevel(value!);
                     }}
                     onLayout={() => setPriorityLevel(PRIORITY_OPTIONS[2])}
                     defaultValue={PRIORITY_OPTIONS[2]}
@@ -163,7 +170,7 @@ export default function CreateTask() {
                   <Select
                     aria-labelledby="task-type"
                     onValueChange={(value) => {
-                      setTaskType(value);
+                      setTaskType(value!);
                     }}
                     onLayout={() => setTaskType(TASK_TYPE_OPTIONS[0])}
                     defaultValue={TASK_TYPE_OPTIONS[0]}
@@ -188,6 +195,44 @@ export default function CreateTask() {
                   </Select>
                 </View>
 
+                <View className="w-full">
+                  {/* Existing project selection */}
+                  {selectedProject.value.projectId && (
+                    <>
+                      {/* Modified assignee selection */}
+                      <View>
+                        <Label nativeID="task-assignee">{i18n.t("app_innerScreens_addTask_select_taskAssigneeLabel")}</Label>
+                        <Select
+                          aria-labelledby="task-assignee"
+                          onValueChange={(option) => {
+                            setTaskAssignee(option);
+                          }}
+                          defaultValue={taskAssignee}
+                        >
+                          <SelectTrigger className="">
+                            <SelectValue
+                              className="text-foreground text-sm native:text-lg"
+                              placeholder={i18n.t("app_innerScreens_addTask_select_taskAssigneePlaceholder")}
+                            />
+                          </SelectTrigger>
+                          <SelectContent className="">
+                            <SelectGroup>
+                              {memberOptions.map((uid) => (
+                                <SelectItem
+                                  key={uid}
+                                  label={`${uid}${uid === getAuth().currentUser!.uid && ` ${i18n.t("app_innerScreens_addTask_select_taskAssigneeYou")}`}`} // You might want to display user names here instead of UIDs
+                                  value={uid}
+                                />
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                      </View>
+                      <Separator className="bg-primary my-5" />
+                    </>
+                  )}
+                </View>
+
                 <Button onPress={() => setSubtaskData([...subtaskData, { key: Crypto.randomUUID(), label: "Edit me!", completed: false }])}>
                   <Text>{i18n.t("app_innerScreens_addTask_button_createSubtask")}</Text>
                 </Button>
@@ -206,7 +251,7 @@ export default function CreateTask() {
                 <Button
                   onPress={() => {
                     try {
-                      createTask(selectedProject.value.projectId, taskName, taskDescription, priorityLevel.value, taskType.value, subtaskData).then(() => {
+                      createTask(selectedProject.value.projectId, taskName, taskDescription, priorityLevel.value, taskType.value, taskAssignee!.value, subtaskData).then(() => {
                         router.back();
                       });
                     } catch (e) {

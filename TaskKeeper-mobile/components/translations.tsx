@@ -95,6 +95,9 @@ const translations = {
     app_innerScreens_addTask_select_taskTypePlaceholder: "Set task type",
     app_innerScreens_addTask_button_createSubtask: "Create subtask",
     app_innerScreens_addTask_button_createTask: "Create new task!",
+    app_innerScreens_addTask_select_taskAssigneeLabel: "Assigned to",
+    app_innerScreens_addTask_select_taskAssigneePlaceholder: "Assign task to...",
+    app_innerScreens_addTask_select_taskAssigneeYou: "(You!)",
     // Edit Project
     app_innerScreens_editProject_input_projectNamePlaceholder: "Project name",
     app_innerScreens_editProject_input_projectDescriptionPlaceholder: "Project description",
@@ -213,6 +216,9 @@ const translations = {
     app_innerScreens_addTask_select_taskTypePlaceholder: "Ustaw typ zadania",
     app_innerScreens_addTask_button_createSubtask: "Utwórz podzadanie",
     app_innerScreens_addTask_button_createTask: "Utwórz nowe zadanie!",
+    app_innerScreens_addTask_select_taskAssigneeLabel: "Przydzielone do",
+    app_innerScreens_addTask_select_taskAssigneePlaceholder: "Przypisz zadanie do...",
+    app_innerScreens_addTask_select_taskAssigneeYou: "(Ty!)",
     // Edit Project
     app_innerScreens_editProject_input_projectNamePlaceholder: "Nazwa projektu",
     app_innerScreens_editProject_input_projectDescriptionPlaceholder: "Opis projektu",

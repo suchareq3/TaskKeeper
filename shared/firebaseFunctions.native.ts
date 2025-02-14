@@ -10,7 +10,9 @@ import {
   messaging,
   runTransaction,
   arrayUnion,
-  arrayRemove
+  arrayRemove,
+  FieldValue,
+  firestore
 } from "../TaskKeeper-mobile/exportedModules.js";
 import { platform } from "./shared";
 import { FirebaseFunctions } from "./firebaseInterface";
@@ -165,7 +167,7 @@ const removeUserFromProject = async (projectId: string, userId: string) => {
         .collection("projects")
         .doc(projectId)
         .update({
-          member_uids: arrayRemove(userId),
+          [`members.${userId}`]: firestore.FieldValue.delete(), // Deletes the userId key
         })
         .then(() => {
           console.log("success removing user from project!");
@@ -261,6 +263,7 @@ const loadUserTasks = async () => {
           taskType: data.task_type,
           subtasks: data.subtasks,
           taskStatus: data.task_status,
+          taskAssigneeUid: data.task_assignee_uid,
           createdOn: data.created_on,
           lastUpdatedOn: data.last_updated_on,
         };
@@ -280,14 +283,24 @@ const addUserToProjectViaInviteCode = async (inviteCode: string) => {
     const currentUser = auth.currentUser;
     if (currentUser) {
       const project = await db.collection("projects").where("invite_code", "==", inviteCode).limit(1).get();
+      if (project.empty) {
+        throw new Error("Invalid invite code");
+      }
       const projectDoc = project.docs[0];
-      await projectDoc.ref
-        .update({
-          member_uids: arrayUnion(currentUser.uid),
-        })
-        .then(() => {
-          console.log("success adding user to project via invite code!");
-        });
+      await projectDoc.ref.update({
+        [`members.${currentUser.uid}`]: {
+          permissions: {
+            can_delete_project: false,
+            can_edit_project: false,
+            can_create_tasks: true,
+            can_edit_task_details: true,
+            can_edit_task_priorityAndType: true,
+            can_edit_task_assignee: true,
+            can_edit_task_status: true,
+            can_delete_task: true,
+          },
+        },
+      });
     }
   } catch (error) {
     console.error("Error adding user to project via invite code!:", error);
@@ -295,13 +308,15 @@ const addUserToProjectViaInviteCode = async (inviteCode: string) => {
   }
 };
 
-type Item = {
-  key: string;
-  label: string;
-  completed: boolean;
-};
-
-const createTask = async (projectId: string, taskName: string, taskDescription: string, priorityLevel: string, taskType: string, subTaskdata: { key: string; label: string; completed: boolean }[]) => {
+const createTask = async (
+  projectId: string,
+  taskName: string,
+  taskDescription: string,
+  priorityLevel: string,
+  taskType: string,
+  taskAssigneeUid: string,
+  subTaskdata: { key: string; label: string; completed: boolean }[]
+) => {
   try {
     const currentUser = auth.currentUser;
     if (currentUser) {
@@ -311,6 +326,7 @@ const createTask = async (projectId: string, taskName: string, taskDescription: 
         task_description: taskDescription,
         priority_level: priorityLevel,
         task_type: taskType,
+        task_assignee_uid: taskAssigneeUid,
         subtasks: subTaskdata,
 
         task_status: "in-progress",
@@ -334,6 +350,7 @@ const editTask = async (
   status: string,
   type: string,
   priorityLevel: string,
+  assigneeUid: string,
   subtasks: Array<{ key: string; label: string; completed: boolean }>
 ) => {
   try {
@@ -346,6 +363,7 @@ const editTask = async (
         task_status: status,
         task_type: type,
         priority_level: priorityLevel,
+        task_assignee_uid: assigneeUid,
         subtasks: subtasks,
         last_updated_on: lastUpdatedOn,
       });

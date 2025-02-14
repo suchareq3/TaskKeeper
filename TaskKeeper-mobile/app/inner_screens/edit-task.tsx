@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Option, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from "react-native-draggable-flatlist";
@@ -17,7 +17,7 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 import * as Crypto from "expo-crypto";
 import i18n from "@/components/translations";
 import { PRIORITY_OPTIONS, TASK_TYPE_OPTIONS, TASK_STATUS_OPTIONS } from "@/components/constants";
-
+import { getAuth } from "@react-native-firebase/auth";
 
 export default function EditTask() {
   const { editTask } = useSession();
@@ -28,6 +28,8 @@ export default function EditTask() {
   const [priorityLevel, setPriorityLevel] = useState(PRIORITY_OPTIONS[2]);
   const [taskType, setTaskType] = useState(TASK_TYPE_OPTIONS[0]);
   const [taskStatus, setTaskStatus] = useState(TASK_STATUS_OPTIONS[0]);
+  const [taskAssignee, setTaskAssignee] = useState<Option>({ value: "", label: "" });
+  const [members, setMembers] = useState<Option[]>([]);
   const [subtasks, setSubtasks] = useState<Array<{ key: string; label: string; completed: boolean }>>([]);
 
   // TODO: this takes roughly ~3x longer to load than 'edit-project.tsx'. Find out why & apply some optimizations if possible
@@ -41,12 +43,33 @@ export default function EditTask() {
         if (task) {
           setTaskName(task.taskName);
           setTaskDescription(task.taskDescription);
+          const initialAssignee = {
+            value: task.taskAssigneeUid || "",
+            label: task.taskAssigneeUid || "", // You might want to replace with actual username
+          };
+          console.log("initialAssignee: ", initialAssignee);
+          setTaskAssignee(initialAssignee);
 
           setPriorityLevel(PRIORITY_OPTIONS.find((p) => p.value === task.priorityLevel) || { value: "", label: "" });
           setTaskType(TASK_TYPE_OPTIONS.find((t) => t.value === task.taskType) || { value: "", label: "" });
           setTaskStatus(TASK_STATUS_OPTIONS.find((s) => s.value === task.taskStatus) || { value: "", label: "" });
 
           setSubtasks(task.subtasks || []);
+        }
+
+        // Fetch project members
+        const storedProjects = await AsyncStorage.getItem("projects");
+        const projects = storedProjects ? JSON.parse(storedProjects) : [];
+        const project = projects.find((p) => p.projectId === task.projectId);
+
+        if (project) {
+          const memberOptions = Object.keys(project.members || {}).map((uid) => ({
+            value: uid,
+            label: uid, // Replace with user name if available
+          }));
+
+          setMembers(memberOptions);
+          
         }
       } catch (error) {
         console.error("Failed to fetch task: ", error);
@@ -57,7 +80,7 @@ export default function EditTask() {
 
   const handleEditTask = async () => {
     try {
-      editTask(taskId as string, taskName, taskDescription, taskStatus.value, taskType.value, priorityLevel.value, subtasks);
+      editTask(taskId as string, taskName, taskDescription, taskStatus.value, taskType.value, priorityLevel.value, taskAssignee!.value, subtasks);
 
       ToastAndroid.show(i18n.t("app_innerScreens_editTask_toast_taskUpdateSuccess"), ToastAndroid.SHORT);
       router.back();
@@ -192,6 +215,32 @@ export default function EditTask() {
                       key={option.value}
                       label={option.label}
                       value={option.value}
+                    />
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </View>
+
+          <View>
+            <Select
+              value={taskAssignee}
+              onValueChange={setTaskAssignee}
+              defaultValue={taskAssignee}
+            >
+              <SelectTrigger>
+                <SelectValue
+                  className="text-foreground text-sm native:text-lg"
+                  placeholder={i18n.t("app_innerScreens_editTask_select_taskAssigneePlaceholder")}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {members.map((member) => (
+                    <SelectItem
+                      key={member!.value}
+                      label={member!.label}
+                      value={member!.value}
                     />
                   ))}
                 </SelectGroup>

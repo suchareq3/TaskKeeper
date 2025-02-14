@@ -14,8 +14,8 @@ const AuthContext = createContext<{
   editProject: (projectId: string, name: string, description: string, githubUrl: string) => any;
   removeUserFromProject: (projectId: string, userId: string) => any;
   addUserToProjectViaInviteCode: (inviteCode: string) => any;
-  createTask: (projectId: string, taskName: string, taskDescription: string, priorityLevel: string, taskType: string, subTaskdata: { key: string; label: string; completed: boolean }[]) => any;
-  editTask: (taskId: string, name: string, description: string, status: string, type: string, priorityLevel: string, subtasks: Array<{ key: string; label: string; completed: boolean }>) => any;
+  createTask: (projectId: string, taskName: string, taskDescription: string, priorityLevel: string, taskType: string, taskAssigneeUid: string, subTaskdata: { key: string; label: string; completed: boolean }[]) => any;
+  editTask: (taskId: string, name: string, description: string, status: string, type: string, priorityLevel: string, assigneeUid: string, subtasks: Array<{ key: string; label: string; completed: boolean }>) => any;
   session?: FirebaseAuthTypes.User | null;
   isLoading: boolean;
 }>({
@@ -163,11 +163,12 @@ export function SessionProvider({ children }: PropsWithChildren) {
     taskDescription: string,
     priorityLevel: string,
     taskType: string,
+    taskAssigneeUid: string,
     subTaskdata: { key: string; label: string; completed: boolean }[]
   ) => {
     setIsLoading(true);
     try {
-      await fbFunctions.createTask(projectId, taskName, taskDescription, priorityLevel, taskType, subTaskdata);
+      await fbFunctions.createTask(projectId, taskName, taskDescription, priorityLevel, taskType, taskAssigneeUid, subTaskdata);
     } catch (error) {
       console.error("createTask in AuthContext.tsx has failed!: ", error);
     } finally {
@@ -175,10 +176,10 @@ export function SessionProvider({ children }: PropsWithChildren) {
     }
   };
 
-  const editTask = async (taskId: string, name: string, description: string, status: string, type: string, priorityLevel: string, subtasks: Array<{ key: string; label: string; completed: boolean }>) => {
+  const editTask = async (taskId: string, name: string, description: string, status: string, type: string, priorityLevel: string, assigneeUid: string, subtasks: Array<{ key: string; label: string; completed: boolean }>) => {
     setIsLoading(true);
     try {
-      await fbFunctions.editTask(taskId, name, description, status, type, priorityLevel, subtasks);
+      await fbFunctions.editTask(taskId, name, description, status, type, priorityLevel, assigneeUid, subtasks);
     } catch (error) {
       console.error("editTask in AuthContext.tsx has failed!: ", error);
     } finally {
