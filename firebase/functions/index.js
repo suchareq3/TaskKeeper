@@ -112,14 +112,7 @@ exports.createProject = onCall(async (data, context) => {
         github_url: githubUrl,
         members: {
           [uid]: {
-            can_delete_project: true,
-            can_edit_project: true,
-            can_create_tasks: true,
-            can_edit_task_details: true,
-            can_edit_task_priorityAndType: true,
-            can_edit_task_assignee: true,
-            can_edit_task_status: true,
-            can_delete_task: true,
+            isManager: true,
           },
         },
         created_on: createdOn,

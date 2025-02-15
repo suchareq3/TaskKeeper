@@ -305,21 +305,26 @@ const addUserToProjectViaInviteCode = async (inviteCode: string) => {
       const projectDoc = project.docs[0];
       await projectDoc.ref.update({
         [`members.${currentUser.uid}`]: {
-          permissions: {
-            can_delete_project: false,
-            can_edit_project: false,
-            can_create_tasks: true,
-            can_edit_task_details: true,
-            can_edit_task_priorityAndType: true,
-            can_edit_task_assignee: true,
-            can_edit_task_status: true,
-            can_delete_task: true,
-          },
+          isManager: false,
         },
       });
     }
   } catch (error) {
     console.error("Error adding user to project via invite code!:", error);
+    throw error;
+  }
+};
+
+const updateProjectMemberManagerStatus = async (projectId: string, userId: string, isManager: boolean) => {
+  try {
+    await db
+      .collection("projects")
+      .doc(projectId)
+      .update({
+        [`members.${userId}.isManager`]: isManager,
+      });
+  } catch (error) {
+    console.error("Error updating manager status:", error);
     throw error;
   }
 };
@@ -409,6 +414,7 @@ export const fbFunctions: FirebaseFunctions = {
   loadUserTasks,
   deleteTask,
   addUserToProjectViaInviteCode,
+  updateProjectMemberManagerStatus,
   createTask,
   editTask,
 };

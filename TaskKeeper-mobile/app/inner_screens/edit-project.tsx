@@ -4,10 +4,12 @@ import { fbFunctions } from "../../../shared/firebaseFunctions";
 import { useSession } from "@/components/AuthContext";
 import { Text } from "@/components/ui/text";
 import { useEffect, useState } from "react";
+import React from "react";
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Clipboard from "expo-clipboard";
 import i18n from "@/components/translations";
@@ -15,10 +17,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { getAuth } from "@react-native-firebase/auth";
 import { useHeaderDropdown } from "@/components/utilityFunctions";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "~/components/ui/dialog";
-import { cn } from "@/lib/utils";
+import { Label } from "@/components/ui/label";
 
 export default function EditProject() {
-  const { editProject } = useSession();
+  const { editProject, isLoading } = useSession();
 
   const { projectId } = useLocalSearchParams();
 
@@ -27,6 +29,10 @@ export default function EditProject() {
   const [githubUrl, setGithubUrl] = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const [projectMembers, setProjectMembers] = useState({});
+  const [isManager, setIsManager] = useState(false);
+  const auth = getAuth();
+  const currentUserUid = auth.currentUser!.uid;
+  
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -42,6 +48,8 @@ export default function EditProject() {
         setGithubUrl(project.githubUrl);
         setProjectMembers(project.members || {});
         setInviteCode(project.inviteCode);
+        setIsManager(project.members[currentUserUid]?.isManager == true);
+        console.log(project.members[currentUserUid])
       } catch (error) {
         console.error("Failed to fetch project: ", error);
       }
@@ -94,7 +102,10 @@ export default function EditProject() {
       isCustom: true,
       customOption: (
         <Dialog>
-          <DialogTrigger asChild>
+          <DialogTrigger
+            disabled={!isManager}
+            asChild
+          >
             <Button
               className="flex items-start"
               variant="destructive"
@@ -143,18 +154,21 @@ export default function EditProject() {
             value={projectName}
             onChangeText={setProjectName}
             keyboardType="default"
+            editable={isManager}
           />
           <Input
             placeholder={i18n.t("app_innerScreens_editProject_input_projectDescriptionPlaceholder")}
             value={projectDescription}
             onChangeText={setProjectDescription}
             keyboardType="default"
+            editable={isManager}
           />
           <Input
             placeholder={i18n.t("app_innerScreens_editProject_input_githubUrlPlaceholder")}
             value={githubUrl}
             onChangeText={setGithubUrl}
             keyboardType="default"
+            editable={isManager}
           />
           <Button
             onPress={() => {
@@ -168,22 +182,57 @@ export default function EditProject() {
                 console.log("smth went wrong: ", e);
               }
             }}
+            disabled={!isManager}
           >
             <Text>{i18n.t("app_innerScreens_editProject_button_editProject")}</Text>
           </Button>
         </View>
-        <Separator className="bg-primary my-4" />
+        <Separator className="bg-primary my-5" />
+        <Label className="!text-xl">Project members:</Label>
 
         {Object.entries(projectMembers).map(([uid, permissions]) => (
           <Card
-            className="w-3/4"
+            className="w-full"
             key={uid}
           >
             <CardContent className="flex flex-row justify-between items-center p-3">
               <Text>{uid}</Text>
+              <View className="flex flex-row gap-2 items-center">
+                <View className="items-center ">
+                <Label>Manager</Label>
+              <Checkbox
+                
+                checked={permissions.isManager}
+                onCheckedChange={(checked) => {
+                  // Update local state first for instant feedback
+                  setProjectMembers((prev) => ({
+                    ...prev,
+                    [uid]: {
+                      ...prev[uid],
+                      isManager: checked,
+                    },
+                  }));
+                  console.log("new project members: ", projectMembers);
+
+                  // Update Firebase
+                  fbFunctions.updateProjectMemberManagerStatus(projectId as string, uid, checked).catch((error) => {
+                    console.error("Failed to update manager status:", error);
+                    // Revert local state if update fails
+                    setProjectMembers((prev) => ({
+                      ...prev,
+                      [uid]: {
+                        ...prev[uid],
+                        isManager: !checked,
+                      },
+                    }));
+                  }).then(() => {console.log("updated manager status!")});
+                }}
+                disabled={!isManager || uid === currentUserUid}
+              />
+              </View>
               <Button
                 variant={"destructive"}
-                disabled={getAuth().currentUser?.uid === uid}
+                disabled={!isManager || getAuth().currentUser?.uid === uid}
                 size={"icon"}
                 onPress={() => fbFunctions.removeUserFromProject(projectId as string, uid)}
               >
@@ -193,33 +242,37 @@ export default function EditProject() {
                   color="white"
                 />
               </Button>
+              </View>
             </CardContent>
           </Card>
         ))}
 
         <View></View>
-        <Separator className="bg-primary my-4" />
-        <View className="flex flex-col w-full items-center">
-          <Text className="text-xl">{i18n.t("app_innerScreens_editProject_text_yourProjectInviteCode")}:</Text>
-          <Button
-            size={"lg"}
-            className="flex relative pl-3 pr-9"
-            onPress={() => {
-              Clipboard.setStringAsync(inviteCode).then(() => {
-                ToastAndroid.show(i18n.t("app_innerScreens_editProject_toast_inviteCodeCopied"), ToastAndroid.SHORT);
-              });
-            }}
-          >
-            <Text className="!text-3xl">{inviteCode}</Text>
-            <MaterialIcons
-              className="absolute right-2 opacity-40"
-              name="content-copy"
-              size={17}
-              color="black"
-            />
-          </Button>
-          <Text>{inviteCode}</Text>
-        </View>
+        {isManager && (
+          <>
+            <Separator className="bg-primary my-5" />
+            <View className="flex flex-col w-full items-center gap-2">
+              <Label className="!text-xl">{i18n.t("app_innerScreens_editProject_text_yourProjectInviteCode")}:</Label>
+              <Button
+                size={"lg"}
+                className="flex relative pl-3 pr-9"
+                onPress={() => {
+                  Clipboard.setStringAsync(inviteCode).then(() => {
+                    ToastAndroid.show(i18n.t("app_innerScreens_editProject_toast_inviteCodeCopied"), ToastAndroid.SHORT);
+                  });
+                }}
+              >
+                <Text className="!text-3xl">{inviteCode}</Text>
+                <MaterialIcons
+                  className="absolute right-2 opacity-40"
+                  name="content-copy"
+                  size={17}
+                  color="black"
+                />
+              </Button>
+            </View>
+          </>
+        )}
       </KeyboardAvoidingView>
     </View>
   );

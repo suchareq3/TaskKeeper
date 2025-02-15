@@ -15,5 +15,6 @@ export interface FirebaseFunctions {
   deleteTask: (taskId: string) => Promise<any>;
   editTask: (taskId: string, name: string, description: string, status: string, type: string, priorityLevel: string, assigneeUid: string, subtasks: Array<{ key: string; label: string; completed: boolean }>) => Promise<any>;
   addUserToProjectViaInviteCode: (inviteCode: string) => Promise<any>;
+  updateProjectMemberManagerStatus: (projectId: string, userId: string, isManager: boolean) => Promise<any>;
   createTask: (projectId: string, taskName: string, taskDescription: string, priorityLevel: string, taskType: string, taskAssigneeUid: string, subTaskdata: { key: string; label: string; completed: boolean }[]) => Promise<any>;
 }
