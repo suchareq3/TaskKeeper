@@ -8,6 +8,7 @@ import { DateTimePickerAndroid, DateTimePickerEvent } from "@react-native-commun
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
 import i18n from "@/components/translations";
+import { Timestamp } from "@react-native-firebase/firestore";
 
 export default function SignUp() {
   const [name, setName] = useState("");
@@ -17,7 +18,7 @@ export default function SignUp() {
 
   // NOTE: this works ONLY for Android! if I'll want to support iOS later, here's an important link for myself:
   // https://github.com/react-native-datetimepicker/datetimepicker?tab=readme-ov-file#usage
-  const [date, setDate] = useState(new Date(Date.now()));
+  const [date, setDate] = useState(Timestamp.now().toDate());
   const onChangeDate = (event: DateTimePickerEvent, selectedDate: any) => {
     const currentDate = selectedDate || date;
     setDate(currentDate);
@@ -73,7 +74,7 @@ export default function SignUp() {
           onPress={() => {
             //TODO: implement proper error handling with user-facing alerts
             //TODO: implement proper loading state (doesn't seem to work while Firebase is processing the sign-up)
-            signUp(email, password, { firstName: name, lastName: lastName, dateOfBirth: date.toLocaleDateString() }).then(() => {
+            signUp(email, password, { first_name: name, last_name: lastName, date_of_birth: date.toLocaleDateString() }).then(() => {
               //router.replace("/");
               signIn(email, password).then(() => {
                 router.replace("/");

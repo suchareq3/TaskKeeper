@@ -73,8 +73,8 @@ export function SessionProvider({ children }: PropsWithChildren) {
     setIsLoading(true);
     try {
       await fbFunctions.logInWithPassword(email, password);
-      // TODO: check & update fcmToken in firebase, replace 'logInWithPassword' with a cloud function (like signup)
-      // TODO for fcmTokens: introduce additional checks & a monthly(?) cloud function failcheck for expired fcmTokens,
+      // TODO: check & update fcm_token in firebase, replace 'logInWithPassword' with a cloud function (like signup)
+      // TODO for fcm_tokens: introduce additional checks & a monthly(?) cloud function failcheck for expired fcm_tokens,
       // https://firebase.google.com/docs/cloud-messaging/manage-tokens
     } catch (error) {
       console.error("signIn in AuthContext.tsx has failed!: ", error);
@@ -100,7 +100,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
     setIsLoading(true);
     try {
       await fbFunctions.signUpUser(email, password, extraData);
-      // TODO: update the cloud function to add fcmToken & fcmToken's timestamp
+      // TODO: update the cloud function to add fcm_token & fcm_token's timestamp
     } catch (error) {
       console.error("signUp in AuthContext.tsx has failed!: ", error);
     } finally {

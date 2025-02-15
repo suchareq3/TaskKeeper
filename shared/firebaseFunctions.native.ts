@@ -12,7 +12,8 @@ import {
   arrayUnion,
   arrayRemove,
   FieldValue,
-  firestore
+  firestore,
+  Timestamp,
 } from "../TaskKeeper-mobile/exportedModules.js";
 import { platform } from "./shared";
 import { FirebaseFunctions } from "./firebaseInterface";
@@ -62,8 +63,8 @@ const logOutUser = () => {
 
 const checkUserStatus = async () => {
   console.log("current user email: " + JSON.stringify(auth.currentUser));
-  const fcmToken = await messaging().getToken();
-  console.log("current fcmToken: " + JSON.stringify(fcmToken));
+  const fcm_token = await messaging().getToken();
+  console.log("current fcm_token: " + JSON.stringify(fcm_token));
   return JSON.stringify(auth.currentUser);
 };
 
@@ -76,8 +77,8 @@ const checkUserLoginStatus = (nextOrObserver) => {
 const signUpUser = async (email: string, password: string, extraData: { [key: string]: string }) => {
   try {
     //await messaging().registerDeviceForRemoteMessages();
-    extraData["fcmToken"] = await messaging().getToken();
-    //extraData["fcmToken"] = "cog3p2waTrSuK2V7RoAfkF:APA91bGbyBsdMfrgEFvupVLu3nkjRngfEZSghTh--L2_ZaK-eGuKSJlRCZLoAEFvupVLu3nkjRngfEZSghTh--dLPXa5NkEg8IdKPY5l7RylkO9c3qI5q5TghE5wUk34-pBc3qI5q5TghE5wUk34-pBmzguHmzguH1By-nzxM";
+    extraData["fcm_token"] = await messaging().getToken();
+    //extraData["fcm_token"] = "cog3p2waTrSuK2V7RoAfkF:APA91bGbyBsdMfrgEFvupVLu3nkjRngfEZSghTh--L2_ZaK-eGuKSJlRCZLoAEFvupVLu3nkjRngfEZSghTh--dLPXa5NkEg8IdKPY5l7RylkO9c3qI5q5TghE5wUk34-pBc3qI5q5TghE5wUk34-pBmzguHmzguH1By-nzxM";
     const registerUserFunction = functions.httpsCallable("signUpUser");
     const result = await registerUserFunction({ email, password, extraData });
     console.log("User registration successful!: ", result);
@@ -94,9 +95,9 @@ const showNotification = async (title: string, description: string) => {
     //await messaging().registerDeviceForRemoteMessages();
 
     //TODO: remake this so that it takes the token (or tokens) as an argument
-    //const fcmToken = await messaging().getToken();
+    //const fcm_token = await messaging().getToken();
     await messaging().registerDeviceForRemoteMessages();
-    const fcmToken =
+    const fcm_token =
       "cog3p2waTrSuK2V7RoAfkF:APA91bGbyBsdMfrgEFvupVLu3nkjRngfEZSghTh--L2_ZaK-eGuKSJlRCZLoAEFvupVLu3nkjRngfEZSghTh--dLPXa5NkEg8IdKPY5l7RylkO9c3qI5q5TghE5wUk34-pBc3qI5q5TghE5wUk34-pBmzguHmzguH1By-nzxM";
     console.log(await messaging().getToken());
 
@@ -104,7 +105,7 @@ const showNotification = async (title: string, description: string) => {
 
     //return token;
     const pushNotificationFunction = functions.httpsCallable("pushNotification");
-    const result = await pushNotificationFunction({ fcmToken, title, description });
+    const result = await pushNotificationFunction({ fcm_token, title, description });
   } catch (error) {
     console.error("Error showing notification:", error);
     throw error;
@@ -136,7 +137,7 @@ const editProject = async (projectId: string, name: string, description: string,
   try {
     const currentUser = auth.currentUser;
     if (currentUser) {
-      const lastUpdatedOn = Date.now();
+      const lastUpdatedOn = Timestamp.now();
       await db
         .collection("projects")
         .doc(projectId)
@@ -181,8 +182,8 @@ const removeUserFromProject = async (projectId: string, userId: string) => {
 
 const deleteProject = async (projectId: string) => {
   try {
-    // NOTE: batch deletes are limited to 500 writes, so only 499 tasks. 
-    // this should be fine for now but should be re-considered for future scalability 
+    // NOTE: batch deletes are limited to 500 writes, so only 499 tasks.
+    // this should be fine for now but should be re-considered for future scalability
     const currentUser = auth.currentUser;
     if (!currentUser) return;
 
@@ -233,7 +234,6 @@ const loadUserProjects = async () => {
     });
     console.log("success loading user projects!:", userProjectsData);
     return userProjectsData;
-
 
     // const getUserProjectsFunction = functions.httpsCallable("getUserProjects");
     // const result = await getUserProjectsFunction({ uid });
@@ -351,8 +351,8 @@ const createTask = async (
         subtasks: subTaskdata,
 
         task_status: "in-progress",
-        created_on: Date.now(),
-        last_updated_on: Date.now(),
+        created_on: Timestamp.now(),
+        last_updated_on: Timestamp.now(),
         assigned_user_uid: currentUser.uid,
       };
 
@@ -377,7 +377,7 @@ const editTask = async (
   try {
     const currentUser = auth.currentUser;
     if (currentUser) {
-      const lastUpdatedOn = Date.now();
+      const lastUpdatedOn = Timestamp.now();
       await db.collection("tasks").doc(taskId).update({
         task_name: name,
         task_description: description,

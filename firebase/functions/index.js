@@ -54,7 +54,8 @@ exports.signUpUser = onCall(async (data, context) => {
       .doc(userUid)
       .set({
         ...extraData,
-        createdAt: Date.now(),
+        created_on: Timestamp.now(),
+        last_updated_on: Timestamp.now(),
       });
 
     return { success: true, uid: userUid };
@@ -66,12 +67,12 @@ exports.signUpUser = onCall(async (data, context) => {
 
 //TODO: this is a PLACEHOLDER function to be replaced when i'll be working on notifications
 exports.pushNotification = onCall(async (data, context) => {
-  const { fcmToken, title, description } = data.data;
+  const { fcm_token, title, description } = data.data;
   if (!title || !description) {
     throw new HttpsError("invalid-argument", JSON.stringify(data.data));
   }
   try {
-    const log = await messaging().sendMulticast({ tokens: [fcmToken], notification: { title: title, body: description } });
+    const log = await messaging().sendMulticast({ tokens: [fcm_token], notification: { title: title, body: description } });
     //throw new HttpsError("internal", "Successful! Log: " + log);
   } catch (error) {
     console.error("Error sending push notification:", error);
@@ -81,15 +82,15 @@ exports.pushNotification = onCall(async (data, context) => {
 
 //TODO: this is a PLACEHOLDER function
 exports.pushNotificationHttp = https.onRequest(async (data, context) => {
-  const fcmToken = "dqJ3jUu_R3qLjF-ybRnata:APA91bHmWRk-uMiWu1j3rx9xsw2vlYi68e3WJG6GEa47VsXHAAtq2fdI0_qLLEHaSfRAvPCcyeQMuZlhxQFb12a5cnm6oFV6lbpirrOfdN-lGSQiBdMvUHk";
+  const fcm_token = "dqJ3jUu_R3qLjF-ybRnata:APA91bHmWRk-uMiWu1j3rx9xsw2vlYi68e3WJG6GEa47VsXHAAtq2fdI0_qLLEHaSfRAvPCcyeQMuZlhxQFb12a5cnm6oFV6lbpirrOfdN-lGSQiBdMvUHk";
   const title = "asdfasdf";
   const description = "ffffff";
-  //const { fcmToken, title, description } = data;
+  //const { fcm_token, title, description } = data;
   // if (!title || !description) {
   //   throw new HttpsError("invalid-argument", JSON.stringify(data.data));
   // }
   try {
-    const log = await messaging().send({ token: fcmToken, notification: { title: title, body: description } });
+    const log = await messaging().send({ token: fcm_token, notification: { title: title, body: description } });
     logger.log("Successful! Log: " + JSON.stringify(log));
     //throw new HttpsError("internal", "Successful! Log: " + log);
   } catch (error) {
