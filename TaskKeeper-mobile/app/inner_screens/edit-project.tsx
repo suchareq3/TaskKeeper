@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import Feather from "@expo/vector-icons/Feather";
 import * as Clipboard from "expo-clipboard";
 import i18n from "@/components/translations";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,7 +21,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { Label } from "@/components/ui/label";
 
 export default function EditProject() {
-  const { editProject, isLoading } = useSession();
+  const { editProject, isLoading, refreshProjectInviteCode } = useSession();
 
   const { projectId } = useLocalSearchParams();
 
@@ -32,7 +33,6 @@ export default function EditProject() {
   const [isManager, setIsManager] = useState(false);
   const auth = getAuth();
   const currentUserUid = auth.currentUser!.uid;
-  
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -49,7 +49,7 @@ export default function EditProject() {
         setProjectMembers(project.members || {});
         setInviteCode(project.inviteCode);
         setIsManager(project.members[currentUserUid]?.isManager == true);
-        console.log(project.members[currentUserUid])
+        console.log(project.members[currentUserUid]);
       } catch (error) {
         console.error("Failed to fetch project: ", error);
       }
@@ -199,49 +199,53 @@ export default function EditProject() {
               <Text>{uid}</Text>
               <View className="flex flex-row gap-2 items-center">
                 <View className="items-center ">
-                <Label>Manager</Label>
-              <Checkbox
-                
-                checked={permissions.isManager}
-                onCheckedChange={(checked) => {
-                  // Update local state first for instant feedback
-                  setProjectMembers((prev) => ({
-                    ...prev,
-                    [uid]: {
-                      ...prev[uid],
-                      isManager: checked,
-                    },
-                  }));
-                  console.log("new project members: ", projectMembers);
+                  <Label>Manager</Label>
+                  <Checkbox
+                    checked={permissions.isManager}
+                    onCheckedChange={(checked) => {
+                      // Update local state first for instant feedback
+                      setProjectMembers((prev) => ({
+                        ...prev,
+                        [uid]: {
+                          ...prev[uid],
+                          isManager: checked,
+                        },
+                      }));
+                      console.log("new project members: ", projectMembers);
 
-                  // Update Firebase
-                  fbFunctions.updateProjectMemberManagerStatus(projectId as string, uid, checked).catch((error) => {
-                    console.error("Failed to update manager status:", error);
-                    // Revert local state if update fails
-                    setProjectMembers((prev) => ({
-                      ...prev,
-                      [uid]: {
-                        ...prev[uid],
-                        isManager: !checked,
-                      },
-                    }));
-                  }).then(() => {console.log("updated manager status!")});
-                }}
-                disabled={!isManager || uid === currentUserUid}
-              />
-              </View>
-              <Button
-                variant={"destructive"}
-                disabled={!isManager || getAuth().currentUser?.uid === uid}
-                size={"icon"}
-                onPress={() => fbFunctions.removeUserFromProject(projectId as string, uid)}
-              >
-                <MaterialIcons
-                  name="delete"
-                  size={20}
-                  color="white"
-                />
-              </Button>
+                      // Update Firebase
+                      fbFunctions
+                        .updateProjectMemberManagerStatus(projectId as string, uid, checked)
+                        .then(() => {
+                          setProjectMembers((prev) => ({
+                            ...prev,
+                            [uid]: {
+                              ...prev[uid],
+                              isManager: checked,
+                            },
+                          }));
+                          console.log("updated manager status!");
+                        })
+                        .catch((error) => {
+                          console.error("Failed to update manager status:", error);
+                          // Revert local state if update fails
+                        });
+                    }}
+                    disabled={!isManager || uid === currentUserUid}
+                  />
+                </View>
+                <Button
+                  variant={"destructive"}
+                  disabled={!isManager || getAuth().currentUser?.uid === uid}
+                  size={"icon"}
+                  onPress={() => fbFunctions.removeUserFromProject(projectId as string, uid)}
+                >
+                  <MaterialIcons
+                    name="delete"
+                    size={20}
+                    color="white"
+                  />
+                </Button>
               </View>
             </CardContent>
           </Card>
@@ -253,23 +257,68 @@ export default function EditProject() {
             <Separator className="bg-primary my-5" />
             <View className="flex flex-col w-full items-center gap-2">
               <Label className="!text-xl">{i18n.t("app_innerScreens_editProject_text_yourProjectInviteCode")}:</Label>
-              <Button
-                size={"lg"}
-                className="flex relative pl-3 pr-9"
-                onPress={() => {
-                  Clipboard.setStringAsync(inviteCode).then(() => {
-                    ToastAndroid.show(i18n.t("app_innerScreens_editProject_toast_inviteCodeCopied"), ToastAndroid.SHORT);
-                  });
-                }}
-              >
-                <Text className="!text-3xl">{inviteCode}</Text>
-                <MaterialIcons
-                  className="absolute right-2 opacity-40"
-                  name="content-copy"
-                  size={17}
-                  color="black"
-                />
-              </Button>
+              <View className="flex flex-row gap-5">
+                <Button
+                  size={"lg"}
+                  className="flex relative pl-3 pr-9"
+                  onPress={() => {
+                    Clipboard.setStringAsync(inviteCode).then(() => {
+                      ToastAndroid.show(i18n.t("app_innerScreens_editProject_toast_inviteCodeCopied"), ToastAndroid.SHORT);
+                    });
+                  }}
+                >
+                  <Text className="!text-3xl">{inviteCode}</Text>
+                  <MaterialIcons
+                    className="absolute right-2 opacity-40"
+                    name="content-copy"
+                    size={17}
+                    color="black"
+                  />
+                </Button>
+                <Dialog>
+                  <DialogTrigger
+                    disabled={!isManager}
+                    asChild
+                  >
+                    <Button
+                      className="flex items-start "
+                      size={null}
+                    >
+                      <Feather
+                        className="p-4 text-primary"
+                        name="refresh-ccw"
+                        size={20}
+                        // color="text-primary"
+                      />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="!text-lg">
+                    <DialogHeader>
+                      <DialogTitle className="!text-[20px]">{i18n.t("app_innerScreens_editProject_dialogTitle_refreshInviteCode")}</DialogTitle>
+                      <DialogDescription className="!text-[16px]">{i18n.t("app_innerScreens_editProject_dialogDescription_refreshInviteCode")}</DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="flex flex-row justify-between mt-5">
+                      <DialogClose asChild>
+                        <Button>
+                          <Text>{i18n.t("app_innerScreens_editProject_button_refreshInviteCodeRefuse")}</Text>
+                        </Button>
+                      </DialogClose>
+                      <DialogClose asChild>
+                        {/* TODO: implement onTrigger (or periodical?) logic for firebase that removes projects with no members in them */}
+                        <Button
+                          variant={"destructive"}
+                          onPress={() => {
+                            // TODO: actually REFRESH the data you get back from firebase instead of using router.back()!
+                            refreshProjectInviteCode(projectId as string).then(() => router.back());
+                          }}
+                        >
+                          <Text>{i18n.t("app_innerScreens_editProject_button_refreshInviteCodeConfirm")}</Text>
+                        </Button>
+                      </DialogClose>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </View>
             </View>
           </>
         )}

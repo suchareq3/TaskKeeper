@@ -20,9 +20,7 @@ export default function TasksScreen() {
       githubUrl: string;
       members: {
         [uid: string]: {
-          permissions: {
-            [permission: string]: boolean;
-          };
+          [permission: string]: boolean;
         };
       };
     }[]
@@ -50,9 +48,7 @@ export default function TasksScreen() {
         githubUrl: string;
         members: {
           [uid: string]: {
-            permissions: {
               [permission: string]: boolean;
-            };
           };
         };
       };
@@ -101,9 +97,7 @@ export default function TasksScreen() {
             githubUrl: string;
             members: {
               [uid: string]: {
-                permissions: {
-                  [permission: string]: boolean;
-                };
+                [permission: string]: boolean;
               };
             };
           };

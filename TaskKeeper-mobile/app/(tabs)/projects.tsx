@@ -17,10 +17,8 @@ export default function ProjectsScreen() {
       description: string;
       githubUrl: string;
       members: {
-        [uid: string]: {
-          permissions: {
-            [permission: string]: boolean;
-          };
+        [uid: string]: {  
+          [permission: string]: boolean;
         };
       };
     }[]

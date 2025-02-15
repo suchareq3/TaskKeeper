@@ -21,7 +21,7 @@ import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import i18n from "@/components/translations";
 
-export default function ProjectTile({ id, title, description, githubUrl, members }: { id: string; title: string; description: string; githubUrl: string; members: { [uid: string]: { permissions: { [permission: string]: boolean } } } }) {
+export default function ProjectTile({ id, title, description, githubUrl, members }: { id: string; title: string; description: string; githubUrl: string; members: { [uid: string]: { [permission: string]: boolean } } }) {
   const insets = useSafeAreaInsets();
   const contentInsets = {
     top: insets.top,

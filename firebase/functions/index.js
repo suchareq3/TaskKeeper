@@ -133,6 +133,33 @@ exports.createProject = onCall(async (data, context) => {
   }
 });
 
+exports.refreshProjectInviteCode = onCall(async (data, context) => {
+  const { projectId } = data.data;
+  logger.log("projectId: ", projectId);
+  const inviteCode = await generateInviteCode();
+  logger.log("new invite code: ", inviteCode);
+  logger.log("projectId: ", projectId);
+  try {
+    await db
+      .collection("projects")
+      .doc(projectId)
+      .update({
+        invite_code: inviteCode,
+      })
+      .then(() => {
+        logger.log("projectId: ", projectId);
+        logger.log("new invite code: ", inviteCode);
+        return { success: true, inviteCode: inviteCode };
+      })
+      .catch((error) => {
+        throw "Error in refreshProjectInviteCode in cloud functions: " + error;
+      });
+  } catch (error) {
+    console.error("Error refreshing project invite code: ", error);
+    throw new HttpsError("internal", "Error refreshing project invite code: " + error);
+  }
+});
+
 // TODO: there's an edge case where someone may be able to re-use someone's old invite code after it re-generates. is this OK?
 const generateInviteCode = async () => {
   const codeGen = () => generate({ length: 8, numbers: true, lowercase: false, uppercase: true, excludeSimilarCharacters: true });

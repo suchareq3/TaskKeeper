@@ -14,8 +14,26 @@ const AuthContext = createContext<{
   editProject: (projectId: string, name: string, description: string, githubUrl: string) => any;
   removeUserFromProject: (projectId: string, userId: string) => any;
   addUserToProjectViaInviteCode: (inviteCode: string) => any;
-  createTask: (projectId: string, taskName: string, taskDescription: string, priorityLevel: string, taskType: string, taskAssigneeUid: string, subTaskdata: { key: string; label: string; completed: boolean }[]) => any;
-  editTask: (taskId: string, name: string, description: string, status: string, type: string, priorityLevel: string, assigneeUid: string, subtasks: Array<{ key: string; label: string; completed: boolean }>) => any;
+  refreshProjectInviteCode: (projectId: string) => any;
+  createTask: (
+    projectId: string,
+    taskName: string,
+    taskDescription: string,
+    priorityLevel: string,
+    taskType: string,
+    taskAssigneeUid: string,
+    subTaskdata: { key: string; label: string; completed: boolean }[]
+  ) => any;
+  editTask: (
+    taskId: string,
+    name: string,
+    description: string,
+    status: string,
+    type: string,
+    priorityLevel: string,
+    assigneeUid: string,
+    subtasks: Array<{ key: string; label: string; completed: boolean }>
+  ) => any;
   deleteTask: (taskId: string) => any;
   session?: FirebaseAuthTypes.User | null;
   isLoading: boolean;
@@ -27,6 +45,7 @@ const AuthContext = createContext<{
   editProject: () => Promise.resolve(),
   removeUserFromProject: () => Promise.resolve(),
   addUserToProjectViaInviteCode: () => Promise.resolve(),
+  refreshProjectInviteCode: () => Promise.resolve(),
   createTask: () => Promise.resolve(),
   editTask: () => Promise.resolve(),
   deleteTask: () => Promise.resolve(),
@@ -200,10 +219,39 @@ export function SessionProvider({ children }: PropsWithChildren) {
     }
   }
 
+  const refreshProjectInviteCode = async (projectId: string) => {
+    setIsLoading(true);
+    try {
+      await fbFunctions.refreshProjectInviteCode(projectId);
+    } catch (error) {
+      console.error("refreshProjectInviteCode in AuthContext.tsx has failed!: ", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <GestureHandlerRootView>
       <SafeAreaView className="flex-1">
-        <AuthContext.Provider value={{ signIn, signOut, signUp, createProject, editProject, removeUserFromProject, addUserToProjectViaInviteCode, createTask, editTask, deleteTask, session, isLoading }}>{children}</AuthContext.Provider>
+        <AuthContext.Provider
+          value={{
+            signIn,
+            signOut,
+            signUp,
+            createProject,
+            editProject,
+            removeUserFromProject,
+            addUserToProjectViaInviteCode,
+            createTask,
+            editTask,
+            deleteTask,
+            refreshProjectInviteCode,
+            session,
+            isLoading,
+          }}
+        >
+          {children}
+        </AuthContext.Provider>
       </SafeAreaView>
     </GestureHandlerRootView>
   );

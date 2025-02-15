@@ -112,9 +112,8 @@ const showNotification = async (title: string, description: string) => {
   }
 };
 
-//TODO: this doesn't need to be a cloud function
-//TODO: also, wrap this in a transaction or batched write
-//TODO: also also, write a separate onTrigger daily/weekly/monthly function for regenerating invite codes. users with invite code permissions should be able to see the remaining time until the invite code expires
+// NOTE: this is a cloud function because it involves password generation, which is safer handled on the server
+// TODO: consider writing a separate onTrigger daily/weekly/monthly function for regenerating invite codes. users with invite code permissions should be able to see the remaining time until the invite code expires
 const createProject = async (name: string, description: string, githubUrl: string) => {
   try {
     const currentUser = auth.currentUser;
@@ -123,6 +122,24 @@ const createProject = async (name: string, description: string, githubUrl: strin
       const uid = currentUser.uid;
       const createProjectFunction = functions.httpsCallable("createProject");
       const result = await createProjectFunction({ name, description, githubUrl, uid });
+      console.log(result);
+    } else {
+      console.error("createProject - logged-in user not found!");
+    }
+  } catch (error) {
+    console.error("Error creating new project:", error);
+    throw error;
+  }
+};
+
+const refreshProjectInviteCode = async (projectId: string) => {
+  try {
+    const currentUser = auth.currentUser;
+    console.log("currentUser:", currentUser);
+    if (currentUser) {
+      const uid = currentUser.uid;
+      const createProjectFunction = functions.httpsCallable("refreshProjectInviteCode");
+      const result = await createProjectFunction({projectId});
       console.log(result);
     } else {
       console.error("createProject - logged-in user not found!");
@@ -188,9 +205,7 @@ const deleteProject = async (projectId: string) => {
     if (!currentUser) return;
 
     const batch = db.batch();
-
     const projectRef = db.collection("projects").doc(projectId);
-
     const tasksSnapshot = await db.collection("tasks").where("project_id", "==", projectId).get();
 
     // Add each task deletion to the batch
@@ -414,6 +429,7 @@ export const fbFunctions: FirebaseFunctions = {
   loadUserTasks,
   deleteTask,
   addUserToProjectViaInviteCode,
+  refreshProjectInviteCode,
   updateProjectMemberManagerStatus,
   createTask,
   editTask,
