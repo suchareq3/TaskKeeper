@@ -128,6 +128,11 @@ const translations = {
     app_innerScreens_editTask_text_newSubtaskTitle: "New subtask",
     app_innerScreens_editTask_toast_taskUpdateSuccess: "Task updated successfully!",
     app_innerScreens_editTask_toast_taskUpdateFailed: "Failed to update task",
+    app_innerScreens_editTask_button_deleteTask: "Delete task",
+    app_innerScreens_editTask_dialogTitle_deleteTask: "Delete task?!",
+    app_innerScreens_editTask_dialogText_deleteTask: "ARE YOU SURE you want to delete this task? This process is irreversible!",
+    app_innerScreens_editTask_button_deleteTaskRefuse: "No! Please take me back!",
+    app_innerScreens_editTask_button_deleteTaskConfirm: "Yes, I'm sure!",
   },
   pl: {
     /**** App ****/
@@ -250,7 +255,6 @@ const translations = {
     app_innerScreens_editTask_text_newSubtaskTitle: "Nowe podzadanie",
     app_innerScreens_editTask_toast_taskUpdateSuccess: "Zadanie zaktualizowane pomyślnie!",
     app_innerScreens_editTask_toast_taskUpdateFailed: "Nie udało się zaktualizować zadania",
-    
   },
 };
 

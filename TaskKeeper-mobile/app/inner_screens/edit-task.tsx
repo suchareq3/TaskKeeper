@@ -19,9 +19,11 @@ import i18n from "@/components/translations";
 import { PRIORITY_OPTIONS, TASK_TYPE_OPTIONS, TASK_STATUS_OPTIONS } from "@/components/constants";
 import { getAuth } from "@react-native-firebase/auth";
 import { Label } from "@/components/ui/label";
+import { useHeaderDropdown } from "@/components/utilityFunctions";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export default function EditTask() {
-  const { editTask } = useSession();
+  const { editTask, deleteTask } = useSession();
   const { taskId } = useLocalSearchParams();
 
   const [taskName, setTaskName] = useState("");
@@ -128,6 +130,47 @@ export default function EditTask() {
       </View>
     </ScaleDecorator>
   );
+
+  useHeaderDropdown([
+    {
+      isCustom: true,
+      customOption: (
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button
+              className="flex items-start"
+              variant="destructive"
+            >
+              <Text>{i18n.t("app_innerScreens_editTask_button_deleteTask")}</Text>
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="!text-lg">
+            <DialogHeader>
+              <DialogTitle className="!text-[20px]">{i18n.t("app_innerScreens_editTask_dialogTitle_deleteTask")}</DialogTitle>
+              <DialogDescription className="!text-[16px]">{i18n.t("app_innerScreens_editTask_dialogText_deleteTask")}</DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="flex flex-row justify-between mt-5">
+              <DialogClose asChild>
+                <Button>
+                  <Text>{i18n.t("app_innerScreens_editTask_button_deleteTaskRefuse")}</Text>
+                </Button>
+              </DialogClose>
+              <DialogClose asChild>
+                <Button
+                  variant={"destructive"}
+                  onPress={() => {
+                    deleteTask(taskId as string).then(() => router.back());
+                  }}
+                >
+                  <Text>{i18n.t("app_innerScreens_editTask_button_deleteTaskConfirm")}</Text>
+                </Button>
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      ),
+    },
+  ]);
 
   return (
     <View className="flex-1 justify-center items-center bg-[#25292e]">

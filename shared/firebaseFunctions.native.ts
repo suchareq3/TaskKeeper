@@ -278,6 +278,22 @@ const loadUserTasks = async () => {
   }
 };
 
+const deleteTask = async (taskId: string) => {
+  try {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      throw new Error("User not authenticated");
+    }
+
+    const task = await db.collection("tasks").doc(taskId).delete();
+    console.log("Task deleted successfully.");
+    return task;
+  } catch (error) {
+    console.error("Error deleting project:", error);
+    throw error;
+  }
+};
+
 const addUserToProjectViaInviteCode = async (inviteCode: string) => {
   try {
     const currentUser = auth.currentUser;
@@ -391,6 +407,7 @@ export const fbFunctions: FirebaseFunctions = {
   deleteProject,
   loadUserProjects,
   loadUserTasks,
+  deleteTask,
   addUserToProjectViaInviteCode,
   createTask,
   editTask,
