@@ -18,6 +18,7 @@ import * as Crypto from "expo-crypto";
 import i18n from "@/components/translations";
 import { PRIORITY_OPTIONS, TASK_TYPE_OPTIONS, TASK_STATUS_OPTIONS } from "@/components/constants";
 import { getAuth } from "@react-native-firebase/auth";
+import { Label } from "@/components/ui/label";
 
 export default function EditTask() {
   const { editTask } = useSession();
@@ -145,6 +146,7 @@ export default function EditTask() {
           />
 
           <View>
+            <Label nativeID="priority-level">{i18n.t("app_innerScreens_addTask_select_priorityLevelLabel")}</Label>
             <Select
               defaultValue={priorityLevel}
               value={priorityLevel}
@@ -171,6 +173,7 @@ export default function EditTask() {
           </View>
 
           <View>
+            <Label nativeID="task-type">{i18n.t("app_innerScreens_addTask_select_taskTypeLabel")}</Label>
             <Select
               defaultValue={taskType}
               value={taskType}
@@ -197,6 +200,7 @@ export default function EditTask() {
           </View>
 
           <View>
+            <Label nativeID="task-status">{i18n.t("app_innerScreens_editTask_select_taskStatusLabel")}</Label>
             <Select
               defaultValue={taskStatus}
               value={taskStatus}
@@ -223,6 +227,7 @@ export default function EditTask() {
           </View>
 
           <View>
+            <Label nativeID="task-assignee">{i18n.t("app_innerScreens_addTask_select_taskAssigneeLabel")}</Label>
             <Select
               value={taskAssignee}
               onValueChange={setTaskAssignee}

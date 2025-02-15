@@ -121,6 +121,7 @@ const translations = {
     app_innerScreens_editTask_select_priorityLevelPlaceholder: "Priority level",
     app_innerScreens_editTask_select_taskTypePlaceholder: "Task type",
     app_innerScreens_editTask_select_taskStatusPlaceholder: "Task status",
+    app_innerScreens_editTask_select_taskStatusLabel: "Task status",
     app_innerScreens_editTask_text_subtasks: "Subtasks",
     app_innerScreens_editTask_button_addSubtask: "Add subtask",
     app_innerScreens_editTask_button_saveChanges: "Save changes",
@@ -242,12 +243,14 @@ const translations = {
     app_innerScreens_editTask_select_priorityLevelPlaceholder: "Poziom priorytetu",
     app_innerScreens_editTask_select_taskTypePlaceholder: "Typ zadania",
     app_innerScreens_editTask_select_taskStatusPlaceholder: "Status zadania",
+    app_innerScreens_editTask_select_taskStatusLabel: "Status zadania",
     app_innerScreens_editTask_text_subtasks: "Podzadania",
     app_innerScreens_editTask_button_addSubtask: "Dodaj podzadanie",
     app_innerScreens_editTask_button_saveChanges: "Zapisz zmiany",
     app_innerScreens_editTask_text_newSubtaskTitle: "Nowe podzadanie",
     app_innerScreens_editTask_toast_taskUpdateSuccess: "Zadanie zaktualizowane pomyślnie!",
     app_innerScreens_editTask_toast_taskUpdateFailed: "Nie udało się zaktualizować zadania",
+    
   },
 };
 
