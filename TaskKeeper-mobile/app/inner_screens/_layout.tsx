@@ -20,6 +20,18 @@ export default function InnerScreensLayout() {
         name="edit-task"
         options={{ title: i18n.t("app_innerScreens_layout_stack_editTaskTitle"), headerShown: true }}
       />
+      <Stack.Screen
+        name="project-releases"
+        options={{ title: i18n.t("app_innerScreens_layout_stack_releases"), headerShown: true }}
+      />
+      <Stack.Screen
+        name="edit-release"
+        options={{ title: i18n.t("app_innerScreens_layout_stack_editRelease"), headerShown: true }}
+      />
+      <Stack.Screen
+        name="release-tasks"
+        options={{ title: i18n.t("app_innerScreens_layout_stack_releaseTasks"), headerShown: true }}
+      />
     </Stack>
   );
 }

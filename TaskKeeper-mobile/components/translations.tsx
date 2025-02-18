@@ -43,15 +43,36 @@ const translations = {
     app_tabs_tasks_text_project: "Project",
     app_tabs_tasks_button_refreshTasks: "Refresh tasks",
     app_tabs_tasks_button_addTask: "Add new task",
+    app_tabs_tasks_text_currentRelease: "Current release",
 
     /**** Components ****/
     // Project Tile
     components_projectTile_text_id: "ID",
     components_projectTile_text_members: "Members",
-    components_projectTile_dropdownMenuItem_editProject: "Edit project",
+    components_projectTile_text_releaseName: "Current release",
+    components_projectTile_text_releaseStatus: "Release status",
+    components_projectTile_dropdownMenuItem_editProject: "Edit/Details",
+    components_projectTile_dropdownMenuItem_projectReleases: "Releases",
     // Task Tile
     components_taskTile_text_subtasksDone: "Sub-tasks done",
-    components_taskTile_dropdownMenuItem_editTask: "Edit task",
+    components_taskTile_dropdownMenuItem_editTask: "Edit/Details",
+    // Release Tile
+    components_releaseTile_text_description: "Description",
+    components_releaseTile_text_startDate: "Start date",
+    components_releaseTile_text_plannedEndDate: "Planned end date",
+    components_releaseTile_text_actualEndDate: "Actual end date",
+    components_releaseTile_dropdownMenuItem_edit: "Edit",
+    components_releaseTile_dropdownMenuItem_delete: "Delete",
+    components_releaseTile_dropdownMenuItem_startRelease: "Start release",
+    components_releaseTile_dropdownMenuItem_revertToPlanned: "Revert to 'planned'",
+    components_releaseTile_dropdownMenuItem_finishRelease: "Finish release",
+    components_releaseTile_dropdownMenuItem_revertToStarted: "Revert to 'started'",
+    components_releaseTile_dropdownMenuItem_showTasks: "Show tasks",
+    components_releaseTile_dialogTitle_deleteRelease: "Delete release?!",
+    components_releaseTile_dialogText_deleteRelease: "ARE YOU SURE you want to delete this release? This would also delete all of its tasks. This process is irreversible!",
+    components_releaseTile_button_deleteReleaseRefuse: "No! Take me back!",
+    components_releaseTile_button_deleteReleaseConfirm: "Yes, I'm sure!",
+
     // Constants
     components_constants_const_priorityOptionsLabel1: "1 (highest)",
     components_constants_const_priorityOptionsLabel2: "2",
@@ -68,6 +89,9 @@ const translations = {
     components_constants_const_taskStatusOptionsLabelInProgress: "In Progress",
     components_constants_const_taskStatusOptionsLabelCompleted: "Completed",
     components_constants_const_taskStatusOptionsLabelOnHold: "On Hold",
+    components_constants_const_releaseStatusOptionsLabelPlanned: "Planned",
+    components_constants_const_releaseStatusOptionsLabelStarted: "Started",
+    components_constants_const_releaseStatusOptionsLabelFinished: "Finished",
 
     /**** Inner Screens ****/
     // Inner Screens Layout
@@ -75,6 +99,9 @@ const translations = {
     app_innerScreens_layout_stack_editProjectTitle: "Editing project",
     app_innerScreens_layout_stack_addTaskTitle: "Add new task",
     app_innerScreens_layout_stack_editTaskTitle: "Editing task",
+    app_innerScreens_layout_stack_releases: "Releases",
+    app_innerScreens_layout_stack_editRelease: "Edit release",
+    app_innerScreens_layout_stack_releaseTasks: "Release tasks",
     // Add Project
     app_innerScreens_addProject_input_projectNamePlaceholder: "Project name",
     app_innerScreens_addProject_input_projectDescriptionPlaceholder: "Project description",
@@ -98,6 +125,8 @@ const translations = {
     app_innerScreens_addTask_select_taskAssigneeLabel: "Assigned to",
     app_innerScreens_addTask_select_taskAssigneePlaceholder: "Assign task to...",
     app_innerScreens_addTask_select_taskAssigneeYou: "(You!)",
+    app_innerScreens_addTask_select_releaseLabel: "Release",
+    app_innerScreens_addTask_select_releasePlaceholder: "Pick a release...",
     // Edit Project
     app_innerScreens_editProject_input_projectNamePlaceholder: "Project name",
     app_innerScreens_editProject_input_projectDescriptionPlaceholder: "Project description",
@@ -119,7 +148,8 @@ const translations = {
     app_innerScreens_editProject_dialogDescription_refreshInviteCode: "ARE YOU SURE you want to refresh the project's invite code? This will invalidate the previous invite code!",
     app_innerScreens_editProject_button_refreshInviteCodeRefuse: "No! Please take me back!",
     app_innerScreens_editProject_button_refreshInviteCodeConfirm: "Yes, I'm sure!",
-
+    app_innerScreens_editProject_label_projectMembers: "Project members",
+    app_innerScreens_editProject_label_manager: "Manager",
     // Edit Task
     app_innerScreens_editTask_input_taskNamePlaceholder: "Task name",
     app_innerScreens_editTask_input_taskDescriptionPlaceholder: "Task description (optional)",
@@ -138,6 +168,22 @@ const translations = {
     app_innerScreens_editTask_dialogText_deleteTask: "ARE YOU SURE you want to delete this task? This process is irreversible!",
     app_innerScreens_editTask_button_deleteTaskRefuse: "No! Please take me back!",
     app_innerScreens_editTask_button_deleteTaskConfirm: "Yes, I'm sure!",
+    // Project Releases
+    app_innerScreens_projectReleases_text_createANewRelease: "Create a new release",
+    app_innerScreens_projectReleases_input_releaseNamePlaceholder: "Release name",
+    app_innerScreens_projectReleases_input_releaseDescriptionPlaceholder: "Release description (optional)",
+    app_innerScreens_projectReleases_button_ChoosePlannedEndDate: "Choose planned end date",
+    app_innerScreens_projectReleases_text_plannedEndDate: "Planned end date",
+    app_innerScreens_projectReleases_button_createNewRelease: "Create new release!",
+    // Edit Release
+    app_innerScreens_editRelease_input_releaseNamePlaceholder: "Release name",
+    app_innerScreens_editRelease_input_releaseDescriptionPlaceholder: "Release description (optional)",
+    app_innerScreens_editRelease_button_ChoosePlannedEndDate: "Choose planned end date",
+    app_innerScreens_editRelease_text_plannedEndDate: "Planned end date",
+    app_innerScreens_editRelease_label_releaseStatus: "Release status",
+    app_innerScreens_editRelease_button_editRelease: "Edit release",
+    // Release Tasks
+    app_innerScreens_releaseTasks_text_releasesTasks: "%{variable}'s tasks",
   },
   pl: {
     /**** App ****/
@@ -175,15 +221,35 @@ const translations = {
     app_tabs_tasks_text_project: "Projekt",
     app_tabs_tasks_button_refreshTasks: "Odśwież zadania",
     app_tabs_tasks_button_addTask: "Dodaj nowe zadanie",
+    app_tabs_tasks_text_currentRelease: "Aktualne wydanie",
 
     /**** Components ****/
     // Project Tile
     components_projectTile_text_id: "ID",
     components_projectTile_text_members: "Członkowie",
-    components_projectTile_dropdownMenuItem_editProject: "Edytuj projekt",
+    components_projectTile_text_releaseName: "Aktualne wydanie",
+    components_projectTile_text_releaseStatus: "Status wydania",
+    components_projectTile_dropdownMenuItem_editProject: "Edytuj/Detale",
+    components_projectTile_dropdownMenuItem_projectReleases: "Wydania",
     // Task Tile
     components_taskTile_text_subtasksDone: "Podzadania wykonane",
-    components_taskTile_dropdownMenuItem_editTask: "Edytuj zadanie",
+    components_taskTile_dropdownMenuItem_editTask: "Edytuj/Detale",
+    // Release Tile
+    components_releaseTile_text_description: "Opis",
+    components_releaseTile_text_startDate: "Data rozpoczęcia",
+    components_releaseTile_text_plannedEndDate: "Planowana data zakończenia",
+    components_releaseTile_text_actualEndDate: "Rzeczywista data zakończenia",
+    components_releaseTile_dropdownMenuItem_edit: "Edytuj",
+    components_releaseTile_dropdownMenuItem_delete: "Usuń",
+    components_releaseTile_dropdownMenuItem_startRelease: "Rozpocznij wydanie",
+    components_releaseTile_dropdownMenuItem_revertToPlanned: "Przywróć do 'zaplanowane'",
+    components_releaseTile_dropdownMenuItem_finishRelease: "Zakończ wydanie",
+    components_releaseTile_dropdownMenuItem_revertToStarted: "Przywróć do 'rozpoczęte'",
+    components_releaseTile_dropdownMenuItem_showTasks: "Pokaż zadania",
+    components_releaseTile_dialogTitle_deleteRelease: "Usunąć wydanie?!",
+    components_releaseTile_dialogText_deleteRelease: "CZY NA PEWNO chcesz usunąć to wydanie? To spowoduje również usunięcie wszystkich jego zadań. Ten proces jest nieodwracalny!",
+    components_releaseTile_button_deleteReleaseRefuse: "Nie! Zabierz mnie stąd!",
+    components_releaseTile_button_deleteReleaseConfirm: "Tak, na pewno!",
     // Constants
     components_constants_const_priorityOptionsLabel1: "1 (najwyższy)",
     components_constants_const_priorityOptionsLabel2: "2",
@@ -200,6 +266,9 @@ const translations = {
     components_constants_const_taskStatusOptionsLabelInProgress: "W trakcie",
     components_constants_const_taskStatusOptionsLabelCompleted: "Zakończone",
     components_constants_const_taskStatusOptionsLabelOnHold: "Wstrzymane",
+    components_constants_const_releaseStatusOptionsLabelPlanned: "Zaplanowane",
+    components_constants_const_releaseStatusOptionsLabelStarted: "Rozpoczęte",
+    components_constants_const_releaseStatusOptionsLabelFinished: "Zakończone",
 
     /**** Inner Screens ****/
     // Inner Screens Layout
@@ -207,6 +276,9 @@ const translations = {
     app_innerScreens_layout_stack_editProjectTitle: "Edytowanie projektu",
     app_innerScreens_layout_stack_addTaskTitle: "Dodaj nowe zadanie",
     app_innerScreens_layout_stack_editTaskTitle: "Edytowanie zadania",
+    app_innerScreens_layout_stack_releases: "Wydania",
+    app_innerScreens_layout_stack_editRelease: "Edytuj wydanie",
+    app_innerScreens_layout_stack_releaseTasks: "Zadania wydania",
     // Add Project
     app_innerScreens_addProject_input_projectNamePlaceholder: "Nazwa projektu",
     app_innerScreens_addProject_input_projectDescriptionPlaceholder: "Opis projektu",
@@ -230,6 +302,8 @@ const translations = {
     app_innerScreens_addTask_select_taskAssigneeLabel: "Przydzielone do",
     app_innerScreens_addTask_select_taskAssigneePlaceholder: "Przypisz zadanie do...",
     app_innerScreens_addTask_select_taskAssigneeYou: "(Ty!)",
+    app_innerScreens_addTask_select_releaseLabel: "Wydanie",
+    app_innerScreens_addTask_select_releasePlaceholder: "Wybierz wydanie...",
     // Edit Project
     app_innerScreens_editProject_input_projectNamePlaceholder: "Nazwa projektu",
     app_innerScreens_editProject_input_projectDescriptionPlaceholder: "Opis projektu",
@@ -251,6 +325,8 @@ const translations = {
     app_innerScreens_editProject_dialogDescription_refreshInviteCode: "CZY NA PEWNO chcesz odświeżyć kod zaproszenia projektu? To spowoduje unieważnienie poprzedniego kodu zaproszenia!",
     app_innerScreens_editProject_button_refreshInviteCodeRefuse: "Nie, zabierz mnie stąd!",
     app_innerScreens_editProject_button_refreshInviteCodeConfirm: "Tak, na pewno!",
+    app_innerScreens_editProject_label_projectMembers: "Członkowie projektu",
+    app_innerScreens_editProject_label_manager: "Manager",
     // Edit Task
     app_innerScreens_editTask_input_taskNamePlaceholder: "Nazwa zadania",
     app_innerScreens_editTask_input_taskDescriptionPlaceholder: "Opis zadania (opcjonalnie)",
@@ -264,6 +340,27 @@ const translations = {
     app_innerScreens_editTask_text_newSubtaskTitle: "Nowe podzadanie",
     app_innerScreens_editTask_toast_taskUpdateSuccess: "Zadanie zaktualizowane pomyślnie!",
     app_innerScreens_editTask_toast_taskUpdateFailed: "Nie udało się zaktualizować zadania",
+    app_innerScreens_editTask_button_deleteTask: "Usuń zadanie",
+    app_innerScreens_editTask_dialogTitle_deleteTask: "Usunąć zadanie?!",
+    app_innerScreens_editTask_dialogText_deleteTask: "CZY NA PEWNO chcesz usunąć to zadanie? Ten proces jest nieodwracalny!",
+    app_innerScreens_editTask_button_deleteTaskRefuse: "Nie, zabierz mnie stąd!",
+    app_innerScreens_editTask_button_deleteTaskConfirm: "Tak, na pewno!",
+    // Project Releases
+    app_innerScreens_projectReleases_text_createANewRelease: "Utwórz nowe wydanie",
+    app_innerScreens_projectReleases_input_releaseNamePlaceholder: "Nazwa wydania",
+    app_innerScreens_projectReleases_input_releaseDescriptionPlaceholder: "Opis wydania (opcjonalne)",
+    app_innerScreens_projectReleases_button_ChoosePlannedEndDate: "Wybierz planowaną datę zakończenia",
+    app_innerScreens_projectReleases_text_plannedEndDate: "Planowana data zakończenia",
+    app_innerScreens_projectReleases_button_createNewRelease: "Utwórz nowe wydanie!",
+    // Edit Release
+    app_innerScreens_editRelease_input_releaseNamePlaceholder: "Nazwa wydania",
+    app_innerScreens_editRelease_input_releaseDescriptionPlaceholder: "Opis wydania (opcjonalne)",
+    app_innerScreens_editRelease_button_ChoosePlannedEndDate: "Wybierz planowaną datę zakończenia",
+    app_innerScreens_editRelease_text_plannedEndDate: "Planowana data zakończenia",
+    app_innerScreens_editRelease_label_releaseStatus: "Status wydania",
+    app_innerScreens_editRelease_button_editRelease: "Edytuj wydanie",
+    // Release Tasks
+    app_innerScreens_releaseTasks_text_releasesTasks: "Zadania %{variable}",
   },
 };
 

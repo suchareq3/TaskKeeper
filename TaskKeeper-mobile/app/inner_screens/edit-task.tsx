@@ -34,6 +34,9 @@ export default function EditTask() {
   const [taskAssignee, setTaskAssignee] = useState<Option>({ value: "", label: "" });
   const [members, setMembers] = useState<Option[]>([]);
   const [subtasks, setSubtasks] = useState<Array<{ key: string; label: string; completed: boolean }>>([]);
+  const [currentReleaseId, setCurrentReleaseId] = useState("");
+  const [releases, setReleases] = useState<Array<{ releaseId: string; name: string; status: string }>>([]);
+  const [selectedRelease, setSelectedRelease] = useState<{ value: string; label: string } | null>(null);
 
   // TODO: this takes roughly ~3x longer to load than 'edit-project.tsx'. Find out why & apply some optimizations if possible
   useEffect(() => {
@@ -58,6 +61,7 @@ export default function EditTask() {
           setTaskStatus(TASK_STATUS_OPTIONS.find((s) => s.value === task.taskStatus) || { value: "", label: "" });
 
           setSubtasks(task.subtasks || []);
+          setCurrentReleaseId(task.releaseId || "");
         }
 
         // Fetch project members
@@ -74,6 +78,25 @@ export default function EditTask() {
           setMembers(memberOptions);
           
         }
+
+        //fetch Releases
+        // TODO: this can be optimized, probably shouldn't be using async/await here...
+        try {
+          console.log("prrrrroject: ", task);
+          const releases = await fbFunctions.getProjectReleases(project.projectId);
+          // Filter releases to only include "planned" or "started" statuses
+          const filteredReleases = releases.filter((release) => release.status === "planned" || release.status === "started");
+          setReleases(filteredReleases);
+            if (task.releaseId) {
+            const initialRelease = filteredReleases.find((release) => release.releaseId === task.releaseId);
+            if (initialRelease) {
+              setSelectedRelease({ value: initialRelease.releaseId, label: initialRelease.name });
+            }
+            }
+        } catch (error) {
+          console.error("Failed to fetch releases:", error);
+        }
+        
       } catch (error) {
         console.error("Failed to fetch task: ", error);
       }
@@ -175,7 +198,7 @@ export default function EditTask() {
   return (
     <View className="flex-1 justify-center items-center bg-[#25292e]">
       <KeyboardAvoidingView className="flex-1 w-full p-5">
-        <View className="gap-4">
+        <View className="gap-1">
           <Input
             placeholder={i18n.t("app_innerScreens_editTask_input_taskNamePlaceholder")}
             value={taskName}
@@ -187,6 +210,36 @@ export default function EditTask() {
             value={taskDescription}
             onChangeText={setTaskDescription}
           />
+
+          {/* New Select for Releases */}
+          <View>
+            <Label nativeID="release">{i18n.t("app_innerScreens_addTask_select_releaseLabel")}</Label>
+            <Select
+              aria-labelledby="release"
+              value={selectedRelease}
+              onValueChange={(value) => {
+                setSelectedRelease(value);
+              }}
+            >
+              <SelectTrigger className="w-[250px]">
+                <SelectValue
+                  className="text-foreground text-sm native:text-lg"
+                  placeholder={i18n.t("app_innerScreens_addTask_select_releasePlaceholder")}
+                />
+              </SelectTrigger>
+              <SelectContent className="w-[250px]">
+                <SelectGroup>
+                  {releases.map((release) => (
+                    <SelectItem
+                      key={release.releaseId}
+                      label={release.name}
+                      value={release.releaseId}
+                    />
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </View>
 
           <View>
             <Label nativeID="priority-level">{i18n.t("app_innerScreens_addTask_select_priorityLevelLabel")}</Label>

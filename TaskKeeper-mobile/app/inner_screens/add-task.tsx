@@ -2,7 +2,7 @@ import { View, KeyboardAvoidingView } from "react-native";
 import { fbFunctions } from "../../../shared/firebaseFunctions";
 import { useSession } from "@/components/AuthContext";
 import { Text } from "@/components/ui/text";
-import { useState, React } from "react";
+import { useState, React, useEffect } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,7 @@ export default function CreateTask() {
 
   const [selectedProject, setSelectedProject] = useState({ value: { projectId: "" }, label: "" });
   const [priorityLevel, setPriorityLevel] = useState(PRIORITY_OPTIONS[2]);
-  const [taskType, setTaskType] = useState(TASK_TYPE_OPTIONS[0] );
+  const [taskType, setTaskType] = useState(TASK_TYPE_OPTIONS[0]);
   const [taskName, setTaskName] = useState("");
   const [taskAssignee, setTaskAssignee] = useState({
     value: getAuth().currentUser!.uid,
@@ -34,8 +34,27 @@ export default function CreateTask() {
   } as Option);
   const [taskDescription, setTaskDescription] = useState("");
   const [subtaskData, setSubtaskData] = useState<Array<{ key: string; label: string; completed: boolean }>>([]);
+  const [releases, setReleases] = useState<Array<{ releaseId: string; name: string; status: string }>>([]);
+  const [selectedRelease, setSelectedRelease] = useState<{ value: string; label: string } | null>(null);
 
   const memberOptions = selectedProject.value.projectId ? Object.keys(parsedProjects.find((p) => p.projectId === selectedProject.value.projectId)?.members || {}) : [];
+
+  // Fetch releases when a project is selected
+  useEffect(() => {
+    if (selectedProject.value.projectId) {
+      const fetchReleases = async () => {
+        try {
+          const releases = await fbFunctions.getProjectReleases(selectedProject.value.projectId);
+          // Filter releases to only include "planned" or "started" statuses
+          const filteredReleases = releases.filter((release) => release.status === "planned" || release.status === "started");
+          setReleases(filteredReleases);
+        } catch (error) {
+          console.error("Failed to fetch releases:", error);
+        }
+      };
+      fetchReleases();
+    }
+  }, [selectedProject.value.projectId]);
 
   const renderItem = ({ item, drag }: RenderItemParams<{ key: string; label: string; completed: boolean }>) => {
     const handleRemoveItem = (key: string) => {
@@ -62,7 +81,7 @@ export default function CreateTask() {
                 className="absolute opacity-50 left-[5] top-[4] bottom-0 z-[50]"
               />
               <Input
-                className="text-white !text-xl text-left ml-12 mr-[88] !bg-transparent bg-red-500"
+                className="text-white !text-xl text-left ml-12 mr-[88] !bg-transparent"
                 editable={true}
                 onChangeText={(text) => handleTextChange(item.key, text)}
               >
@@ -75,7 +94,7 @@ export default function CreateTask() {
               onCheckedChange={(checked) => setSubtaskData((prevData) => prevData.map((dataItem) => (dataItem.key === item.key ? { ...dataItem, completed: checked } : dataItem)))}
             />
             <Button
-              className="absolute right-0 bg-red-500"
+              className="absolute right-0"
               onPress={() => handleRemoveItem(item.key)}
             >
               <Text>[DNT]X</Text>
@@ -93,6 +112,7 @@ export default function CreateTask() {
           <Select
             onValueChange={(value) => {
               setSelectedProject(value);
+              setSelectedRelease(null); // Reset selected release when project changes
               console.log(selectedProject);
             }}
           >
@@ -119,7 +139,7 @@ export default function CreateTask() {
             <>
               <Separator className="bg-primary my-5" />
 
-              <View className="gap-2">
+              <View className="gap-1">
                 <Input
                   placeholder={i18n.t("app_innerScreens_addTask_input_taskNamePlaceholder")}
                   value={taskName}
@@ -134,6 +154,35 @@ export default function CreateTask() {
                   onChangeText={setTaskDescription}
                   keyboardType="default"
                 />
+                {/* New Select for Releases */}
+                <View>
+                  <Label nativeID="release">{i18n.t("app_innerScreens_addTask_select_releaseLabel")}</Label>
+                  <Select
+                    aria-labelledby="release"
+                    value={selectedRelease}
+                    onValueChange={(value) => {
+                      setSelectedRelease(value);
+                    }}
+                  >
+                    <SelectTrigger className="w-[250px]">
+                      <SelectValue
+                        className="text-foreground text-sm native:text-lg"
+                        placeholder={i18n.t("app_innerScreens_addTask_select_releasePlaceholder")}
+                      />
+                    </SelectTrigger>
+                    <SelectContent className="w-[250px]">
+                      <SelectGroup>
+                        {releases.map((release) => (
+                          <SelectItem
+                            key={release.releaseId}
+                            label={release.name}
+                            value={release.releaseId}
+                          />
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </View>
 
                 <View>
                   <Label nativeID="priority-level">{i18n.t("app_innerScreens_addTask_select_priorityLevelLabel")}</Label>
@@ -251,7 +300,7 @@ export default function CreateTask() {
                 <Button
                   onPress={() => {
                     try {
-                      createTask(selectedProject.value.projectId, taskName, taskDescription, priorityLevel.value, taskType.value, taskAssignee!.value, subtaskData).then(() => {
+                      createTask (selectedRelease!.value, selectedProject.value.projectId, taskName, taskDescription, priorityLevel.value, taskType.value, taskAssignee!.value, subtaskData).then(() => {
                         router.back();
                       });
                     } catch (e) {

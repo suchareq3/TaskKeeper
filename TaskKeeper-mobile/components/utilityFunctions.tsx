@@ -105,3 +105,38 @@ export const useHeaderDropdown = (options: DropdownOption[]) => {
     navigation.setOptions({ headerRight: () => dropdown });
   }, [navigation, options]);
 };
+
+export const getCurrentRelease = (
+  projectId: string,
+  releases: {
+    releaseId: string;
+    projectId: string;
+    name: string;
+    status: string;
+    actualEndDate: string;
+    plannedEndDate: string;
+  }[]
+) => {
+  // returns ONE release, prioritizing started > planned > finished
+  // for 'started', there's only max 1 release
+  // for 'finished', prioritizes the most recent by actualEndDate
+  // for 'planned', prioritizes the most recent by plannedEndDate
+  // Find the 'started' release first (there should be only one)
+  const startedRelease = releases.find((release) => release.projectId === projectId && release.status === "started");
+  if (startedRelease) return startedRelease;
+
+  // Find the most recent 'planned' release by plannedEndDate
+  const plannedReleases = releases
+    .filter((release) => release.projectId === projectId && release.status === "planned")
+    .sort((a, b) => new Date(b.plannedEndDate).getTime() - new Date(a.plannedEndDate).getTime());
+  if (plannedReleases.length > 0) return plannedReleases[0];
+
+  // Find the most recent 'finished' release by actualEndDate
+  const finishedReleases = releases
+    .filter((release) => release.projectId === projectId && release.status === "finished")
+    .sort((a, b) => new Date(b.actualEndDate).getTime() - new Date(a.actualEndDate).getTime());
+  if (finishedReleases.length > 0) return finishedReleases[0];
+
+  // Return null if no releases are found
+  return null;
+};

@@ -25,7 +25,7 @@ export default function SubtaskTile({ id, title, subtaskDoneCount, subtaskTodoCo
 
   return (
     <Card className="p-0 flex-row p-0">
-      <View className="bg-red-500 flex-1">
+      <View className="flex-1">
         <CardHeader>
           <CardTitle className="text-2xl">{title}</CardTitle>
         </CardHeader>
@@ -43,10 +43,7 @@ export default function SubtaskTile({ id, title, subtaskDoneCount, subtaskTodoCo
       <View>
         <CardHeader className="items-end p-0">
           <DropdownMenu className="flex">
-            <DropdownMenuTrigger
-              style={{ borderColor: "red", borderWidth: 2 }}
-              asChild
-            >
+            <DropdownMenuTrigger asChild>
               <Button
                 size={null}
                 className="p-3   items-center justify-center rounded-none bg-transparent"

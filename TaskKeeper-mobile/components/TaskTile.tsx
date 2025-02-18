@@ -33,28 +33,27 @@ export default function TaskTile({ id, title, subtaskDoneCount, subtaskTodoCount
 
   return (
     <Card className="p-0 flex-row p-0">
-      <View className="bg-red-500 flex-1">
+      <View className="flex-1">
         <CardHeader>
           <CardTitle className="text-2xl">{title}</CardTitle>
         </CardHeader>
-        <CardContent className="flex  ">
-          <View className="gap-5 flex flex-row">
-            <Text className="text-3xl font-extrabold">{`${subtaskDoneCount} / ${subtaskTodoCount}`}</Text>
-            <Progress
-              value={calculatePercentage(subtaskDoneCount, subtaskTodoCount)}
-              className="flex-1 relative top-2"
-            />
-          </View>
-          <Text className="text-lg font-medium">{i18n.t("components_taskTile_text_subtasksDone")}</Text>
-        </CardContent>
+        {subtaskTodoCount > 0 && (
+          <CardContent className="flex  ">
+            <View className="gap-5 flex flex-row">
+              <Text className="text-3xl font-extrabold">{`${subtaskDoneCount} / ${subtaskTodoCount}`}</Text>
+              <Progress
+                value={calculatePercentage(subtaskDoneCount, subtaskTodoCount)}
+                className="flex-1 relative top-2"
+              />
+            </View>
+            <Text className="text-lg font-medium">{i18n.t("components_taskTile_text_subtasksDone")}</Text>
+          </CardContent>
+        )}
       </View>
       <View>
         <CardHeader className="items-end p-0">
           <DropdownMenu className="flex">
-            <DropdownMenuTrigger
-              style={{ borderColor: "red", borderWidth: 2 }}
-              asChild
-            >
+            <DropdownMenuTrigger asChild>
               <Button
                 size={null}
                 className="p-3   items-center justify-center rounded-none bg-transparent"

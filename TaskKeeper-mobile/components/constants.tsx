@@ -23,3 +23,9 @@ export const TASK_STATUS_OPTIONS = [
   { value: "completed", label: i18n.t("components_constants_const_taskStatusOptionsLabelCompleted") },
   { value: "on-hold", label: i18n.t("components_constants_const_taskStatusOptionsLabelOnHold") },
 ];
+
+export const RELEASE_STATUS_OPTIONS = [
+  { value: "planned", label: i18n.t("components_constants_const_releaseStatusOptionsLabelPlanned") },
+  { value: "started", label: i18n.t("components_constants_const_releaseStatusOptionsLabelStarted") },
+  { value: "finished", label: i18n.t("components_constants_const_releaseStatusOptionsLabelFinished") },
+];

@@ -5,6 +5,7 @@ import { getToken, default as messaging } from "@react-native-firebase/messaging
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import * as ExpoNotifications from "expo-notifications";
+import { Timestamp } from "@react-native-firebase/firestore";
 
 const AuthContext = createContext<{
   signIn: (email: string, password: string) => Promise<void>;
@@ -16,6 +17,7 @@ const AuthContext = createContext<{
   addUserToProjectViaInviteCode: (inviteCode: string) => any;
   refreshProjectInviteCode: (projectId: string) => any;
   createTask: (
+    releaseId: string,
     projectId: string,
     taskName: string,
     taskDescription: string,
@@ -35,6 +37,8 @@ const AuthContext = createContext<{
     subtasks: Array<{ key: string; label: string; completed: boolean }>
   ) => any;
   deleteTask: (taskId: string) => any;
+  createRelease: (projectId: string, releaseName: string, releaseDescription: string, plannedEndDate: Date) => any;
+  getProjectReleases: (projectId: string) => any;
   session?: FirebaseAuthTypes.User | null;
   isLoading: boolean;
 }>({
@@ -49,6 +53,8 @@ const AuthContext = createContext<{
   createTask: () => Promise.resolve(),
   editTask: () => Promise.resolve(),
   deleteTask: () => Promise.resolve(),
+  createRelease: () => Promise.resolve(),
+  getProjectReleases: () => Promise.resolve(),
   session: null,
   isLoading: true,
 });
@@ -74,7 +80,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
       setSession(currentUser);
       console.log("went into userLoginStatus in AuthContext.tsx!: " + JSON.stringify(currentUser));
       if (currentUser) {
-        //necessary for
+        //necessary for notifications
         messaging().registerDeviceForRemoteMessages();
       }
       setIsLoading(false);
@@ -179,6 +185,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
   };
 
   const createTask = async (
+    releaseId: string,
     projectId: string,
     taskName: string,
     taskDescription: string,
@@ -189,7 +196,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
   ) => {
     setIsLoading(true);
     try {
-      await fbFunctions.createTask(projectId, taskName, taskDescription, priorityLevel, taskType, taskAssigneeUid, subTaskdata);
+      await fbFunctions.createTask(releaseId, projectId, taskName, taskDescription, priorityLevel, taskType, taskAssigneeUid, subTaskdata);
     } catch (error) {
       console.error("createTask in AuthContext.tsx has failed!: ", error);
     } finally {
@@ -230,6 +237,28 @@ export function SessionProvider({ children }: PropsWithChildren) {
     }
   };
 
+  const createRelease = async (projectId: string, releaseName: string, releaseDescription: string, plannedEndDate: Date) => {
+    setIsLoading(true);
+    try {
+      await fbFunctions.createRelease(projectId, releaseName, releaseDescription, plannedEndDate);
+    } catch (error) {
+      console.error("createRelease in AuthContext.tsx has failed!: ", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  const getProjectReleases = async (projectId: string) => {
+    setIsLoading(true);
+    try {
+      await fbFunctions.getProjectReleases(projectId);
+    } catch (error) {
+      console.error("getProjectReleases in AuthContext.tsx has failed!: ", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   return (
     <GestureHandlerRootView>
       <SafeAreaView className="flex-1">
@@ -246,6 +275,8 @@ export function SessionProvider({ children }: PropsWithChildren) {
             editTask,
             deleteTask,
             refreshProjectInviteCode,
+            createRelease,
+            getProjectReleases,
             session,
             isLoading,
           }}

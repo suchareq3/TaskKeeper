@@ -188,7 +188,7 @@ export default function EditProject() {
           </Button>
         </View>
         <Separator className="bg-primary my-5" />
-        <Label className="!text-xl">Project members:</Label>
+        <Label className="!text-xl">{i18n.t("app_innerScreens_editProject_label_projectMembers")}:</Label>
 
         {Object.entries(projectMembers).map(([uid, permissions]) => (
           <Card
@@ -199,7 +199,7 @@ export default function EditProject() {
               <Text>{uid}</Text>
               <View className="flex flex-row gap-2 items-center">
                 <View className="items-center ">
-                  <Label>Manager</Label>
+                  <Label>{i18n.t("app_innerScreens_editProject_label_manager")}</Label>
                   <Checkbox
                     checked={permissions.isManager}
                     onCheckedChange={(checked) => {

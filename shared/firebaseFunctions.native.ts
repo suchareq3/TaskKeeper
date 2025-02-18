@@ -17,6 +17,7 @@ import {
 } from "../TaskKeeper-mobile/exportedModules.js";
 import { platform } from "./shared";
 import { FirebaseFunctions } from "./firebaseInterface";
+import { start } from "repl";
 
 const app = getApp(); // gets config from google-services.json
 const auth = getAuth();
@@ -139,7 +140,7 @@ const refreshProjectInviteCode = async (projectId: string) => {
     if (currentUser) {
       const uid = currentUser.uid;
       const createProjectFunction = functions.httpsCallable("refreshProjectInviteCode");
-      const result = await createProjectFunction({projectId});
+      const result = await createProjectFunction({ projectId });
       console.log(result);
     } else {
       console.error("createProject - logged-in user not found!");
@@ -271,6 +272,7 @@ const loadUserTasks = async () => {
         const data = doc.data();
         return {
           taskId: doc.id,
+          releaseId: data.release_id,
           projectId: data.project_id,
           taskName: data.task_name,
           taskDescription: data.task_description,
@@ -286,6 +288,39 @@ const loadUserTasks = async () => {
 
       console.log("Success loading user tasks:", userTasksData);
       return await userTasksData;
+    }
+  } catch (error) {
+    console.error("Error loading user tasks!");
+    throw error;
+  }
+};
+
+const loadReleaseTasks = async (releaseId: string) => {
+  try {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const userTasks = await db.collection("tasks").where("release_id", "==", releaseId).get();
+
+      const userTasksData = userTasks.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          taskId: doc.id,
+          releaseId: data.release_id,
+          projectId: data.project_id,
+          taskName: data.task_name,
+          taskDescription: data.task_description,
+          priorityLevel: data.priority_level,
+          taskType: data.task_type,
+          subtasks: data.subtasks,
+          taskStatus: data.task_status,
+          taskAssigneeUid: data.task_assignee_uid,
+          createdOn: data.created_on,
+          lastUpdatedOn: data.last_updated_on,
+        };
+      });
+
+      console.log("Success loading user tasks:", userTasksData);
+      return userTasksData;
     }
   } catch (error) {
     console.error("Error loading user tasks!");
@@ -345,6 +380,7 @@ const updateProjectMemberManagerStatus = async (projectId: string, userId: strin
 };
 
 const createTask = async (
+  releaseId: string,
   projectId: string,
   taskName: string,
   taskDescription: string,
@@ -357,6 +393,7 @@ const createTask = async (
     const currentUser = auth.currentUser;
     if (currentUser) {
       let taskData = {
+        release_id: releaseId,
         project_id: projectId,
         task_name: taskName,
         task_description: taskDescription,
@@ -413,6 +450,222 @@ const editTask = async (
   }
 };
 
+const createRelease = async (projectId: string, releaseName: string, releaseDescription: string, plannedEndDate: Date) => {
+  try {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const releaseData = {
+        project_id: projectId,
+        name: releaseName,
+        description: releaseDescription,
+        created_on: Timestamp.now(),
+        last_updated_on: Timestamp.now(),
+        planned_end_date: Timestamp.fromDate(plannedEndDate),
+        status: "planned",
+      };
+
+      await db.collection("releases").add(releaseData);
+    }
+  } catch (error) {
+    console.error("Error creating new release:", error);
+    throw error;
+  }
+};
+
+const getProjectReleases = async (projectId: string) => {
+  try {
+    const releases = await db.collection("releases").where("project_id", "==", projectId).get();
+    console.log(
+      "releases:",
+      releases.docs.map((doc) => doc.data())
+    );
+    const releasesData = releases.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        releaseId: doc.id,
+        name: data.name,
+        description: data.description,
+        startDate: data.start_date,
+        plannedEndDate: data.planned_end_date,
+        actualEndDate: data.actual_end_date,
+        status: data.status,
+        createdOn: data.created_on,
+        lastUpdatedOn: data.last_updated_on,
+      };
+    });
+    console.log("Success loading project releases:", releasesData);
+    return releasesData;
+  } catch (error) {
+    console.error("Error getting project releases:", error);
+    throw error;
+  }
+};
+
+const getAllReleases = async () => {
+  try {
+    const releases = await db.collection("releases").get();
+    console.log(
+      "releases:",
+      releases.docs.map((doc) => doc.data())
+    );
+    const releasesData = releases.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        releaseId: doc.id,
+        projectId: data.project_id,
+        name: data.name,
+        description: data.description,
+        startDate: data.start_date,
+        plannedEndDate: data.planned_end_date,
+        actualEndDate: data.actual_end_date,
+        status: data.status,
+        createdOn: data.created_on,
+        lastUpdatedOn: data.last_updated_on,
+      };
+    });
+    console.log("Success loading all releases:", releasesData);
+    return releasesData;
+  } catch (error) {
+    console.error("Error getting all releases:", error);
+    throw error;
+  }
+};
+
+const deleteRelease = async (releaseId: string) => {
+  const currentUser = auth.currentUser;
+  if (!currentUser) return;
+  try {
+    await db.collection("releases").doc(releaseId).delete();
+    console.log("Release deleted successfully.");
+  } catch (error) {
+    console.error("Error deleting release:", error);
+    throw error;
+  }
+};
+
+const deleteReleaseWithTasks = async (releaseId: string) => {
+  const currentUser = auth.currentUser;
+  if (!currentUser) return;
+
+  try {
+    const batch = db.batch();
+    const releaseRef = db.collection("releases").doc(releaseId);
+    const tasksSnapshot = await db.collection("tasks").where("release_id", "==", releaseId).get();
+
+    // Add each task deletion to the batch
+    tasksSnapshot.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+
+    // Delete the release itself
+    batch.delete(releaseRef);
+
+    // Commit the batch (atomic operation)
+    await batch.commit();
+    console.log("Release and all tasks deleted successfully.");
+    return;
+  } catch (error) {
+    console.error("Error deleting release:", error);
+    throw error;
+  }
+};
+
+const editRelease = async (releaseId: string, name: string, description: string, plannedEndDate: Date, status: string) => {
+  try {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const lastUpdatedOn = Timestamp.now();
+      await db
+        .collection("releases")
+        .doc(releaseId)
+        .update({
+          name: name,
+          description: description,
+          planned_end_date: Timestamp.fromDate(plannedEndDate),
+          status: status,
+          last_updated_on: lastUpdatedOn,
+        });
+      console.log("Release updated successfully!");
+      return;
+    } else {
+      throw new Error("User not authenticated");
+    }
+  } catch (error) {
+    console.error("Error updating release: ", error);
+    throw error;
+  }
+};
+
+const revertRelease = async (releaseId: string) => {
+  try {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const lastUpdatedOn = Timestamp.now();
+      await db.collection("releases").doc(releaseId).update({
+        status: "planned",
+        start_date: null,
+        actual_end_date: null,
+        last_updated_on: lastUpdatedOn,
+      });
+      console.log("Release status reverted to planned successfully!");
+      return;
+    } else {
+      throw new Error("User not authenticated");
+    }
+  } catch (error) {
+    console.error("Error reverting release status to planned: ", error);
+    throw error;
+  }
+};
+
+const startRelease = async (releaseId: string, projectId: string) => {
+  try {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      // Check for existing started releases in this project - only 1 can be 'started'!
+      const startedReleasesQuery = await db.collection("releases").where("project_id", "==", projectId).where("status", "==", "started").get();
+      if (!startedReleasesQuery.empty) {
+        throw new Error("Cannot start release - another release is already in progress");
+      }
+      const lastUpdatedOn = Timestamp.now();
+      await db.collection("releases").doc(releaseId).update({
+        status: "started",
+        start_date: Timestamp.now(),
+        actual_end_date: null,
+        last_updated_on: lastUpdatedOn,
+      });
+      console.log("Release started successfully!");
+      return;
+    } else {
+      throw new Error("User not authenticated");
+    }
+  } catch (error) {
+    console.error("Error starting release: ", error);
+    throw error;
+  }
+};
+
+const finishRelease = async (releaseId: string) => {
+  try {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const lastUpdatedOn = Timestamp.now();
+      await db.collection("releases").doc(releaseId).update({
+        status: "finished",
+        actual_end_date: Timestamp.now(),
+        last_updated_on: lastUpdatedOn,
+      });
+      console.log("Release finished successfully!");
+      return;
+    } else {
+      throw new Error("User not authenticated");
+    }
+  } catch (error) {
+    console.error("Error finishing release: ", error);
+    throw error;
+  }
+};
+
 export const fbFunctions: FirebaseFunctions = {
   someSharedFunction,
   logInWithPassword,
@@ -427,10 +680,20 @@ export const fbFunctions: FirebaseFunctions = {
   deleteProject,
   loadUserProjects,
   loadUserTasks,
+  loadReleaseTasks,
   deleteTask,
   addUserToProjectViaInviteCode,
   refreshProjectInviteCode,
   updateProjectMemberManagerStatus,
   createTask,
   editTask,
+  createRelease,
+  getProjectReleases,
+  deleteRelease,
+  deleteReleaseWithTasks,
+  editRelease,
+  getAllReleases,
+  startRelease,
+  finishRelease,
+  revertRelease,
 };

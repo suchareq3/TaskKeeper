@@ -10,6 +10,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import TaskTile from "@/components/TaskTile";
 import { countSubtasks } from "@/components/utilityFunctions";
 import i18n from "@/components/translations";
+import { getCurrentRelease } from "@/components/utilityFunctions";
 
 export default function TasksScreen() {
   const [projects, setProjects] = useState<
@@ -32,6 +33,7 @@ export default function TasksScreen() {
       taskName: string;
       taskDescription: string;
       projectId: string;
+      releaseId: string;
       priorityLevel: string;
       taskStatus: string;
       type: string;
@@ -48,7 +50,7 @@ export default function TasksScreen() {
         githubUrl: string;
         members: {
           [uid: string]: {
-              [permission: string]: boolean;
+            [permission: string]: boolean;
           };
         };
       };
@@ -57,6 +59,7 @@ export default function TasksScreen() {
         taskName: string;
         taskDescription: string;
         projectId: string;
+        releaseId: string;
         priorityLevel: string;
         taskStatus: string;
         type: string;
@@ -64,6 +67,17 @@ export default function TasksScreen() {
       }>;
     };
   }>({});
+
+  const [releases, setReleases] = useState<
+    {
+      releaseId: string;
+      projectId: string;
+      name: string;
+      status: string;
+      actualEndDate: string;
+      plannedEndDate: string;
+    }[]
+  >([]);
 
   const fetchData = async () => {
     try {
@@ -102,6 +116,7 @@ export default function TasksScreen() {
             };
           };
           tasks: Array<{
+            releaseId: string;
             taskId: string;
             taskName: string;
             taskDescription: string;
@@ -121,7 +136,7 @@ export default function TasksScreen() {
 
           if (!project) {
             console.warn(`Project not found for task: ${task.taskId}`);
-            
+
             continue; // Skip this task if the project is not found
           }
 
@@ -136,6 +151,15 @@ export default function TasksScreen() {
       }
 
       setGroupedTasks(grouped);
+
+      const cachedReleases = await AsyncStorage.getItem("releases");
+      if (cachedReleases) {
+        setReleases(JSON.parse(cachedReleases));
+      }
+
+      const loadedReleases = await fbFunctions.getAllReleases();
+      setReleases(loadedReleases || []);
+      AsyncStorage.setItem("releases", JSON.stringify(loadedReleases));
     } catch (error) {
       console.error("Failed to fetch data:", error);
       setTasks([]); // Ensure tasks is always an array
@@ -148,9 +172,6 @@ export default function TasksScreen() {
 
   return (
     <ScrollView className="flex-1 justifyitems-center bg-[#25292e] p-5">
-      <View>
-        <Text className="text-2xl">{i18n.t("app_tabs_tasks_text_yourTasks")}:</Text>
-      </View>
       <Button
         onPress={() => {
           fetchData();
@@ -158,26 +179,34 @@ export default function TasksScreen() {
       >
         <Text>{i18n.t("app_tabs_tasks_button_refreshTasks")}</Text>
       </Button>
-      {Object.values(groupedTasks).map((group, index) => (
-        <View
-          key={index}
-          className="mb-4"
-        >
-          <Text className="text-xl font-bold">{i18n.t("app_tabs_tasks_text_project") + ": " + group.project.name}</Text>
-          {group.tasks.map((task, taskIndex) => {
-            const counts = countSubtasks(task.subtasks);
-            return (
-              <TaskTile
-                key={taskIndex}
-                id={task.taskId}
-                title={task.taskName}
-                subtaskDoneCount={counts.completed}
-                subtaskTodoCount={counts.total}
-              />
-            );
-          })}
-        </View>
-      ))}
+      {Object.values(groupedTasks).map((group, index) => {
+        const currentRelease = getCurrentRelease(group.project.projectId, releases);
+        console.log("currentRelease:", group.project.projectId);
+
+        return (
+          <View
+            key={index}
+            className="mb-4 gap-1"
+          >
+            <Text className="text-2xl font-bold">{i18n.t("app_tabs_tasks_text_project") + ": " + group.project.name}</Text>
+            {currentRelease && <Text className="">{`${i18n.t("app_tabs_tasks_text_currentRelease")}: ${currentRelease.name} (${currentRelease.status})`}</Text>}
+            {group.tasks.map((task, taskIndex) => {
+              if (currentRelease?.releaseId === task.releaseId) {
+                const counts = countSubtasks(task.subtasks);
+                return (
+                  <TaskTile
+                    key={taskIndex}
+                    id={task.taskId}
+                    title={task.taskName}
+                    subtaskDoneCount={counts.completed}
+                    subtaskTodoCount={counts.total}
+                  />
+                );
+              }
+            })}
+          </View>
+        );
+      })}
       <Button onPress={() => router.push({ pathname: "/inner_screens/add-task", params: { projects: JSON.stringify(projects) } })}>
         <Text>{i18n.t("app_tabs_tasks_button_addTask")}</Text>
       </Button>

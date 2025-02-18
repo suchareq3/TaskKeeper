@@ -112,7 +112,7 @@ export default function TabsLayout() {
 
 function TabNavigator() {
   return (
-    <Tabs screenOptions={{ headerShown: false, tabBarStyle: { height: 50, margin: 0, padding: 0, borderColor: "red", borderTopWidth: 0 }, tabBarActiveBackgroundColor: "rgb(200,200,200)" }}>
+    <Tabs screenOptions={{ headerShown: false, tabBarStyle: { height: 50, margin: 0, padding: 0, borderTopWidth: 0 }, tabBarActiveBackgroundColor: "rgb(200,200,200)" }}>
       <Tabs.Screen
         name="index"
         options={{
