@@ -74,7 +74,7 @@ export default function EditRelease() {
 
 
   return (
-    <View className="flex-1 justify-center items-center bg-[#25292e]">
+    <View className="flex-1 justify-center items-center bg-background">
       <KeyboardAvoidingView className="flex-1 flex flex-col items-center w-full p-5">
         <View className="flex flex-col w-full gap-2">
           <Input
@@ -93,7 +93,7 @@ export default function EditRelease() {
           <Button onPress={showDatepicker}>
             <Text>{i18n.t("app_innerScreens_editRelease_button_ChoosePlannedEndDate")}</Text>
           </Button>
-          <Text className="text-white">
+          <Text className="text-lg">
             {i18n.t("app_innerScreens_editRelease_text_plannedEndDate")}: {plannedEndDate?.toLocaleDateString()}
           </Text>
 

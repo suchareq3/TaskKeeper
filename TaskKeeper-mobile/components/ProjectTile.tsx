@@ -20,6 +20,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import i18n from "@/components/translations";
+import { useTheme } from "@react-navigation/native";
 
 export default function ProjectTile({
   id,
@@ -74,7 +75,7 @@ export default function ProjectTile({
                 <Entypo
                   name="dots-three-vertical"
                   size={22}
-                  color="white"
+                  color={useTheme().colors.primary}
                 />
               </Button>
             </DropdownMenuTrigger>

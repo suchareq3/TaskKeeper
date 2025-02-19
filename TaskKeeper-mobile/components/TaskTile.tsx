@@ -21,6 +21,7 @@ import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Progress } from "./ui/progress";
 import i18n from "@/components/translations";
+import { useTheme } from "@react-navigation/native";
 
 export default function TaskTile({ id, title, subtaskDoneCount, subtaskTodoCount }: { id: string; title: string; subtaskDoneCount: number; subtaskTodoCount: number }) {
   const insets = useSafeAreaInsets();
@@ -61,7 +62,7 @@ export default function TaskTile({ id, title, subtaskDoneCount, subtaskTodoCount
                 <Entypo
                   name="dots-three-vertical"
                   size={22}
-                  color="white"
+                  color={useTheme().colors.primary}
                 />
               </Button>
             </DropdownMenuTrigger>

@@ -20,8 +20,17 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Progress } from "./ui/progress";
+import { useTheme } from "@react-navigation/native";
 
 export default function SubtaskTile({ id, title, subtaskDoneCount, subtaskTodoCount }: { id: string; title: string; subtaskDoneCount: number; subtaskTodoCount: number }) {
+
+  const insets = useSafeAreaInsets();
+  const contentInsets = {
+    top: insets.top,
+    bottom: insets.bottom,
+    left: 12,
+    right: 12,
+  };
 
   return (
     <Card className="p-0 flex-row p-0">
@@ -51,7 +60,7 @@ export default function SubtaskTile({ id, title, subtaskDoneCount, subtaskTodoCo
                 <Entypo
                   name="dots-three-vertical"
                   size={22}
-                  color="white"
+                  color={useTheme().colors.primary}
                 />
               </Button>
             </DropdownMenuTrigger>

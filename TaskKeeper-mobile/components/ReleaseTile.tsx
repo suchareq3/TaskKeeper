@@ -24,6 +24,7 @@ import { Timestamp } from "@react-native-firebase/firestore";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { useSession } from "./AuthContext";
 import { fbFunctions } from "../../shared/firebaseFunctions";
+import { useTheme } from "@react-navigation/native";
 
 export default function ReleaseTile({
   isManager,
@@ -96,7 +97,7 @@ export default function ReleaseTile({
                 <Entypo
                   name="dots-three-vertical"
                   size={22}
-                  color="white"
+                  color={useTheme().colors.primary}
                 />
               </Button>
             </DropdownMenuTrigger>

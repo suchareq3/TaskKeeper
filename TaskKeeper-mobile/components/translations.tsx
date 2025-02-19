@@ -27,8 +27,10 @@ const translations = {
     app_notFound_stack_title: "Oops! 404: Not Found",
     app_notFound_button_goToMainScreen: "Sorry, you've encountered an unknown error! Press here to go to the main screen.",
     // Tabs Layout
+    app_tabs_layout_text_drawerTitle: "Back to the app",
     app_tabs_layout_text_tasks: "Tasks",
     app_tabs_layout_text_projects: "Projects",
+    app_tabs_layout_text_notifications: "Notifications",
     app_tabs_layout_text_loading: "Loading...",
     app_tabs_layout_draweritem_logOut: "Log out",
     app_tabs_layout_button_themeSwitchLight: "Light",
@@ -205,8 +207,10 @@ const translations = {
     app_notFound_stack_title: "Ups! 404: Nie znaleziono",
     app_notFound_button_goToMainScreen: "Przepraszamy, napotkano nieznany błąd! Kliknij tutaj, aby przejść do ekranu głównego.",
     // Tabs Layout
+    app_tabs_layout_text_drawerTitle: "Wróć do aplikacji",
     app_tabs_layout_text_tasks: "Zadania",
     app_tabs_layout_text_projects: "Projekty",
+    app_tabs_layout_text_notifications: "Powiadomienia",
     app_tabs_layout_text_loading: "Ładowanie...",
     app_tabs_layout_draweritem_logOut: "Wyloguj się",
     app_tabs_layout_button_themeSwitchLight: "Jasny",

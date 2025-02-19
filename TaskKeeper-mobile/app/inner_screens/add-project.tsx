@@ -18,9 +18,9 @@ export default function CreateProject() {
   const [inviteCode, setInviteCode] = useState("");
 
   return (
-    <View className="flex-1 justify-center items-center bg-[#25292e]">
+    <View className="flex-1 justify-center items-center bg-background">
       <KeyboardAvoidingView className="flex-1 items-center w-full p-5">
-        <View className=" w-full">
+        <View className=" w-full gap-2">
           <Input
             className=""
             placeholder={i18n.t("app_innerScreens_addProject_input_projectNamePlaceholder")}
@@ -57,9 +57,9 @@ export default function CreateProject() {
           </Button>
         </View>
         <Separator className="bg-primary my-5" />
-        <Text className="text-5xl">{i18n.t("app_innerScreens_addProject_text_or")}</Text>
+        <Text className="text-5xl font-bold">{i18n.t("app_innerScreens_addProject_text_or")}</Text>
         <Separator className="bg-primary my-5" />
-        <View className="w-full">
+        <View className="w-full gap-2">
           <Input
             placeholder={i18n.t("app_innerScreens_addProject_input_inviteCodePlaceholder")}
             value={inviteCode}

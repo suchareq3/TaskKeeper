@@ -27,6 +27,7 @@ const { getAuth } = require("firebase-admin/auth");
 const { log } = require("firebase-functions/logger");
 const { admin, messaging } = require("firebase-admin");
 const { generate } = require("generate-password");
+const { onDocumentCreated, onDocumentUpdated } = require("firebase-functions/firestore");
 
 const app = initializeApp();
 const auth = getAuth();
@@ -35,20 +36,19 @@ const db = getFirestore();
 exports.signUpUser = onCall(async (data, context) => {
   const { email, password, extraData } = data.data;
   if (!email || !password) {
-    throw new HttpsError("invalid-argument", JSON.stringify(data.data));
+    throw new HttpsError("invalid-argument", "Missing email or password.");
   }
 
+  let user;
   try {
-    //step 1 : create user in Auth
-    const user = await auth.createUser({
+    // Step 1: Create user in Auth
+    user = await auth.createUser({
       email: email,
       password: password,
     });
-
-    //TODO: transakcjeeeeee
-
-    // step 2: create user record in Firestore
     const userUid = user.uid;
+
+    // Step 2: Create user record in Firestore
     await db
       .collection("users")
       .doc(userUid)
@@ -60,42 +60,17 @@ exports.signUpUser = onCall(async (data, context) => {
 
     return { success: true, uid: userUid };
   } catch (error) {
-    console.error("Error creating user:", error);
+    logger.error("Error creating user:", error);
+    // Rollback: If the Firestore write fails after creating the Auth user, delete the Auth user.
+    if (user) {
+      try {
+        await auth.deleteUser(user.uid);
+        logger.log("Rolled back auth user creation due to Firestore error.");
+      } catch (deleteError) {
+        logger.error("Failed to rollback auth user:", deleteError);
+      }
+    }
     throw new HttpsError("internal", "Error creating new user: " + error);
-  }
-});
-
-//TODO: this is a PLACEHOLDER function to be replaced when i'll be working on notifications
-exports.pushNotification = onCall(async (data, context) => {
-  const { fcm_token, title, description } = data.data;
-  if (!title || !description) {
-    throw new HttpsError("invalid-argument", JSON.stringify(data.data));
-  }
-  try {
-    const log = await messaging().sendMulticast({ tokens: [fcm_token], notification: { title: title, body: description } });
-    //throw new HttpsError("internal", "Successful! Log: " + log);
-  } catch (error) {
-    console.error("Error sending push notification:", error);
-    throw new HttpsError("internal", "Error sending push notification: " + error);
-  }
-});
-
-//TODO: this is a PLACEHOLDER function
-exports.pushNotificationHttp = https.onRequest(async (data, context) => {
-  const fcm_token = "dqJ3jUu_R3qLjF-ybRnata:APA91bHmWRk-uMiWu1j3rx9xsw2vlYi68e3WJG6GEa47VsXHAAtq2fdI0_qLLEHaSfRAvPCcyeQMuZlhxQFb12a5cnm6oFV6lbpirrOfdN-lGSQiBdMvUHk";
-  const title = "asdfasdf";
-  const description = "ffffff";
-  //const { fcm_token, title, description } = data;
-  // if (!title || !description) {
-  //   throw new HttpsError("invalid-argument", JSON.stringify(data.data));
-  // }
-  try {
-    const log = await messaging().send({ token: fcm_token, notification: { title: title, body: description } });
-    logger.log("Successful! Log: " + JSON.stringify(log));
-    //throw new HttpsError("internal", "Successful! Log: " + log);
-  } catch (error) {
-    console.error("Error sending push notification:", error);
-    throw new HttpsError("internal", "Error sending push notification: " + error);
   }
 });
 
@@ -128,7 +103,7 @@ exports.createProject = onCall(async (data, context) => {
         throw "Error in createProject in cloud functions: " + error;
       });
   } catch (error) {
-    console.error("Error creating new project: ", error);
+    logger.error("Error creating new project: ", error);
     throw new HttpsError("internal", "Error sending push notification: " + error);
   }
 });
@@ -155,10 +130,264 @@ exports.refreshProjectInviteCode = onCall(async (data, context) => {
         throw "Error in refreshProjectInviteCode in cloud functions: " + error;
       });
   } catch (error) {
-    console.error("Error refreshing project invite code: ", error);
+    logger.error("Error refreshing project invite code: ", error);
     throw new HttpsError("internal", "Error refreshing project invite code: " + error);
   }
 });
+
+
+exports.createNotificationForTaskAssigneeOnTaskReassignment = onDocumentUpdated("tasks/{taskId}", async (event) => {
+  // Get the data before and after the update
+  const beforeData = event.data.before.data();
+  const afterData = event.data.after.data();
+
+  if (!beforeData || !afterData) {
+    logger.log("Insufficient task data for update.");
+    return;
+  }
+
+  // Check if the task assignee changed
+  const oldAssigneeUid = beforeData.task_assignee_uid;
+  const newAssigneeUid = afterData.task_assignee_uid;
+
+  if (oldAssigneeUid === newAssigneeUid) {
+    logger.log("Task assignee remains unchanged.");
+    return;
+  }
+
+  // Construct the notification record using the task name if available
+  const taskName = afterData.task_name;
+  const notificationData = {
+    title: "Task Reassigned",
+    body: `A task has been re-assigned to you: ${taskName}.`,
+    // Note: userUids expects an array even for a single UID
+    userUids: [newAssigneeUid],
+    createdOn: Timestamp.now(),
+  };
+
+  try {
+    // Get Firestore instance and add a new document to the notifications collection
+    const db = getFirestore();
+    await db.collection("notifications").add(notificationData);
+    logger.log("Notification for task reassignment created.");
+  } catch (error) {
+    logger.error("Error creating notification for task reassignment:", error);
+  }
+});
+
+
+exports.createNotificationForTaskAssigneeOnNewTask = onDocumentCreated("tasks/{taskId}", async (event) => {
+  // Get the newly created task document data
+  const data = event.data.data();
+  if (!data) {
+    logger.log("No task data available.");
+    return;
+  }
+
+  // Extract the UID of the task assignee
+  const taskAssigneeUid = data.task_assignee_uid;
+  if (!taskAssigneeUid) {
+    logger.log("Task does not have an assignee uid.");
+    return;
+  }
+  const taskName = data.task_name;
+
+  // Prepare the notification record
+  const notificationData = {
+    title: "New Task Assigned",
+    body: `You have been assigned a new task: ${taskName}`,
+    // Use an array to store user UIDs (even if it's a single UID)
+    userUids: [taskAssigneeUid],
+    createdOn: Timestamp.now(),
+  };
+
+  try {
+    // Get Firestore instance and add a new document to the notifications collection
+    const db = getFirestore();
+    await db.collection("notifications").add(notificationData);
+    logger.log("Notification record created for new task.");
+  } catch (error) {
+    logger.error("Error creating notification record:", error);
+  }
+});
+
+
+exports.createNotificationForProjectMembersOnNewMember = onDocumentUpdated("projects/{projectId}", async (event) => {
+  // Get the document data before and after the update
+  const beforeData = event.data.before.data();
+  const afterData = event.data.after.data();
+
+  if (!beforeData || !afterData) {
+    logger.log("Insufficient project data.");
+    return;
+  }
+
+  // Get the 'members' maps. Each is an object with keys as user IDs.
+  const beforeMembers = beforeData.members || {};
+  const afterMembers = afterData.members || {};
+
+  const beforeMemberIds = Object.keys(beforeMembers);
+  const afterMemberIds = Object.keys(afterMembers);
+
+  // Determine which member IDs are new (present in after but not in before)
+  const newMemberIds = afterMemberIds.filter((id) => !beforeMemberIds.includes(id));
+
+  if (newMemberIds.length === 0) {
+    logger.log("No new members added.");
+    return;
+  }
+
+  // Determine recipients: all members in the updated project except the newly added ones.
+  const recipientIds = afterMemberIds.filter((id) => !newMemberIds.includes(id));
+
+  if (recipientIds.length === 0) {
+    logger.log("No existing members to notify.");
+    return;
+  }
+
+  // Fetch new members' firstName and lastName from the 'users' collection.
+  const newMemberNames = await Promise.all(
+    newMemberIds.map(async (uid) => {
+      const userDoc = await db.collection("users").doc(uid).get();
+      if (userDoc.exists) {
+        const userData = userDoc.data();
+        if (userData.firstName && userData.lastName) {
+          return `${userData.firstName} ${userData.lastName}`;
+        }
+      }
+      // Fallback to the UID if names are not available
+      return uid;
+    })
+  );
+
+  let nameString;
+  if (newMemberNames.length === 1) {
+    nameString = newMemberNames[0];
+  } else {
+    // Join multiple names with commas
+    nameString = newMemberNames.join(", ");
+  }
+
+  // Prepare the notification record with the new member's name(s)
+  const notificationData = {
+    title: "New Project Member Added",
+    body: `New member${newMemberNames.length > 1 ? "s" : ""} ${nameString} ${newMemberNames.length > 1 ? "have" : "has"} joined your project.`,
+    userUids: recipientIds, // Alert all existing members
+    createdOn: Timestamp.now(),
+  };
+
+  try {
+    await db.collection("notifications").add(notificationData);
+    logger.log("Notification record created for new project member.");
+  } catch (error) {
+    logger.error("Error creating notification record:", error);
+  }
+});
+
+
+exports.createNotificationForProjectMembersOnReleaseStatusChange = onDocumentUpdated("releases/{releaseId}", async (event) => {
+  // Get the release data before and after the update.
+  const beforeData = event.data.before.data();
+  const afterData = event.data.after.data();
+
+  if (!beforeData || !afterData) {
+    logger.log("Insufficient release data.");
+    return;
+  }
+
+  // Only proceed if the status has changed.
+  if (beforeData.status === afterData.status) {
+    logger.log("Release status unchanged.");
+    return;
+  }
+
+  // Extract release details.
+  const releaseStatus = afterData.status;
+  const releaseName = afterData.name || "Unnamed Release";
+  const projectId = afterData.project_id;
+
+  if (!projectId) {
+    logger.log("Release document does not contain a project_id.");
+    return;
+  }
+
+  const db = getFirestore();
+
+  // Fetch the associated project document.
+  const projectDoc = await db.collection("projects").doc(projectId).get();
+  if (!projectDoc.exists) {
+    logger.log("Project not found for project_id:", projectId);
+    return;
+  }
+  const projectData = projectDoc.data();
+  const projectName = projectData.name || "Unnamed Project";
+
+  // Extract project members (assumes members is a map with user IDs as keys).
+  const members = projectData.members || {};
+  const userUids = Object.keys(members);
+
+  if (userUids.length === 0) {
+    logger.log("No project members found for project:", projectId);
+    return;
+  }
+
+  // Construct the notification message.
+  const notificationData = {
+    title: "Release Status Updated",
+    body: `The release "${releaseName}" for project "${projectName}" is now "${releaseStatus}".`,
+    userUids, // Notifies all project users.
+    createdOn: Timestamp.now(),
+  };
+
+  try {
+    await db.collection("notifications").add(notificationData);
+    logger.log("Notification created for release status change.");
+  } catch (error) {
+    logger.error("Error creating notification:", error);
+  }
+});
+
+
+//sends notification to users when a record in the 'notifications' collection is created
+exports.handleNewNotification = onDocumentCreated("notifications/{notificationId}", async (event) => {
+  const data = event.data.data();
+  if (!data) return;
+
+  const { title, body, userUids } = data;
+
+  if (!userUids || userUids.length === 0) {
+    logger.log("No user UIDs provided.");
+    return;
+  }
+
+  try {
+    const db = getFirestore();
+    const userDocs = await db.collection("users").where("uid", "in", userUids).get();
+
+    const tokens = userDocs.docs.map((doc) => doc.data().fcmToken).filter((token) => token);
+
+    if (tokens.length === 0) {
+      logger.log("No valid FCM tokens found.");
+      return;
+    }
+
+    const message = {
+      notification: { title, body },
+      tokens,
+    };
+
+    const response = await messaging().sendEachForMulticast(message);
+    logger.log("FCM Response:", response);
+  } catch (error) {
+    logger.error("Error sending notification:", error);
+  }
+});
+
+
+
+
+
+
 
 // TODO: there's an edge case where someone may be able to re-use someone's old invite code after it re-generates. is this OK?
 const generateInviteCode = async () => {

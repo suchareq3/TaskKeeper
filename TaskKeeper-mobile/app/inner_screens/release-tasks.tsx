@@ -44,7 +44,7 @@ export default function ReleaseTasks() {
   }, []);
 
   return (
-    <ScrollView className="flex-1 justifyitems-center bg-[#25292e] p-5 gap-5">
+    <ScrollView className="flex-1 justifyitems-center bg-background p-5 gap-5">
       <Button
         onPress={() => {
           fetchData();

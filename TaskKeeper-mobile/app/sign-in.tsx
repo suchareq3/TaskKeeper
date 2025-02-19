@@ -15,9 +15,9 @@ export default function SignIn() {
   const [password, setPassword] = useState("");
   const { signIn } = useSession();
   return (
-    <KeyboardAvoidingView className="flex-1 flex-col justify-between items-center bg-violet-900 h-full py-20">
+    <KeyboardAvoidingView className="flex-1 flex-col justify-between items-center bg-background h-full py-20">
       <View className="flex">
-        <Logo className="self-start border-black border-2" />
+        <Logo className="p-6 rounded-full bg-card shadow-lg inset-shadow-lg" />
       </View>
       <View className="gap-3 w-4/5 items-center">
         <Input

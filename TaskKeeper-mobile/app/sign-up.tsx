@@ -34,11 +34,11 @@ export default function SignUp() {
 
   const { signUp, signIn } = useSession();
   return (
-    <KeyboardAvoidingView className="flex-1 flex flex-col justify-between items-center bg-violet-900 h-full py-20">
+    <KeyboardAvoidingView className="flex-1 flex flex-col justify-between items-center bg-background h-full py-20 p-5">
       <View className="flex">
-        <Logo className="border-black border-2" />
+        <Logo className="" />
       </View>
-      <View className="flex gap-3">
+      <View className="flex gap-3 w-full">
         <Input
           placeholder={i18n.t("app_signUp_input_namePlaceholder")}
           value={name}
@@ -55,7 +55,7 @@ export default function SignUp() {
         <Button onPress={showDatepicker}>
           <Text>{i18n.t("app_signUp_button_pickDateOfBirth")}</Text>
         </Button>
-        <Text className="text-white">{i18n.t("app_signUp_text_datePicked")}: {date.toLocaleDateString()}</Text>
+        <Text>{i18n.t("app_signUp_text_datePicked")}: {date.toLocaleDateString()}</Text>
 
         <Input
           placeholder={i18n.t("app_signUp_input_emailPlaceholder")}

@@ -18,6 +18,8 @@ import { Textarea } from "~/components/ui/textarea";
 import i18n from "@/components/translations";
 import { PRIORITY_OPTIONS, TASK_TYPE_OPTIONS, TASK_STATUS_OPTIONS } from "@/components/constants";
 import { getAuth } from "@react-native-firebase/auth";
+import { useTheme } from "@react-navigation/native";
+import { Fontisto, Ionicons } from "@expo/vector-icons";
 
 export default function CreateTask() {
   const { createTask } = useSession();
@@ -68,7 +70,7 @@ export default function CreateTask() {
     return (
       <View className="relative">
         <ScaleDecorator>
-          <View className="flex w-full max-h-[50] bg-gray-600 scroll">
+          <View className="flex w-full max-h-[50] bg-background scroll mb-2">
             <TouchableOpacity
               delayLongPress={250}
               onLongPress={drag}
@@ -77,11 +79,11 @@ export default function CreateTask() {
               <MaterialIcons
                 name="drag-indicator"
                 size={32}
-                color="black"
-                className="absolute opacity-50 left-[5] top-[4] bottom-0 z-[50]"
+                color={useTheme().colors.text}
+                className="absolute opacity-70 left-[5] top-[4] bottom-0 z-[50]"
               />
               <Input
-                className="text-white !text-xl text-left ml-12 mr-[88] !bg-transparent"
+                className=" !text-xl text-left ml-12 mr-[88] bg-input"
                 editable={true}
                 onChangeText={(text) => handleTextChange(item.key, text)}
               >
@@ -89,15 +91,21 @@ export default function CreateTask() {
               </Input>
             </TouchableOpacity>
             <Checkbox
-              className="absolute right-[48] top-[2] border-2 p-5"
+              className="absolute right-[42] top-[2] border-2 p-5"
               checked={item.completed}
               onCheckedChange={(checked) => setSubtaskData((prevData) => prevData.map((dataItem) => (dataItem.key === item.key ? { ...dataItem, completed: checked } : dataItem)))}
             />
             <Button
-              className="absolute right-0"
+            variant={"destructive"}
+            size={null}
+              className="absolute right-0 top-[2] p-3"
               onPress={() => handleRemoveItem(item.key)}
             >
-              <Text>[DNT]X</Text>
+              <Fontisto 
+                name="close-a"
+                size={16}
+                color={"white"}
+              />
             </Button>
           </View>
         </ScaleDecorator>
@@ -106,7 +114,7 @@ export default function CreateTask() {
   };
 
   return (
-    <View className="flex-1 justify-center items-center bg-[#25292e]">
+    <View className="flex-1 justify-center items-center bg-background">
       <KeyboardAvoidingView className="flex-1 items-center w-full p-5">
         <View className="w-full">
           <Select
@@ -154,7 +162,6 @@ export default function CreateTask() {
                   onChangeText={setTaskDescription}
                   keyboardType="default"
                 />
-                {/* New Select for Releases */}
                 <View>
                   <Label nativeID="release">{i18n.t("app_innerScreens_addTask_select_releaseLabel")}</Label>
                   <Select

@@ -19,6 +19,7 @@ import { getAuth } from "@react-native-firebase/auth";
 import { useHeaderDropdown } from "@/components/utilityFunctions";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "~/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { useTheme } from "@react-navigation/native";
 
 export default function EditProject() {
   const { editProject, isLoading, refreshProjectInviteCode } = useSession();
@@ -144,10 +145,10 @@ export default function EditProject() {
   ]);
 
   return (
-    <View className="flex-1 justify-center items-center bg-[#25292e]">
+    <View className="flex-1 justify-center items-center bg-background">
       <KeyboardAvoidingView className="flex-1 flex flex-col  items-center w-full p-5">
         {/* name, description & github url */}
-        <View className="flex flex-col w-full">
+        <View className="flex flex-col w-full gap-2">
           <Input
             className=""
             placeholder={i18n.t("app_innerScreens_editProject_input_projectNamePlaceholder")}
@@ -269,10 +270,10 @@ export default function EditProject() {
                 >
                   <Text className="!text-3xl">{inviteCode}</Text>
                   <MaterialIcons
-                    className="absolute right-2 opacity-40"
+                    className="absolute right-2 opacity-50"
                     name="content-copy"
                     size={17}
-                    color="black"
+                    color={useTheme().colors.card}
                   />
                 </Button>
                 <Dialog>
@@ -288,7 +289,7 @@ export default function EditProject() {
                         className="p-4 text-primary"
                         name="refresh-ccw"
                         size={20}
-                        // color="text-primary"
+                        color={useTheme().colors.card}
                       />
                     </Button>
                   </DialogTrigger>

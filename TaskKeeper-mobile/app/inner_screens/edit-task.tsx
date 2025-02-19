@@ -117,41 +117,44 @@ export default function EditTask() {
   };
 
   const renderItem = ({ item, drag }: RenderItemParams<{ key: string; label: string; completed: boolean }>) => (
-    <ScaleDecorator>
-      <View className="flex-row items-center mb-2">
-        <TouchableOpacity
-          onLongPress={drag}
-          className="mr-2"
-        >
-          <MaterialIcons
-            name="drag-indicator"
-            size={24}
-            color="gray"
+    <View className="relative">
+      <ScaleDecorator>
+        <View className="flex-row items-center mb-2">
+          <TouchableOpacity
+            delayLongPress={250}
+            onLongPress={drag}
+            className="h-20"
+          >
+            <MaterialIcons
+              name="drag-indicator"
+              size={24}
+              color="gray"
+            />
+          </TouchableOpacity>
+          <Input
+            className="flex-1"
+            value={item.label}
+            onChangeText={(text) => setSubtasks((prev) => prev.map((sub) => (sub.key === item.key ? { ...sub, label: text } : sub)))}
           />
-        </TouchableOpacity>
-        <Input
-          className="flex-1"
-          value={item.label}
-          onChangeText={(text) => setSubtasks((prev) => prev.map((sub) => (sub.key === item.key ? { ...sub, label: text } : sub)))}
-        />
-        <Checkbox
-          checked={item.completed}
-          onCheckedChange={(checked) => setSubtasks((prev) => prev.map((sub) => (sub.key === item.key ? { ...sub, completed: !!checked } : sub)))}
-          className="ml-2"
-        />
-        <Button
-          variant="destructive"
-          className="ml-2"
-          onPress={() => setSubtasks((prev) => prev.filter((sub) => sub.key !== item.key))}
-        >
-          <MaterialIcons
-            name="delete"
-            size={20}
-            color="white"
+          <Checkbox
+            checked={item.completed}
+            onCheckedChange={(checked) => setSubtasks((prev) => prev.map((sub) => (sub.key === item.key ? { ...sub, completed: !!checked } : sub)))}
+            className="ml-2"
           />
-        </Button>
-      </View>
-    </ScaleDecorator>
+          <Button
+            variant="destructive"
+            className="ml-2"
+            onPress={() => setSubtasks((prev) => prev.filter((sub) => sub.key !== item.key))}
+          >
+            <MaterialIcons
+              name="delete"
+              size={20}
+              color="white"
+            />
+          </Button>
+        </View>
+      </ScaleDecorator>
+    </View>
   );
 
   useHeaderDropdown([
@@ -196,7 +199,7 @@ export default function EditTask() {
   ]);
 
   return (
-    <View className="flex-1 justify-center items-center bg-[#25292e]">
+    <View className="flex-1 justify-center items-center bg-background">
       <KeyboardAvoidingView className="flex-1 w-full p-5">
         <View className="gap-1">
           <Input

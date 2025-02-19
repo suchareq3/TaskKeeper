@@ -10,7 +10,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import i18n from "@/components/translations";
 import { getCurrentRelease } from "@/components/utilityFunctions";
 
-export default function ProjectsScreen() {
+export default function NotificationsScreen() {
   const [projects, setProjects] = useState<
     {
       projectId: string;
@@ -18,7 +18,7 @@ export default function ProjectsScreen() {
       description: string;
       githubUrl: string;
       members: {
-        [uid: string]: {  
+        [uid: string]: {
           [permission: string]: boolean;
         };
       };
@@ -44,7 +44,6 @@ export default function ProjectsScreen() {
       setProjects(loadedProjects);
       AsyncStorage.setItem("projects", JSON.stringify(loadedProjects));
 
-
       const cachedReleases = await AsyncStorage.getItem("releases");
       if (cachedReleases) {
         setReleases(JSON.parse(cachedReleases));
@@ -64,7 +63,10 @@ export default function ProjectsScreen() {
   return (
     <ScrollView className="flex-1 justifyitems-center bg-background p-5">
       <View className="gap-1">
-        <Button className="mb-4"
+        <View>
+          <Text className="text-2xl">{i18n.t("app_tabs_projects_text_yourProjects")}:</Text>
+        </View>
+        <Button
           onPress={() => {
             fetchData();
           }}
@@ -73,17 +75,19 @@ export default function ProjectsScreen() {
         </Button>
         {projects.map((project, index) => {
           const currentRelease = getCurrentRelease(project.projectId, releases);
-          return <ProjectTile
-            key={index}
-            id={project.projectId}
-            title={project.name}
-            description={project.description}
-            githubUrl={project.githubUrl}
-            members={project.members}
-            releaseName={currentRelease?.name}
-            releaseStatus={currentRelease?.status}
-          />
-    })}
+          return (
+            <ProjectTile
+              key={index}
+              id={project.projectId}
+              title={project.name}
+              description={project.description}
+              githubUrl={project.githubUrl}
+              members={project.members}
+              releaseName={currentRelease?.name}
+              releaseStatus={currentRelease?.status}
+            />
+          );
+        })}
         <Button
           onPress={() => {
             router.push("/inner_screens/add-project");

@@ -118,7 +118,7 @@ export default function ProjectReleases() {
   }, []);
 
   return (
-    <View className="flex-1 justify-center items-center bg-[#25292e]">
+    <View className="flex-1 justify-center items-center bg-background">
       <KeyboardAvoidingView className="flex-1 flex flex-col  items-center w-full p-5">
         <View className="flex flex-col w-full">
           {releases &&
@@ -186,7 +186,7 @@ export default function ProjectReleases() {
           >
             <Text>{i18n.t("app_innerScreens_projectReleases_button_ChoosePlannedEndDate")}</Text>
           </Button>
-          <Text className="text-white">
+          <Text className="text-lg">
             {i18n.t("app_innerScreens_projectReleases_text_plannedEndDate")}: {plannedEndDate.toLocaleDateString()}
           </Text>
           <Button
