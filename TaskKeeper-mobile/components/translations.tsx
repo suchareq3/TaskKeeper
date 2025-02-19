@@ -46,6 +46,8 @@ const translations = {
     app_tabs_tasks_button_refreshTasks: "Refresh tasks",
     app_tabs_tasks_button_addTask: "Add new task",
     app_tabs_tasks_text_currentRelease: "Current release",
+    // Notifications
+    app_tabs_notifications_text_refreshNotifications: "Refresh notifications",
 
     /**** Components ****/
     // Project Tile
@@ -226,6 +228,8 @@ const translations = {
     app_tabs_tasks_button_refreshTasks: "Odśwież zadania",
     app_tabs_tasks_button_addTask: "Dodaj nowe zadanie",
     app_tabs_tasks_text_currentRelease: "Aktualne wydanie",
+    // Notifications
+    app_tabs_notifications_text_refreshNotifications: "Odśwież powiadomienia",
 
     /**** Components ****/
     // Project Tile

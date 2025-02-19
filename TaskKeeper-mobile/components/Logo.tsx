@@ -7,7 +7,7 @@ import { MoonStar } from "@/lib/icons/MoonStar";
 export default function Logo({ className }: { className?: string }) {
   return (
     <>
-      <P className={"text-5xl font-bold " + className}>TaskKeeper</P>
+      <P className={"text-5xl font-bold p-6 rounded-full bg-card shadow-lg inset-shadow-lg " + className}>TaskKeeper</P>
     </>
   );
 }

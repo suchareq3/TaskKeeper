@@ -36,7 +36,7 @@ export default function SignUp() {
   return (
     <KeyboardAvoidingView className="flex-1 flex flex-col justify-between items-center bg-background h-full py-20 p-5">
       <View className="flex">
-        <Logo className="" />
+        <Logo />
       </View>
       <View className="flex gap-3 w-full">
         <Input

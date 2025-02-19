@@ -46,4 +46,5 @@ export interface FirebaseFunctions {
   finishRelease: (releaseId: string) => Promise<any>;
   revertRelease: (releaseId: string) => Promise<any>;
   loadReleaseTasks: (releaseId: string) => Promise<any>;
+  getUserNotifications: () => Promise<any>;
 }

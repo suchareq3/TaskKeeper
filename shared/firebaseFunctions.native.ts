@@ -666,6 +666,29 @@ const finishRelease = async (releaseId: string) => {
   }
 };
 
+const getUserNotifications = async () => {
+  try {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const userNotifications = await db.collection("notifications").where("user_uids", "array-contains", currentUser.uid).orderBy("created_on", "desc").get();
+      const userNotificationsData = userNotifications.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          notificationId: doc.id,
+          title: data.title,
+          body: data.body,
+          createdOn: data.created_on,
+        };
+      });
+      console.log("Success loading user notifications:", userNotificationsData);
+      return userNotificationsData;
+    }
+  } catch (error) {
+    console.error("Error loading user notifications!");
+    throw error;
+  }
+};
+
 export const fbFunctions: FirebaseFunctions = {
   someSharedFunction,
   logInWithPassword,
@@ -696,4 +719,5 @@ export const fbFunctions: FirebaseFunctions = {
   startRelease,
   finishRelease,
   revertRelease,
+  getUserNotifications,
 };

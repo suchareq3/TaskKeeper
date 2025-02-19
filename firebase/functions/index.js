@@ -22,7 +22,7 @@ const { onRequest, onCall, HttpsError } = require("firebase-functions/v2/https")
 
 // The Firebase Admin SDK to access Firestore.
 const { initializeApp } = require("firebase-admin/app");
-const { getFirestore, Timestamp } = require("firebase-admin/firestore");
+const { getFirestore, Timestamp, FieldPath } = require("firebase-admin/firestore");
 const { getAuth } = require("firebase-admin/auth");
 const { log } = require("firebase-functions/logger");
 const { admin, messaging } = require("firebase-admin");
@@ -46,19 +46,19 @@ exports.signUpUser = onCall(async (data, context) => {
       email: email,
       password: password,
     });
-    const userUid = user.uid;
+    const user_uid = user.uid;
 
     // Step 2: Create user record in Firestore
     await db
       .collection("users")
-      .doc(userUid)
+      .doc(user_uid)
       .set({
         ...extraData,
         created_on: Timestamp.now(),
         last_updated_on: Timestamp.now(),
       });
 
-    return { success: true, uid: userUid };
+    return { success: true, uid: user_uid };
   } catch (error) {
     logger.error("Error creating user:", error);
     // Rollback: If the Firestore write fails after creating the Auth user, delete the Auth user.
@@ -161,8 +161,8 @@ exports.createNotificationForTaskAssigneeOnTaskReassignment = onDocumentUpdated(
     title: "Task Reassigned",
     body: `A task has been re-assigned to you: ${taskName}.`,
     // Note: userUids expects an array even for a single UID
-    userUids: [newAssigneeUid],
-    createdOn: Timestamp.now(),
+    user_uids: [newAssigneeUid],
+    created_on: Timestamp.now(),
   };
 
   try {
@@ -197,8 +197,8 @@ exports.createNotificationForTaskAssigneeOnNewTask = onDocumentCreated("tasks/{t
     title: "New Task Assigned",
     body: `You have been assigned a new task: ${taskName}`,
     // Use an array to store user UIDs (even if it's a single UID)
-    userUids: [taskAssigneeUid],
-    createdOn: Timestamp.now(),
+    user_uids: [taskAssigneeUid],
+    created_on: Timestamp.now(),
   };
 
   try {
@@ -251,8 +251,8 @@ exports.createNotificationForProjectMembersOnNewMember = onDocumentUpdated("proj
       const userDoc = await db.collection("users").doc(uid).get();
       if (userDoc.exists) {
         const userData = userDoc.data();
-        if (userData.firstName && userData.lastName) {
-          return `${userData.firstName} ${userData.lastName}`;
+        if (userData.first_name && userData.last_name) {
+          return `${userData.first_name} ${userData.last_name}`;
         }
       }
       // Fallback to the UID if names are not available
@@ -272,8 +272,8 @@ exports.createNotificationForProjectMembersOnNewMember = onDocumentUpdated("proj
   const notificationData = {
     title: "New Project Member Added",
     body: `New member${newMemberNames.length > 1 ? "s" : ""} ${nameString} ${newMemberNames.length > 1 ? "have" : "has"} joined your project.`,
-    userUids: recipientIds, // Alert all existing members
-    createdOn: Timestamp.now(),
+    user_uids: recipientIds, // Alert all existing members
+    created_on: Timestamp.now(),
   };
 
   try {
@@ -324,9 +324,9 @@ exports.createNotificationForProjectMembersOnReleaseStatusChange = onDocumentUpd
 
   // Extract project members (assumes members is a map with user IDs as keys).
   const members = projectData.members || {};
-  const userUids = Object.keys(members);
+  const user_uids = Object.keys(members);
 
-  if (userUids.length === 0) {
+  if (user_uids.length === 0) {
     logger.log("No project members found for project:", projectId);
     return;
   }
@@ -335,8 +335,8 @@ exports.createNotificationForProjectMembersOnReleaseStatusChange = onDocumentUpd
   const notificationData = {
     title: "Release Status Updated",
     body: `The release "${releaseName}" for project "${projectName}" is now "${releaseStatus}".`,
-    userUids, // Notifies all project users.
-    createdOn: Timestamp.now(),
+    user_uids, // Notifies all project users.
+    created_on: Timestamp.now(),
   };
 
   try {
@@ -353,19 +353,19 @@ exports.handleNewNotification = onDocumentCreated("notifications/{notificationId
   const data = event.data.data();
   if (!data) return;
 
-  const { title, body, userUids } = data;
+  const { title, body, user_uids } = data;
 
-  if (!userUids || userUids.length === 0) {
+  if (!user_uids || user_uids.length === 0) {
     logger.log("No user UIDs provided.");
     return;
   }
 
   try {
-    const db = getFirestore();
-    const userDocs = await db.collection("users").where("uid", "in", userUids).get();
+    const userDocs = await db.collection("users").where(FieldPath.documentId(), "in", user_uids).get();
 
-    const tokens = userDocs.docs.map((doc) => doc.data().fcmToken).filter((token) => token);
+ 
 
+    const tokens = userDocs.docs.map((doc) => doc.data().fcm_token).filter((token) => token);
     if (tokens.length === 0) {
       logger.log("No valid FCM tokens found.");
       return;

@@ -17,7 +17,7 @@ export default function SignIn() {
   return (
     <KeyboardAvoidingView className="flex-1 flex-col justify-between items-center bg-background h-full py-20">
       <View className="flex">
-        <Logo className="p-6 rounded-full bg-card shadow-lg inset-shadow-lg" />
+        <Logo />
       </View>
       <View className="gap-3 w-4/5 items-center">
         <Input
