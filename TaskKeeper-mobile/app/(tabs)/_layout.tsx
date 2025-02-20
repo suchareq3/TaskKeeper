@@ -51,12 +51,6 @@ export default function TabsLayout() {
             signOut();
           }}
         />
-        <DrawerItem
-          label={"[DNT]Check user status"}
-          onPress={() => {
-            fbFunctions.checkUserStatus();
-          }}
-        />
         <View className="flex flex-row justify-center w-full px-3 gap-1">
           <Button
             className="flex-1 rounded-l-3xl rounded-r-none"

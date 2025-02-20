@@ -202,18 +202,6 @@ export default function EditTask() {
     <View className="flex-1 justify-center items-center bg-background">
       <KeyboardAvoidingView className="flex-1 w-full p-5">
         <View className="gap-1">
-          <Input
-            placeholder={i18n.t("app_innerScreens_editTask_input_taskNamePlaceholder")}
-            value={taskName}
-            onChangeText={setTaskName}
-          />
-
-          <Textarea
-            placeholder={i18n.t("app_innerScreens_editTask_input_taskDescriptionPlaceholder")}
-            value={taskDescription}
-            onChangeText={setTaskDescription}
-          />
-
           {/* New Select for Releases */}
           <View>
             <Label nativeID="release">{i18n.t("app_innerScreens_addTask_select_releaseLabel")}</Label>
@@ -243,6 +231,18 @@ export default function EditTask() {
               </SelectContent>
             </Select>
           </View>
+          
+          <Input
+            placeholder={i18n.t("app_innerScreens_editTask_input_taskNamePlaceholder")}
+            value={taskName}
+            onChangeText={setTaskName}
+          />
+
+          <Textarea
+            placeholder={i18n.t("app_innerScreens_editTask_input_taskDescriptionPlaceholder")}
+            value={taskDescription}
+            onChangeText={setTaskDescription}
+          />
 
           <View>
             <Label nativeID="priority-level">{i18n.t("app_innerScreens_addTask_select_priorityLevelLabel")}</Label>

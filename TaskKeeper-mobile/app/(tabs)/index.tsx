@@ -171,6 +171,7 @@ export default function TasksScreen() {
   }, []);
 
   return (
+    // TODO: bottom nav tabs partially hide the content, find a way to fix this
     <ScrollView className="flex-1 bg-background p-5" contentContainerClassName="justify-center">
       <Button className="mb-4"
         onPress={() => {

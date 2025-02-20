@@ -43,7 +43,6 @@ export default function SignIn() {
           onPress={() => {
             //TODO: implement proper error handling with user-facing alerts
             signIn(email, password);
-            //fbFunctions.logInWithPassword("abc123@gmail.com", "abc123");
             // Navigate after signing in.
             // TODO: You may want to tweak this to ensure sign-in is successful before navigating.
             router.replace("/");
@@ -54,12 +53,6 @@ export default function SignIn() {
         <Button onPress={() => router.navigate("/sign-up")}>
           <Text>{i18n.t("app_signIn_button_signUp")}</Text>
         </Button>
-
-        <Button onPress={() => fbFunctions.checkUserStatus()}>
-          <Text>[DNT]Check. User. STATUS!</Text>
-        </Button>
-        {/* <Button title="LOGIN WITHOUT GOING THROUGH AUTHCONTEXT" onPress={() => fbFunctions.logInWithPassword("abc123@gmail.com","abc123")}></Button>
-        <Button title="if you're logged out, this redirect shouldn't work!" onPress={() => router.navigate("/")}></Button> */}
       </View>
     </KeyboardAvoidingView>
   );

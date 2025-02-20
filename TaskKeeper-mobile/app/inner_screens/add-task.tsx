@@ -114,9 +114,10 @@ export default function CreateTask() {
   };
 
   return (
+    // NOTE: can't use ScrollView here due to conflicts with DraggableFlatList
     <View className="flex-1 justify-center items-center bg-background">
       <KeyboardAvoidingView className="flex-1 items-center w-full p-5">
-        <View className="w-full">
+        <View className="w-full gap-2">
           <Select
             onValueChange={(value) => {
               setSelectedProject(value);
@@ -143,183 +144,185 @@ export default function CreateTask() {
               </SelectGroup>
             </SelectContent>
           </Select>
-          {selectedProject.value.projectId && (
-            <>
-              <Separator className="bg-primary my-5" />
-
-              <View className="gap-1">
-                <Input
-                  placeholder={i18n.t("app_innerScreens_addTask_input_taskNamePlaceholder")}
-                  value={taskName}
-                  onChangeText={setTaskName}
-                  keyboardType="default"
+          <View>
+            <Select
+              aria-labelledby="release"
+              value={selectedRelease}
+              onValueChange={(value) => {
+                setSelectedRelease(value);
+              }}
+            >
+              <SelectTrigger className="w-[250px]">
+                <SelectValue
+                  className="text-foreground text-sm native:text-lg"
+                  placeholder={i18n.t("app_innerScreens_addTask_select_releasePlaceholder")}
                 />
-                <Textarea
-                  className="max-h-[120]"
-                  numberOfLines={2}
-                  placeholder={i18n.t("app_innerScreens_addTask_input_taskDescriptionPlaceholder")}
-                  value={taskDescription}
-                  onChangeText={setTaskDescription}
-                  keyboardType="default"
-                />
-                <View>
-                  <Label nativeID="release">{i18n.t("app_innerScreens_addTask_select_releaseLabel")}</Label>
-                  <Select
-                    aria-labelledby="release"
-                    value={selectedRelease}
-                    onValueChange={(value) => {
-                      setSelectedRelease(value);
-                    }}
-                  >
-                    <SelectTrigger className="w-[250px]">
-                      <SelectValue
-                        className="text-foreground text-sm native:text-lg"
-                        placeholder={i18n.t("app_innerScreens_addTask_select_releasePlaceholder")}
-                      />
-                    </SelectTrigger>
-                    <SelectContent className="w-[250px]">
-                      <SelectGroup>
-                        {releases.map((release) => (
-                          <SelectItem
-                            key={release.releaseId}
-                            label={release.name}
-                            value={release.releaseId}
-                          />
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </View>
-
-                <View>
-                  <Label nativeID="priority-level">{i18n.t("app_innerScreens_addTask_select_priorityLevelLabel")}</Label>
-                  <Select
-                    aria-labelledby="priority-level"
-                    onValueChange={(value) => {
-                      setPriorityLevel(value!);
-                    }}
-                    onLayout={() => setPriorityLevel(PRIORITY_OPTIONS[2])}
-                    defaultValue={PRIORITY_OPTIONS[2]}
-                  >
-                    <SelectTrigger className="w-[250px]">
-                      <SelectValue
-                        className="text-foreground text-sm native:text-lg"
-                        placeholder={i18n.t("app_innerScreens_addTask_select_priorityLevelPlaceholder")}
-                      />
-                    </SelectTrigger>
-                    <SelectContent className="w-[250px]">
-                      <SelectGroup>
-                        {PRIORITY_OPTIONS.map((option) => (
-                          <SelectItem
-                            key={option.value}
-                            label={option.label}
-                            value={option.value}
-                          />
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </View>
-
-                <View>
-                  <Label nativeID="task-type">{i18n.t("app_innerScreens_addTask_select_taskTypeLabel")}</Label>
-                  <Select
-                    aria-labelledby="task-type"
-                    onValueChange={(value) => {
-                      setTaskType(value!);
-                    }}
-                    onLayout={() => setTaskType(TASK_TYPE_OPTIONS[0])}
-                    defaultValue={TASK_TYPE_OPTIONS[0]}
-                  >
-                    <SelectTrigger className="w-[250px]">
-                      <SelectValue
-                        className="text-foreground text-sm native:text-lg"
-                        placeholder={i18n.t("app_innerScreens_addTask_select_taskTypePlaceholder")}
-                      />
-                    </SelectTrigger>
-                    <SelectContent className="w-[250px]">
-                      <SelectGroup>
-                        {TASK_TYPE_OPTIONS.map((option) => (
-                          <SelectItem
-                            key={option.value}
-                            label={option.label}
-                            value={option.value}
-                          />
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </View>
-
-                <View className="w-full">
-                  {/* Existing project selection */}
-                  {selectedProject.value.projectId && (
-                    <>
-                      {/* Modified assignee selection */}
-                      <View>
-                        <Label nativeID="task-assignee">{i18n.t("app_innerScreens_addTask_select_taskAssigneeLabel")}</Label>
-                        <Select
-                          aria-labelledby="task-assignee"
-                          onValueChange={(option) => {
-                            setTaskAssignee(option);
-                          }}
-                          defaultValue={taskAssignee}
-                        >
-                          <SelectTrigger className="">
-                            <SelectValue
-                              className="text-foreground text-sm native:text-lg"
-                              placeholder={i18n.t("app_innerScreens_addTask_select_taskAssigneePlaceholder")}
-                            />
-                          </SelectTrigger>
-                          <SelectContent className="">
-                            <SelectGroup>
-                              {memberOptions.map((uid) => (
-                                <SelectItem
-                                  key={uid}
-                                  label={`${uid}${uid === getAuth().currentUser!.uid && ` ${i18n.t("app_innerScreens_addTask_select_taskAssigneeYou")}`}`} // You might want to display user names here instead of UIDs
-                                  value={uid}
-                                />
-                              ))}
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-                      </View>
-                      <Separator className="bg-primary my-5" />
-                    </>
-                  )}
-                </View>
-
-                <Button onPress={() => setSubtaskData([...subtaskData, { key: Crypto.randomUUID(), label: "Edit me!", completed: false }])}>
-                  <Text>{i18n.t("app_innerScreens_addTask_button_createSubtask")}</Text>
-                </Button>
-                <DraggableFlatList
-                  data={subtaskData}
-                  onDragEnd={({ data }) => {
-                    setSubtaskData(data);
-                    console.log("new data:", data);
-                  }}
-                  keyExtractor={(item) => item.key}
-                  renderItem={renderItem}
-                />
-
+              </SelectTrigger>
+              <SelectContent className="w-[250px]">
+                <SelectGroup>
+                  {releases.map((release) => (
+                    <SelectItem
+                      key={release.releaseId}
+                      label={release.name}
+                      value={release.releaseId}
+                    />
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </View>
+          {selectedProject.value.projectId &&
+            selectedRelease?.value &&(
+              <>
                 <Separator className="bg-primary my-5" />
 
-                <Button
-                  onPress={() => {
-                    try {
-                      createTask (selectedRelease!.value, selectedProject.value.projectId, taskName, taskDescription, priorityLevel.value, taskType.value, taskAssignee!.value, subtaskData).then(() => {
-                        router.back();
-                      });
-                    } catch (e) {
-                      console.log("smth went wrong: ", e);
-                    }
-                  }}
-                >
-                  <Text>{i18n.t("app_innerScreens_addTask_button_createTask")}</Text>
-                </Button>
-              </View>
-            </>
-          )}
+                <View className="gap-1">
+                  <Input
+                    placeholder={i18n.t("app_innerScreens_addTask_input_taskNamePlaceholder")}
+                    value={taskName}
+                    onChangeText={setTaskName}
+                    keyboardType="default"
+                  />
+                  <Textarea
+                    className="max-h-[120]"
+                    numberOfLines={2}
+                    placeholder={i18n.t("app_innerScreens_addTask_input_taskDescriptionPlaceholder")}
+                    value={taskDescription}
+                    onChangeText={setTaskDescription}
+                    keyboardType="default"
+                  />
+
+                  <View>
+                    <Label nativeID="priority-level">{i18n.t("app_innerScreens_addTask_select_priorityLevelLabel")}</Label>
+                    <Select
+                      aria-labelledby="priority-level"
+                      onValueChange={(value) => {
+                        setPriorityLevel(value!);
+                      }}
+                      onLayout={() => setPriorityLevel(PRIORITY_OPTIONS[2])}
+                      defaultValue={PRIORITY_OPTIONS[2]}
+                    >
+                      <SelectTrigger className="w-[250px]">
+                        <SelectValue
+                          className="text-foreground text-sm native:text-lg"
+                          placeholder={i18n.t("app_innerScreens_addTask_select_priorityLevelPlaceholder")}
+                        />
+                      </SelectTrigger>
+                      <SelectContent className="w-[250px]">
+                        <SelectGroup>
+                          {PRIORITY_OPTIONS.map((option) => (
+                            <SelectItem
+                              key={option.value}
+                              label={option.label}
+                              value={option.value}
+                            />
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </View>
+
+                  <View>
+                    <Label nativeID="task-type">{i18n.t("app_innerScreens_addTask_select_taskTypeLabel")}</Label>
+                    <Select
+                      aria-labelledby="task-type"
+                      onValueChange={(value) => {
+                        setTaskType(value!);
+                      }}
+                      onLayout={() => setTaskType(TASK_TYPE_OPTIONS[0])}
+                      defaultValue={TASK_TYPE_OPTIONS[0]}
+                    >
+                      <SelectTrigger className="w-[250px]">
+                        <SelectValue
+                          className="text-foreground text-sm native:text-lg"
+                          placeholder={i18n.t("app_innerScreens_addTask_select_taskTypePlaceholder")}
+                        />
+                      </SelectTrigger>
+                      <SelectContent className="w-[250px]">
+                        <SelectGroup>
+                          {TASK_TYPE_OPTIONS.map((option) => (
+                            <SelectItem
+                              key={option.value}
+                              label={option.label}
+                              value={option.value}
+                            />
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </View>
+
+                  <View className="w-full">
+                    {/* Existing project selection */}
+                    {selectedProject.value.projectId && (
+                      <>
+                        {/* Modified assignee selection */}
+                        <View>
+                          <Label nativeID="task-assignee">{i18n.t("app_innerScreens_addTask_select_taskAssigneeLabel")}</Label>
+                          <Select
+                            aria-labelledby="task-assignee"
+                            onValueChange={(option) => {
+                              setTaskAssignee(option);
+                            }}
+                            defaultValue={taskAssignee}
+                          >
+                            <SelectTrigger className="">
+                              <SelectValue
+                                className="text-foreground text-sm native:text-lg"
+                                placeholder={i18n.t("app_innerScreens_addTask_select_taskAssigneePlaceholder")}
+                              />
+                            </SelectTrigger>
+                            <SelectContent className="">
+                              <SelectGroup>
+                                {memberOptions.map((uid) => (
+                                  <SelectItem
+                                    key={uid}
+                                    label={`${uid}${uid === getAuth().currentUser!.uid && ` ${i18n.t("app_innerScreens_addTask_select_taskAssigneeYou")}`}`} // You might want to display user names here instead of UIDs
+                                    value={uid}
+                                  />
+                                ))}
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+                        </View>
+                        <Separator className="bg-primary my-5" />
+                      </>
+                    )}
+                  </View>
+
+                  <Button onPress={() => setSubtaskData([...subtaskData, { key: Crypto.randomUUID(), label: "Edit me!", completed: false }])}>
+                    <Text>{i18n.t("app_innerScreens_addTask_button_createSubtask")}</Text>
+                  </Button>
+                  <DraggableFlatList
+                    data={subtaskData}
+                    onDragEnd={({ data }) => {
+                      setSubtaskData(data);
+                      console.log("new data:", data);
+                    }}
+                    keyExtractor={(item) => item.key}
+                    renderItem={renderItem}
+                  />
+
+                  <Separator className="bg-primary my-5" />
+
+                  <Button
+                    onPress={() => {
+                      try {
+                        createTask(selectedRelease!.value, selectedProject.value.projectId, taskName, taskDescription, priorityLevel.value, taskType.value, taskAssignee!.value, subtaskData).then(
+                          () => {
+                            router.back();
+                          }
+                        );
+                      } catch (e) {
+                        console.log("smth went wrong: ", e);
+                      }
+                    }}
+                  >
+                    <Text>{i18n.t("app_innerScreens_addTask_button_createTask")}</Text>
+                  </Button>
+                </View>
+              </>
+            )}
         </View>
       </KeyboardAvoidingView>
     </View>
