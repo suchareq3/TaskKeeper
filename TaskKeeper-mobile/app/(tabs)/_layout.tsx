@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { fbFunctions } from "../../../shared/firebaseFunctions";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import i18n from "@/components/translations";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { getAuth } from "@react-native-firebase/auth";
 
 export default function TabsLayout() {
   PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
@@ -43,6 +45,9 @@ export default function TabsLayout() {
   function CustomDrawerContent(props: any) {
     return (
       <DrawerContentScrollView {...props}>
+          <Card className="items-center justify-center p-2 bg-card">
+            <Text className="text-lg font-bold text-primary">{getAuth().currentUser!.uid}</Text>
+          </Card>
         <DrawerItemList {...props} />
 
         <DrawerItem
