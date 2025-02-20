@@ -50,6 +50,7 @@ export default function NotificationsScreen() {
     >
       <View className="gap-1">
         <Button
+          className="mb-4"
           onPress={() => {
             fetchData();
           }}
