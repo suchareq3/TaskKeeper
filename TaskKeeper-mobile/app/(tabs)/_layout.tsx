@@ -28,7 +28,7 @@ export default function TabsLayout() {
     //TODO: (even bettererer) DO redirect to the new page, but use Skeleton components to show the loading state
     return (
       <View className="bg-background items-center justify-center w-full h-full">
-        <Text className="text-4xl font-bold bg-text">{i18n.t("app_tabs_layout_text_loading")}</Text>
+        <Text className="text-4xl font-bold text-primary">{i18n.t("app_tabs_layout_text_loading")}</Text>
       </View>
     );
     
@@ -46,7 +46,7 @@ export default function TabsLayout() {
     return (
       <DrawerContentScrollView {...props}>
           <Card className="items-center justify-center p-2 bg-card">
-            <Text className="text-lg font-bold text-primary">{getAuth().currentUser!.uid}</Text>
+            <Text className="text-lg font-bold text-primary">{getAuth().currentUser?.uid}</Text>
           </Card>
         <DrawerItemList {...props} />
 

@@ -5,7 +5,6 @@ export interface FirebaseFunctions {
   checkUserStatus: () => Promise<string>;
   checkUserLoginStatus: (nextOrObserver: any) => any;
   signUpUser: (email: string, password: string, extraData: { [key: string]: string }) => any;
-  showNotification: (title: string, description: string) => Promise<string | undefined>;
   createProject: (name: string, description: string, githubUrl: string) => Promise<void>;
   editProject: (projectId: string, name: string, description: string, githubUrl: string) => Promise<any>;
   removeUserFromProject: (projectId: string, userId: string) => Promise<any>;
@@ -47,4 +46,5 @@ export interface FirebaseFunctions {
   revertRelease: (releaseId: string) => Promise<any>;
   loadReleaseTasks: (releaseId: string) => Promise<any>;
   getUserNotifications: () => Promise<any>;
+  getAllUsers: () => Promise<any>;
 }

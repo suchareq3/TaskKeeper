@@ -33,47 +33,6 @@ const app = initializeApp();
 const auth = getAuth();
 const db = getFirestore();
 
-exports.signUpUser = onCall(async (data, context) => {
-  const { email, password, extraData } = data.data;
-  if (!email || !password) {
-    throw new HttpsError("invalid-argument", "Missing email or password.");
-  }
-
-  let user;
-  try {
-    // Step 1: Create user in Auth
-    user = await auth.createUser({
-      email: email,
-      password: password,
-    });
-    const user_uid = user.uid;
-
-    // Step 2: Create user record in Firestore
-    await db
-      .collection("users")
-      .doc(user_uid)
-      .set({
-        ...extraData,
-        created_on: Timestamp.now(),
-        last_updated_on: Timestamp.now(),
-      });
-
-    return { success: true, uid: user_uid };
-  } catch (error) {
-    logger.error("Error creating user:", error);
-    // Rollback: If the Firestore write fails after creating the Auth user, delete the Auth user.
-    if (user) {
-      try {
-        await auth.deleteUser(user.uid);
-        logger.log("Rolled back auth user creation due to Firestore error.");
-      } catch (deleteError) {
-        logger.error("Failed to rollback auth user:", deleteError);
-      }
-    }
-    throw new HttpsError("internal", "Error creating new user: " + error);
-  }
-});
-
 exports.createProject = onCall(async (data, context) => {
   const { name, description, githubUrl, uid } = data.data;
   const createdOn = Timestamp.now();

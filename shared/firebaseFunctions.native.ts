@@ -14,10 +14,10 @@ import {
   FieldValue,
   firestore,
   Timestamp,
+  FirebaseAuthTypes,
 } from "../TaskKeeper-mobile/exportedModules.js";
 import { platform } from "./shared";
 import { FirebaseFunctions } from "./firebaseInterface";
-import { start } from "repl";
 
 const app = getApp(); // gets config from google-services.json
 const auth = getAuth();
@@ -73,43 +73,42 @@ const checkUserLoginStatus = (nextOrObserver) => {
   return auth.onAuthStateChanged(nextOrObserver);
 };
 
-//TODO: this doesn't need to be a cloud function
-//TODO: also, wrap this in a transaction or batched write
-const signUpUser = async (email: string, password: string, extraData: { [key: string]: string }) => {
+
+const signUpUser = async (email: string, password: string, extraData: { [key: string]: any }) => {
+  let user: FirebaseAuthTypes.UserCredential | null = null;
   try {
-    //await messaging().registerDeviceForRemoteMessages();
+    if (!email || !password) {
+      throw new Error("Missing email or password.");
+    }
     extraData["fcm_token"] = await messaging().getToken();
-    //extraData["fcm_token"] = "cog3p2waTrSuK2V7RoAfkF:APA91bGbyBsdMfrgEFvupVLu3nkjRngfEZSghTh--L2_ZaK-eGuKSJlRCZLoAEFvupVLu3nkjRngfEZSghTh--dLPXa5NkEg8IdKPY5l7RylkO9c3qI5q5TghE5wUk34-pBc3qI5q5TghE5wUk34-pBmzguHmzguH1By-nzxM";
-    const registerUserFunction = functions.httpsCallable("signUpUser");
-    const result = await registerUserFunction({ email, password, extraData });
-    console.log("User registration successful!: ", result);
+    // Step 1: Create user in Auth
+    user = await auth.createUserWithEmailAndPassword(email, password);
+    const user_uid = user.user.uid;
+
+    // Step 2: Create user record in Firestore
+    await db
+      .collection("users")
+      .doc(user_uid)
+      .set({
+        ...extraData,
+        created_on: Timestamp.now(),
+        last_updated_on: Timestamp.now(),
+      });
+
     logInWithPassword(email, password);
+    return { success: true, uid: user_uid };
   } catch (error) {
-    console.error("Error registering user:", error);
-    throw error;
-  }
-};
-
-//TODO: complete this function! right now it's a placeholder!
-const showNotification = async (title: string, description: string) => {
-  try {
-    //await messaging().registerDeviceForRemoteMessages();
-
-    //TODO: remake this so that it takes the token (or tokens) as an argument
-    //const fcm_token = await messaging().getToken();
-    await messaging().registerDeviceForRemoteMessages();
-    const fcm_token =
-      "cog3p2waTrSuK2V7RoAfkF:APA91bGbyBsdMfrgEFvupVLu3nkjRngfEZSghTh--L2_ZaK-eGuKSJlRCZLoAEFvupVLu3nkjRngfEZSghTh--dLPXa5NkEg8IdKPY5l7RylkO9c3qI5q5TghE5wUk34-pBc3qI5q5TghE5wUk34-pBmzguHmzguH1By-nzxM";
-    console.log(await messaging().getToken());
-
-    return await messaging().getToken();
-
-    //return token;
-    const pushNotificationFunction = functions.httpsCallable("pushNotification");
-    const result = await pushNotificationFunction({ fcm_token, title, description });
-  } catch (error) {
-    console.error("Error showing notification:", error);
-    throw error;
+    console.error("Error creating user:", error);
+    // Rollback: If the Firestore write fails after creating the Auth user, delete the Auth user.
+    if (user) {
+      try {
+        await user.user.delete();
+        console.log("Rolled back auth user creation due to Firestore error.");
+      } catch (deleteError) {
+        console.error("Failed to rollback auth user:", deleteError);
+      }
+    }
+    throw Error("Error creating new user: " + error);
   }
 };
 
@@ -696,7 +695,6 @@ export const fbFunctions: FirebaseFunctions = {
   checkUserStatus,
   checkUserLoginStatus,
   signUpUser,
-  showNotification,
   createProject,
   editProject,
   removeUserFromProject,

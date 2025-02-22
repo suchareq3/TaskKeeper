@@ -74,7 +74,7 @@ export default function SignUp() {
           onPress={() => {
             //TODO: implement proper error handling with user-facing alerts
             //TODO: implement proper loading state (doesn't seem to work while Firebase is processing the sign-up)
-            signUp(email, password, { first_name: name, last_name: lastName, date_of_birth: date.toLocaleDateString() }).then(() => {
+            signUp(email, password, { first_name: name, last_name: lastName, date_of_birth: Timestamp.fromDate(date) }).then(() => {
               //router.replace("/");
               signIn(email, password).then(() => {
                 router.replace("/");

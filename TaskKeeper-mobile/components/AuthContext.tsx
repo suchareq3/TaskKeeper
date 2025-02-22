@@ -10,7 +10,7 @@ import { Timestamp } from "@react-native-firebase/firestore";
 const AuthContext = createContext<{
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => any;
-  signUp: (email: string, password: string, extraData: { [key: string]: string }) => any;
+  signUp: (email: string, password: string, extraData: { [key: string]: any }) => any;
   createProject: (name: string, description: string, githubUrl: string) => any;
   editProject: (projectId: string, name: string, description: string, githubUrl: string) => any;
   removeUserFromProject: (projectId: string, userId: string) => any;
