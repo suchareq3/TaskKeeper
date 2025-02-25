@@ -37,7 +37,7 @@ import {
 import firebaseConfig from "./firebaseWebConfig";
 import { appStartInfo, platform } from "./shared";
 import { FirebaseFunctions } from "./firebaseInterface";
-import { randomUUID } from "crypto";
+import { v4 as uuidv4 } from "uuid";
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
@@ -1105,6 +1105,7 @@ const uploadTemplate = async (name: string, table: string, fields: string[], fil
     if (!currentUser) throw new Error("User not authenticated");
 
     // Generate unique ID
+    const templateId = uuidv4(); // Add this line
     const storagePath = `templates/${templateId}.docx`;
     const storageRef = ref(storage, storagePath);
 
@@ -1121,8 +1122,8 @@ const uploadTemplate = async (name: string, table: string, fields: string[], fil
       created_on: Timestamp.now(),
     };
 
-    const docRef = await addDoc(collection(db, "templates"), templateData);
-    return docRef.id;
+    await setDoc(doc(db, "templates", templateId), templateData);
+    return templateId; // Return the generated ID
   } catch (error) {
     console.error("Error uploading template:", error);
     throw error;
