@@ -18,7 +18,6 @@ firebase-debug.*.log*
 # .firebaserc
 
 # Firebase data
-example_data/
 firebase-export*/
 
 # Runtime data
