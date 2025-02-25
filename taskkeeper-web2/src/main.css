@@ -1,0 +1,24 @@
+@import "tailwindcss";
+@import "../node_modules/@radix-ui/themes/styles.css";
+
+body {
+}
+
+.rt-Button {
+  cursor: pointer;
+  z-index: 2;
+}
+
+.rt-TextFieldRoot {
+  margin-bottom: 10px !important;
+  max-width: 500px !important;
+}
+
+.rt-SelectTrigger {
+  margin-bottom: 10px !important;
+  max-width: 500px !important;
+}
+
+h1 {
+  margin-bottom: 10px !important;
+}

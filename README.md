@@ -1,11 +1,11 @@
 # TaskKeeper
 Projekt inżynierski WSB-NLU
 
-# web app (admin panel) - React + Remix
+# web app (admin panel) - React + Vite
 cd TaskKeeper-web
-npx expo 
+npm run dev
 
-# mobile app (target app) - React Native w/ Expo
+# mobile app (target app) - React Native + Expo
 cd TaskKeeper-mobile
 npm run android
 or

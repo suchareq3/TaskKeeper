@@ -1,0 +1,35 @@
+{
+  "name": "taskkeeper-web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "dev": "vite --port=3001",
+    "build": "vite build",
+    "serve": "vite preview",
+    "start": "vite"
+  },
+  "devDependencies": {
+    "@tanstack/router-plugin": "^1.106.0",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "@vitejs/plugin-react": "^4.3.2",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.0.7",
+    "vite": "^6.0.3"
+  },
+  "dependencies": {
+    "@radix-ui/themes": "^3.2.0",
+    "@tailwindcss/vite": "^4.0.7",
+    "@tanstack/react-router": "^1.106.0",
+    "@tanstack/router-devtools": "^1.106.0",
+    "ag-grid-react": "^33.1.1",
+    "date-fns": "^4.1.0",
+    "firebase": "^10.14.1",
+    "firebaseui": "^6.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}

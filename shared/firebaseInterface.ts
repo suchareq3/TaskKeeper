@@ -4,7 +4,8 @@ export interface FirebaseFunctions {
   logOutUser: () => Promise<void>;
   checkUserStatus: () => Promise<string>;
   checkUserLoginStatus: (nextOrObserver: any) => any;
-  signUpUser: (email: string, password: string, extraData: { [key: string]: string }) => any;
+  signUpUser: (email: string, password: string, extraData: { [key: string]: any }) => any;
+  signUpUserNoToken: (email: string, password: string, extraData: { [key: string]: any }) => any;
   createProject: (name: string, description: string, githubUrl: string) => Promise<void>;
   editProject: (projectId: string, name: string, description: string, githubUrl: string) => Promise<any>;
   removeUserFromProject: (projectId: string, userId: string) => Promise<any>;
@@ -47,4 +48,31 @@ export interface FirebaseFunctions {
   loadReleaseTasks: (releaseId: string) => Promise<any>;
   getUserNotifications: () => Promise<any>;
   getAllUsers: () => Promise<any>;
+  getUserById: (userId: string) => Promise<any>;
+  updateUserDetails: (userId: string, data: { [key: string]: any }) => Promise<any>;
+  deleteUserById: (userId: string) => Promise<any>;
+  getAllProjects: () => Promise<any>;
+  getProjectById: (projectId: string) => Promise<any>;
+  editProjectWithMembers: (
+    projectId: string,
+    updatedFields: Partial<{
+      name: string;
+      description: string;
+      github_url: string;
+      members: Record<string, { isManager: boolean }>;
+    }>
+  ) => Promise<any>;
+  getReleaseById: (releaseId: string) => Promise<any>;
+  getAllTasks: () => Promise<any>;
+  getTaskById: (taskId: string) => Promise<any>;
+  getAllNotifications: () => Promise<any>;
+  createCustomNotification: (title: string, body: string, userUids: string[]) => Promise<any>;
+  getNotificationById: (notificationId: string) => Promise<any>;
+  deleteNotificationById: (notificationId: string) => Promise<any>;
+  getAllTemplates: () => Promise<any>;
+  getTables: () => Promise<any>;
+  getTableFields: (table: string) => Promise<any>;
+  uploadTemplate: (name: string, table: string, fields: string[], file: File) => Promise<any>;
+  handleDelete: (templateId: string) => void;
+  handleDownload: (templateId: string) => void;
 }

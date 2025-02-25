@@ -94,6 +94,23 @@ exports.refreshProjectInviteCode = onCall(async (data, context) => {
   }
 });
 
+exports.deleteUserById = onCall(async (data, context) => {
+  const { userId } = data.data;
+  if (!userId) {
+    throw new HttpsError("invalid-argument", "User ID is required.");
+  }
+
+  try {
+    // Delete from Firebase Authentication then, if successful, from firestore
+    await auth.deleteUser(userId).then(async () => await db.collection("users").doc(userId).delete());
+
+    return { success: true, message: "User deleted successfully." };
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    throw new HttpsError("internal", "Failed to delete user.");
+  }
+});
+
 
 exports.createNotificationForTaskAssigneeOnTaskReassignment = onDocumentUpdated("tasks/{taskId}", async (event) => {
   // Get the data before and after the update
