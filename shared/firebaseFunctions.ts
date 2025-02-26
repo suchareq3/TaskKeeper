@@ -33,6 +33,7 @@ import {
   uploadBytes,
   getDownloadURL,
   deleteObject,
+  connectStorageEmulator,
 } from "../taskkeeper-web2/exportedModules.js";
 import firebaseConfig from "./firebaseWebConfig";
 import { appStartInfo, platform } from "./shared";
@@ -49,6 +50,7 @@ const storage = getStorage(app);
 connectAuthEmulator(auth, "http://localhost:9099");
 connectFirestoreEmulator(db, "localhost", 8080);
 connectFunctionsEmulator(functions, "localhost", 5001);
+connectStorageEmulator(storage, "localhost", 9199);
 
 const someSharedFunction = () => {
   console.log(`Called from shared function! Project type: ${platform}`);
@@ -1151,21 +1153,37 @@ const handleDelete = async (templateId: string) => {
   }
 };
 
-const handleDownload = async (templateId: string) => {
+const handleDownload = async (filePath: string): Promise<void> => {
   try {
-    const templateDoc = await getDoc(doc(db, "templates", templateId));
-    if (!templateDoc.exists()) {
-      throw new Error("Template not found");
-    }
+    const storageRef = ref(storage, filePath);
 
-    const templateData = templateDoc.data();
-    const downloadUrl = await getDownloadURL(ref(storage, templateData.storagePath));
+    const url = await getDownloadURL(storageRef);
 
-    return downloadUrl;
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", filePath.split("/").pop() || "download");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   } catch (error) {
     console.error("Error generating download URL:", error);
-    throw error;
+    throw new Error("Failed to initiate download");
   }
+};
+
+const getDownloadUrlForPath = async (filePath: string): Promise<string> => {
+  try {
+    const storageRef = ref(storage, filePath);
+    return await getDownloadURL(storageRef);
+  } catch (error) {
+    console.error("Error generating download URL:", error);
+    throw new Error("Failed to get download URL");
+  }
+};
+
+const getAllTableRecords = async (table: string) => {
+  const snapshot = await getDocs(collection(db, table));
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 };
 
 export const fbFunctions: FirebaseFunctions = {
@@ -1219,4 +1237,6 @@ export const fbFunctions: FirebaseFunctions = {
   uploadTemplate,
   handleDelete,
   handleDownload,
+  getDownloadUrlForPath,
+  getAllTableRecords,
 };

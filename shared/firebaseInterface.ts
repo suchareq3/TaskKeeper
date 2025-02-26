@@ -75,4 +75,5 @@ export interface FirebaseFunctions {
   uploadTemplate: (name: string, table: string, fields: string[], file: File) => Promise<any>;
   handleDelete: (templateId: string) => void;
   handleDownload: (templateId: string) => void;
+  getAllTableRecords: (params: any) => Promise<any>;
 }

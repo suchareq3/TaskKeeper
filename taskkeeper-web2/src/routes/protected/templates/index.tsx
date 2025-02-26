@@ -16,6 +16,7 @@ interface Template {
   table: string;
   createdAt: Date;
   fields: string[];
+  storagePath: string;
 }
 
 function TemplatesPage() {
@@ -34,8 +35,11 @@ function TemplatesPage() {
       headerName: "Actions",
       cellRenderer: (params: any) => (
         <div className="flex gap-2">
-          <Button onClick={() => fbFunctions.handleDownload(params.data)}>Download</Button>
-          <Button color="red" onClick={() => fbFunctions.handleDelete(params.data)}>
+          <Button onClick={() => (params.data.storagePath ? fbFunctions.handleDownload(params.data.storagePath) : null)} disabled={!params.data.storagePath}>
+            Download
+          </Button>
+          <Button onClick={() => router.history.push(`/protected/templates/${params.data.id}/fill`)}>Fill & Download</Button>
+          <Button color="red" onClick={() => router.history.push(`/protected/templates/${params.data.id}/delete`)}>
             Delete
           </Button>
         </div>

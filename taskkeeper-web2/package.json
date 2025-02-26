@@ -12,6 +12,7 @@
   },
   "devDependencies": {
     "@tanstack/router-plugin": "^1.106.0",
+    "@types/file-saver": "^2.0.7",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "@vitejs/plugin-react": "^4.3.2",
@@ -27,8 +28,11 @@
     "@tanstack/router-devtools": "^1.106.0",
     "ag-grid-react": "^33.1.1",
     "date-fns": "^4.1.0",
+    "docxtemplater": "^3.60.0",
+    "file-saver": "^2.0.5",
     "firebase": "^10.14.1",
     "firebaseui": "^6.1.0",
+    "pizzip": "^3.1.8",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   }

@@ -18,8 +18,8 @@ export {
   deleteDoc,
   addDoc,
   orderBy,
-  getDoc
+  getDoc,
 } from "firebase/firestore";
 export { getFunctions, httpsCallable, connectFunctionsEmulator } from "firebase/functions";
 export { getMessaging, getToken } from "firebase/messaging";
-export {getStorage, ref, uploadBytes, getDownloadURL, deleteObject} from "firebase/storage"
+export {getStorage, ref, uploadBytes, getDownloadURL, deleteObject, connectStorageEmulator} from "firebase/storage"

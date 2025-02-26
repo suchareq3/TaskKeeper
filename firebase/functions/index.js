@@ -368,7 +368,7 @@ exports.handleNewNotification = onDocumentCreated("notifications/{notificationId
 // TODO: there's an edge case where someone may be able to re-use someone's old invite code after it re-generates. is this OK?
 const generateInviteCode = async () => {
   const codeGen = () => generate({ length: 8, numbers: true, lowercase: false, uppercase: true, excludeSimilarCharacters: true });
-  const codeCheckQuery = (invCode) => db.collection("projects").where("invite_code", "array-contains", invCode);
+  const codeCheckQuery = (invCode) => db.collection("projects").where("invite_code", "==", invCode);
 
   let inviteCode = codeGen();
   let userProjects = await codeCheckQuery(inviteCode).get();

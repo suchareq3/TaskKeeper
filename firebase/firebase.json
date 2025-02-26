@@ -3,7 +3,13 @@
     {
       "source": "functions",
       "codebase": "default",
-      "ignore": ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log", "*.local"]
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ]
     }
   ],
   "firestore": {
@@ -23,9 +29,16 @@
       "host": "localhost",
       "port": 8080
     },
+    "storage": {
+      "host": "localhost",
+      "port": 9199
+    },
     "ui": {
       "enabled": true
     },
     "singleProjectMode": true
+  },
+  "storage": {
+    "rules": "storage.rules"
   }
 }

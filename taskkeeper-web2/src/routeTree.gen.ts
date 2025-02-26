@@ -35,6 +35,8 @@ import { Route as ProtectedProjectsProjectIdIndexImport } from './routes/protect
 import { Route as ProtectedNotificationsNotificationIdIndexImport } from './routes/protected/notifications/$notificationId/index'
 import { Route as ProtectedUsersUserIdEditImport } from './routes/protected/users/$userId/edit'
 import { Route as ProtectedUsersUserIdDeleteImport } from './routes/protected/users/$userId/delete'
+import { Route as ProtectedTemplatesTemplateIdFillImport } from './routes/protected/templates/$templateId/fill'
+import { Route as ProtectedTemplatesTemplateIdDeleteImport } from './routes/protected/templates/$templateId/delete'
 import { Route as ProtectedTasksTaskIdEditImport } from './routes/protected/tasks/$taskId/edit'
 import { Route as ProtectedTasksTaskIdDeleteImport } from './routes/protected/tasks/$taskId/delete'
 import { Route as ProtectedReleasesReleaseIdSetStartedImport } from './routes/protected/releases/$releaseId/set-started'
@@ -199,6 +201,20 @@ const ProtectedUsersUserIdDeleteRoute = ProtectedUsersUserIdDeleteImport.update(
     getParentRoute: () => ProtectedRoute,
   } as any,
 )
+
+const ProtectedTemplatesTemplateIdFillRoute =
+  ProtectedTemplatesTemplateIdFillImport.update({
+    id: '/templates/$templateId/fill',
+    path: '/templates/$templateId/fill',
+    getParentRoute: () => ProtectedRoute,
+  } as any)
+
+const ProtectedTemplatesTemplateIdDeleteRoute =
+  ProtectedTemplatesTemplateIdDeleteImport.update({
+    id: '/templates/$templateId/delete',
+    path: '/templates/$templateId/delete',
+    getParentRoute: () => ProtectedRoute,
+  } as any)
 
 const ProtectedTasksTaskIdEditRoute = ProtectedTasksTaskIdEditImport.update({
   id: '/tasks/$taskId/edit',
@@ -470,6 +486,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedTasksTaskIdEditImport
       parentRoute: typeof ProtectedImport
     }
+    '/protected/templates/$templateId/delete': {
+      id: '/protected/templates/$templateId/delete'
+      path: '/templates/$templateId/delete'
+      fullPath: '/protected/templates/$templateId/delete'
+      preLoaderRoute: typeof ProtectedTemplatesTemplateIdDeleteImport
+      parentRoute: typeof ProtectedImport
+    }
+    '/protected/templates/$templateId/fill': {
+      id: '/protected/templates/$templateId/fill'
+      path: '/templates/$templateId/fill'
+      fullPath: '/protected/templates/$templateId/fill'
+      preLoaderRoute: typeof ProtectedTemplatesTemplateIdFillImport
+      parentRoute: typeof ProtectedImport
+    }
     '/protected/users/$userId/delete': {
       id: '/protected/users/$userId/delete'
       path: '/users/$userId/delete'
@@ -555,6 +585,8 @@ interface ProtectedRouteChildren {
   ProtectedReleasesReleaseIdSetStartedRoute: typeof ProtectedReleasesReleaseIdSetStartedRoute
   ProtectedTasksTaskIdDeleteRoute: typeof ProtectedTasksTaskIdDeleteRoute
   ProtectedTasksTaskIdEditRoute: typeof ProtectedTasksTaskIdEditRoute
+  ProtectedTemplatesTemplateIdDeleteRoute: typeof ProtectedTemplatesTemplateIdDeleteRoute
+  ProtectedTemplatesTemplateIdFillRoute: typeof ProtectedTemplatesTemplateIdFillRoute
   ProtectedUsersUserIdDeleteRoute: typeof ProtectedUsersUserIdDeleteRoute
   ProtectedUsersUserIdEditRoute: typeof ProtectedUsersUserIdEditRoute
   ProtectedNotificationsNotificationIdIndexRoute: typeof ProtectedNotificationsNotificationIdIndexRoute
@@ -594,6 +626,9 @@ const ProtectedRouteChildren: ProtectedRouteChildren = {
     ProtectedReleasesReleaseIdSetStartedRoute,
   ProtectedTasksTaskIdDeleteRoute: ProtectedTasksTaskIdDeleteRoute,
   ProtectedTasksTaskIdEditRoute: ProtectedTasksTaskIdEditRoute,
+  ProtectedTemplatesTemplateIdDeleteRoute:
+    ProtectedTemplatesTemplateIdDeleteRoute,
+  ProtectedTemplatesTemplateIdFillRoute: ProtectedTemplatesTemplateIdFillRoute,
   ProtectedUsersUserIdDeleteRoute: ProtectedUsersUserIdDeleteRoute,
   ProtectedUsersUserIdEditRoute: ProtectedUsersUserIdEditRoute,
   ProtectedNotificationsNotificationIdIndexRoute:
@@ -637,6 +672,8 @@ export interface FileRoutesByFullPath {
   '/protected/releases/$releaseId/set-started': typeof ProtectedReleasesReleaseIdSetStartedRoute
   '/protected/tasks/$taskId/delete': typeof ProtectedTasksTaskIdDeleteRoute
   '/protected/tasks/$taskId/edit': typeof ProtectedTasksTaskIdEditRoute
+  '/protected/templates/$templateId/delete': typeof ProtectedTemplatesTemplateIdDeleteRoute
+  '/protected/templates/$templateId/fill': typeof ProtectedTemplatesTemplateIdFillRoute
   '/protected/users/$userId/delete': typeof ProtectedUsersUserIdDeleteRoute
   '/protected/users/$userId/edit': typeof ProtectedUsersUserIdEditRoute
   '/protected/notifications/$notificationId': typeof ProtectedNotificationsNotificationIdIndexRoute
@@ -674,6 +711,8 @@ export interface FileRoutesByTo {
   '/protected/releases/$releaseId/set-started': typeof ProtectedReleasesReleaseIdSetStartedRoute
   '/protected/tasks/$taskId/delete': typeof ProtectedTasksTaskIdDeleteRoute
   '/protected/tasks/$taskId/edit': typeof ProtectedTasksTaskIdEditRoute
+  '/protected/templates/$templateId/delete': typeof ProtectedTemplatesTemplateIdDeleteRoute
+  '/protected/templates/$templateId/fill': typeof ProtectedTemplatesTemplateIdFillRoute
   '/protected/users/$userId/delete': typeof ProtectedUsersUserIdDeleteRoute
   '/protected/users/$userId/edit': typeof ProtectedUsersUserIdEditRoute
   '/protected/notifications/$notificationId': typeof ProtectedNotificationsNotificationIdIndexRoute
@@ -713,6 +752,8 @@ export interface FileRoutesById {
   '/protected/releases/$releaseId/set-started': typeof ProtectedReleasesReleaseIdSetStartedRoute
   '/protected/tasks/$taskId/delete': typeof ProtectedTasksTaskIdDeleteRoute
   '/protected/tasks/$taskId/edit': typeof ProtectedTasksTaskIdEditRoute
+  '/protected/templates/$templateId/delete': typeof ProtectedTemplatesTemplateIdDeleteRoute
+  '/protected/templates/$templateId/fill': typeof ProtectedTemplatesTemplateIdFillRoute
   '/protected/users/$userId/delete': typeof ProtectedUsersUserIdDeleteRoute
   '/protected/users/$userId/edit': typeof ProtectedUsersUserIdEditRoute
   '/protected/notifications/$notificationId/': typeof ProtectedNotificationsNotificationIdIndexRoute
@@ -753,6 +794,8 @@ export interface FileRouteTypes {
     | '/protected/releases/$releaseId/set-started'
     | '/protected/tasks/$taskId/delete'
     | '/protected/tasks/$taskId/edit'
+    | '/protected/templates/$templateId/delete'
+    | '/protected/templates/$templateId/fill'
     | '/protected/users/$userId/delete'
     | '/protected/users/$userId/edit'
     | '/protected/notifications/$notificationId'
@@ -789,6 +832,8 @@ export interface FileRouteTypes {
     | '/protected/releases/$releaseId/set-started'
     | '/protected/tasks/$taskId/delete'
     | '/protected/tasks/$taskId/edit'
+    | '/protected/templates/$templateId/delete'
+    | '/protected/templates/$templateId/fill'
     | '/protected/users/$userId/delete'
     | '/protected/users/$userId/edit'
     | '/protected/notifications/$notificationId'
@@ -826,6 +871,8 @@ export interface FileRouteTypes {
     | '/protected/releases/$releaseId/set-started'
     | '/protected/tasks/$taskId/delete'
     | '/protected/tasks/$taskId/edit'
+    | '/protected/templates/$templateId/delete'
+    | '/protected/templates/$templateId/fill'
     | '/protected/users/$userId/delete'
     | '/protected/users/$userId/edit'
     | '/protected/notifications/$notificationId/'
@@ -899,6 +946,8 @@ export const routeTree = rootRoute
         "/protected/releases/$releaseId/set-started",
         "/protected/tasks/$taskId/delete",
         "/protected/tasks/$taskId/edit",
+        "/protected/templates/$templateId/delete",
+        "/protected/templates/$templateId/fill",
         "/protected/users/$userId/delete",
         "/protected/users/$userId/edit",
         "/protected/notifications/$notificationId/",
@@ -1002,6 +1051,14 @@ export const routeTree = rootRoute
     },
     "/protected/tasks/$taskId/edit": {
       "filePath": "protected/tasks/$taskId/edit.tsx",
+      "parent": "/protected"
+    },
+    "/protected/templates/$templateId/delete": {
+      "filePath": "protected/templates/$templateId/delete.tsx",
+      "parent": "/protected"
+    },
+    "/protected/templates/$templateId/fill": {
+      "filePath": "protected/templates/$templateId/fill.tsx",
       "parent": "/protected"
     },
     "/protected/users/$userId/delete": {
