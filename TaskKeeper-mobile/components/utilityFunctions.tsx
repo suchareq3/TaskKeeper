@@ -60,6 +60,7 @@ export const useHeaderDropdown = (options: DropdownOption[]) => {
     right: 12,
   };
   const navigation = useNavigation();
+  const theme = useTheme();
 
   const dropdown = (
     <DropdownMenu>
@@ -68,7 +69,7 @@ export const useHeaderDropdown = (options: DropdownOption[]) => {
           <Entypo
             name="dots-three-vertical"
             size={22}
-            color={useTheme().colors.primary}
+            color={theme.colors.primary}
           />
         </Button>
       </DropdownMenuTrigger>

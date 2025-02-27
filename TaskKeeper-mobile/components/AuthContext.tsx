@@ -6,6 +6,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import * as ExpoNotifications from "expo-notifications";
 import { Timestamp } from "@react-native-firebase/firestore";
+import { useError } from "./ErrorContext";
+import { safeExecute } from "@/lib/errorUtils";
 
 const AuthContext = createContext<{
   signIn: (email: string, password: string) => Promise<void>;
@@ -73,6 +75,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
   const [session, setSession] = useState<FirebaseAuthTypes.User | null>(null);
   // TODO: add timeout
   const [isLoading, setIsLoading] = useState(true);
+  const { logError } = useError();
 
   // Listen for auth state changes
   useEffect(() => {
@@ -98,11 +101,9 @@ export function SessionProvider({ children }: PropsWithChildren) {
     setIsLoading(true);
     try {
       await fbFunctions.logInWithPassword(email, password);
-      // TODO: check & update fcm_token in firebase, replace 'logInWithPassword' with a cloud function (like signup)
-      // TODO for fcm_tokens: introduce additional checks & a monthly(?) cloud function failcheck for expired fcm_tokens,
-      // https://firebase.google.com/docs/cloud-messaging/manage-tokens
     } catch (error) {
-      console.error("signIn in AuthContext.tsx has failed!: ", error);
+      logError(error, "Sign In");
+      throw error; // Re-throw the error so the calling component knows the operation failed
     } finally {
       setIsLoading(false);
     }
@@ -114,20 +115,21 @@ export function SessionProvider({ children }: PropsWithChildren) {
     try {
       await fbFunctions.logOutUser();
     } catch (error) {
-      console.error("signOut in AuthContext.tsx has failed!: ", error);
+      logError(error, "Sign Out");
+      throw error; // Re-throw the error so the calling component knows the operation failed
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Sign in with email and password
-  const signUp = async (email: string, password: string, extraData: { [key: string]: string }) => {
+  // Sign up with email and password
+  const signUp = async (email: string, password: string, extraData: { [key: string]: any }) => {
     setIsLoading(true);
     try {
       await fbFunctions.signUpUser(email, password, extraData);
-      // TODO: update the cloud function to add fcm_token & fcm_token's timestamp
     } catch (error) {
-      console.error("signUp in AuthContext.tsx has failed!: ", error);
+      logError(error, "Sign Up");
+      throw error; // Re-throw the error so the calling component knows the operation failed
     } finally {
       setIsLoading(false);
     }
@@ -137,9 +139,10 @@ export function SessionProvider({ children }: PropsWithChildren) {
   const createProject = async (name: string, description: string, githubUrl: string) => {
     setIsLoading(true);
     try {
-      await fbFunctions.createProject(name, description, githubUrl);
+      await safeExecute(() => fbFunctions.createProject(name, description, githubUrl), "Create Project");
     } catch (error) {
-      console.error("createProject in AuthContext.tsx has failed!: ", error);
+      logError(error, "Create Project");
+      throw error; // Re-throw the error so the calling component knows the operation failed
     } finally {
       setIsLoading(false);
     }
@@ -148,9 +151,10 @@ export function SessionProvider({ children }: PropsWithChildren) {
   const editProject = async (projectId: string, name: string, description: string, githubUrl: string) => {
     setIsLoading(true);
     try {
-      await fbFunctions.editProject(projectId, name, description, githubUrl);
+      await safeExecute(() => fbFunctions.editProject(projectId, name, description, githubUrl), "Edit Project");
     } catch (error) {
-      console.error("editProject in AuthContext.tsx has failed!: ", error);
+      logError(error, "Edit Project");
+      throw error; // Re-throw the error so the calling component knows the operation failed
     } finally {
       setIsLoading(false);
     }
@@ -159,9 +163,10 @@ export function SessionProvider({ children }: PropsWithChildren) {
   const removeUserFromProject = async (projectId: string, userId: string) => {
     setIsLoading(true);
     try {
-      await fbFunctions.removeUserFromProject(projectId, userId);
+      await safeExecute(() => fbFunctions.removeUserFromProject(projectId, userId), "Remove User From Project");
     } catch (error) {
-      console.error("removeUserFromProject in AuthContext.tsx has failed!: ", error);
+      logError(error, "Remove User From Project");
+      throw error; // Re-throw the error so the calling component knows the operation failed
     } finally {
       setIsLoading(false);
     }
@@ -170,18 +175,26 @@ export function SessionProvider({ children }: PropsWithChildren) {
   const addUserToProjectViaInviteCode = async (inviteCode: string) => {
     setIsLoading(true);
     try {
-      await fbFunctions.addUserToProjectViaInviteCode(inviteCode);
+      await safeExecute(() => fbFunctions.addUserToProjectViaInviteCode(inviteCode), "Add User To Project Via Invite Code");
     } catch (error) {
-      console.error("addUserToProjectViaInviteCode in AuthContext.tsx has failed!: ", error);
+      logError(error, "Add User To Project Via Invite Code");
+      throw error; // Re-throw the error so the calling component knows the operation failed
     } finally {
       setIsLoading(false);
     }
   };
 
-  type Item = {
-    key: string;
-    label: string;
-    completed: boolean;
+  const refreshProjectInviteCode = async (projectId: string) => {
+    setIsLoading(true);
+    try {
+      const result = await safeExecute(() => fbFunctions.refreshProjectInviteCode(projectId), "Refresh Project Invite Code");
+      return result; // Return the new invite code
+    } catch (error) {
+      logError(error, "Refresh Project Invite Code");
+      throw error; // Re-throw the error so the calling component knows the operation failed
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const createTask = async (
@@ -196,9 +209,10 @@ export function SessionProvider({ children }: PropsWithChildren) {
   ) => {
     setIsLoading(true);
     try {
-      await fbFunctions.createTask(releaseId, projectId, taskName, taskDescription, priorityLevel, taskType, taskAssigneeUid, subTaskdata);
+      await safeExecute(() => fbFunctions.createTask(releaseId, projectId, taskName, taskDescription, priorityLevel, taskType, taskAssigneeUid, subTaskdata), "Create Task");
     } catch (error) {
-      console.error("createTask in AuthContext.tsx has failed!: ", error);
+      logError(error, "Create Task");
+      throw error; // Re-throw the error so the calling component knows the operation failed
     } finally {
       setIsLoading(false);
     }
@@ -207,9 +221,10 @@ export function SessionProvider({ children }: PropsWithChildren) {
   const editTask = async (taskId: string, name: string, description: string, status: string, type: string, priorityLevel: string, assigneeUid: string, subtasks: Array<{ key: string; label: string; completed: boolean }>) => {
     setIsLoading(true);
     try {
-      await fbFunctions.editTask(taskId, name, description, status, type, priorityLevel, assigneeUid, subtasks);
+      await safeExecute(() => fbFunctions.editTask(taskId, name, description, status, type, priorityLevel, assigneeUid, subtasks), "Edit Task");
     } catch (error) {
-      console.error("editTask in AuthContext.tsx has failed!: ", error);
+      logError(error, "Edit Task");
+      throw error; // Re-throw the error so the calling component knows the operation failed
     } finally {
       setIsLoading(false);
     }
@@ -218,20 +233,10 @@ export function SessionProvider({ children }: PropsWithChildren) {
   const deleteTask = async (taskId: string) => {
     setIsLoading(true);
     try {
-      await fbFunctions.deleteTask(taskId);
+      await safeExecute(() => fbFunctions.deleteTask(taskId), "Delete Task");
     } catch (error) {
-      console.error("deleteTask in AuthContext.tsx has failed!: ", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  const refreshProjectInviteCode = async (projectId: string) => {
-    setIsLoading(true);
-    try {
-      await fbFunctions.refreshProjectInviteCode(projectId);
-    } catch (error) {
-      console.error("refreshProjectInviteCode in AuthContext.tsx has failed!: ", error);
+      logError(error, "Delete Task");
+      throw error; // Re-throw the error so the calling component knows the operation failed
     } finally {
       setIsLoading(false);
     }
@@ -240,24 +245,26 @@ export function SessionProvider({ children }: PropsWithChildren) {
   const createRelease = async (projectId: string, releaseName: string, releaseDescription: string, plannedEndDate: Date) => {
     setIsLoading(true);
     try {
-      await fbFunctions.createRelease(projectId, releaseName, releaseDescription, plannedEndDate);
+      await safeExecute(() => fbFunctions.createRelease(projectId, releaseName, releaseDescription, plannedEndDate), "Create Release");
     } catch (error) {
-      console.error("createRelease in AuthContext.tsx has failed!: ", error);
+      logError(error, "Create Release");
+      throw error; // Re-throw the error so the calling component knows the operation failed
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   const getProjectReleases = async (projectId: string) => {
     setIsLoading(true);
     try {
-      await fbFunctions.getProjectReleases(projectId);
+      await safeExecute(() => fbFunctions.getProjectReleases(projectId), "Get Project Releases");
     } catch (error) {
-      console.error("getProjectReleases in AuthContext.tsx has failed!: ", error);
+      logError(error, "Get Project Releases");
+      throw error; // Re-throw the error so the calling component knows the operation failed
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   return (
     <GestureHandlerRootView>

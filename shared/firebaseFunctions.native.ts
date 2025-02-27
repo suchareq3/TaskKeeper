@@ -39,26 +39,56 @@ const someSharedFunction = () => {
 
 const logInWithPassword = (email: string, password: string) => {
   if (email === "" || password === "") {
-    throw "email or password is empty!";
+    throw new Error("Email or password is empty");
   }
+  
   return signInWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
-      console.log("lougged the fuck in! logged in user:" + userCredential.user);
+      console.log("User logged in successfully");
+      return userCredential.user;
     })
     .catch((error) => {
       const errorCode = error.code;
       const errorMessage = error.message;
-      console.log("error during login!: " + error.code + ", " + error.message);
+      
+      // Map Firebase error codes to translation keys
+      let errorKey = "firebase_error_generic";
+      
+      if (errorCode === 'auth/invalid-email') {
+        errorKey = "firebase_error_invalid_email";
+      } else if (errorCode === 'auth/user-disabled') {
+        errorKey = "firebase_error_user_disabled";
+      } else if (errorCode === 'auth/user-not-found') {
+        errorKey = "firebase_error_user_not_found";
+      } else if (errorCode === 'auth/wrong-password') {
+        errorKey = "firebase_error_wrong_password";
+      } else if (errorCode === 'auth/too-many-requests') {
+        errorKey = "firebase_error_too_many_requests";
+      } else if (errorCode === 'auth/network-request-failed') {
+        errorKey = "firebase_error_network_request_failed";
+      }
+      
+      console.error(`Login error: ${errorCode} - ${errorMessage}`);
+      
+      // Create an error object with the translation key
+      const translatedError = new Error(errorKey);
+      // Add the original error code as a property for debugging
+      (translatedError as any).code = errorCode;
+      // Add a flag to indicate this is a translation key, not a direct message
+      (translatedError as any).isTranslationKey = true;
+      
+      throw translatedError;
     });
 };
 
 const logOutUser = () => {
   return signOut(auth)
     .then(() => {
-      console.log("logout successful!");
+      console.log("Logout successful");
     })
     .catch((error) => {
-      console.log("something went uh-oh during logging out! oopsie woopsie! >w< " + error);
+      console.error("Error during logout:", error);
+      throw new Error("firebase_error_generic");
     });
 };
 
@@ -78,7 +108,7 @@ const signUpUser = async (email: string, password: string, extraData: { [key: st
   let user: FirebaseAuthTypes.UserCredential | null = null;
   try {
     if (!email || !password) {
-      throw new Error("Missing email or password.");
+      throw new Error("Email or password is empty");
     }
     extraData["fcm_token"] = await messaging().getToken();
     // Step 1: Create user in Auth
@@ -95,9 +125,8 @@ const signUpUser = async (email: string, password: string, extraData: { [key: st
         last_updated_on: Timestamp.now(),
       });
 
-    logInWithPassword(email, password);
     return { success: true, uid: user_uid };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error creating user:", error);
     // Rollback: If the Firestore write fails after creating the Auth user, delete the Auth user.
     if (user) {
@@ -108,14 +137,42 @@ const signUpUser = async (email: string, password: string, extraData: { [key: st
         console.error("Failed to rollback auth user:", deleteError);
       }
     }
-    throw Error("Error creating new user: " + error);
+    
+    // Map Firebase error codes to translation keys
+    let errorKey = "firebase_error_generic";
+    const errorCode = error.code;
+    
+    if (errorCode === 'auth/email-already-in-use') {
+      errorKey = "firebase_error_email_already_in_use";
+    } else if (errorCode === 'auth/invalid-email') {
+      errorKey = "firebase_error_invalid_email";
+    } else if (errorCode === 'auth/operation-not-allowed') {
+      errorKey = "firebase_error_operation_not_allowed";
+    } else if (errorCode === 'auth/weak-password') {
+      errorKey = "firebase_error_weak_password";
+    }
+    
+    // Create an error object with the translation key
+    const translatedError = new Error(errorKey);
+    // Add the original error code as a property for debugging
+    (translatedError as any).code = errorCode;
+    // Add a flag to indicate this is a translation key, not a direct message
+    (translatedError as any).isTranslationKey = true;
+    
+    throw translatedError;
   }
 };
 
-// NOTE: this is a cloud function because it involves password generation, which is safer handled on the server
-// TODO: consider writing a separate onTrigger daily/weekly/monthly function for regenerating invite codes. users with invite code permissions should be able to see the remaining time until the invite code expires
 const createProject = async (name: string, description: string, githubUrl: string) => {
   try {
+    // Validate input parameters
+    if (!name || name.trim() === '') {
+      const errorKey = "project_error_name_required";
+      const translatedError = new Error(errorKey);
+      (translatedError as any).isTranslationKey = true;
+      throw translatedError;
+    }
+    
     const currentUser = auth.currentUser;
     console.log("currentUser:", currentUser);
     if (currentUser) {
@@ -123,35 +180,119 @@ const createProject = async (name: string, description: string, githubUrl: strin
       const createProjectFunction = functions.httpsCallable("createProject");
       const result = await createProjectFunction({ name, description, githubUrl, uid });
       console.log(result);
+      return result;
     } else {
-      console.error("createProject - logged-in user not found!");
+      const errorKey = "project_error_user_not_authenticated";
+      const translatedError = new Error(errorKey);
+      (translatedError as any).isTranslationKey = true;
+      throw translatedError;
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error creating new project:", error);
-    throw error;
+    
+    // If it's already a translated error, just rethrow it
+    if (error && (error as any).isTranslationKey) {
+      throw error;
+    }
+    
+    // Handle specific Firebase errors
+    const errorCode = error?.code || '';
+    let errorKey = "project_error_unknown";
+    
+    if (errorCode.includes('permission-denied')) {
+      errorKey = "project_error_permission_denied";
+    } else if (errorCode.includes('not-found')) {
+      errorKey = "project_error_not_found";
+    } else if (errorCode.includes('already-exists')) {
+      errorKey = "project_error_already_exists";
+    } else if (errorCode.includes('unauthenticated')) {
+      errorKey = "project_error_user_not_authenticated";
+    } else if (errorCode.includes('invalid-argument')) {
+      errorKey = "project_error_invalid_argument";
+    }
+    
+    // Create an error object with the translation key
+    const translatedError = new Error(errorKey);
+    // Add the original error code as a property for debugging
+    (translatedError as any).code = errorCode;
+    // Add a flag to indicate this is a translation key, not a direct message
+    (translatedError as any).isTranslationKey = true;
+    
+    throw translatedError;
   }
 };
 
 const refreshProjectInviteCode = async (projectId: string) => {
   try {
+    if (!projectId || projectId.trim() === '') {
+      const errorKey = "project_error_id_required";
+      const translatedError = new Error(errorKey);
+      (translatedError as any).isTranslationKey = true;
+      throw translatedError;
+    }
+    
     const currentUser = auth.currentUser;
     console.log("currentUser:", currentUser);
     if (currentUser) {
       const uid = currentUser.uid;
-      const createProjectFunction = functions.httpsCallable("refreshProjectInviteCode");
-      const result = await createProjectFunction({ projectId });
+      const refreshInviteCodeFunction = functions.httpsCallable("refreshProjectInviteCode");
+      const result = await refreshInviteCodeFunction({ projectId });
       console.log(result);
+      return result;
     } else {
-      console.error("createProject - logged-in user not found!");
+      const errorKey = "project_error_user_not_authenticated";
+      const translatedError = new Error(errorKey);
+      (translatedError as any).isTranslationKey = true;
+      throw translatedError;
     }
-  } catch (error) {
-    console.error("Error creating new project:", error);
-    throw error;
+  } catch (error: any) {
+    console.error("Error refreshing project invite code:", error);
+    
+    // If it's already a translated error, just rethrow it
+    if (error && (error as any).isTranslationKey) {
+      throw error;
+    }
+    
+    // Handle specific Firebase errors
+    const errorCode = error?.code || '';
+    let errorKey = "project_error_unknown";
+    
+    if (errorCode.includes('permission-denied')) {
+      errorKey = "project_error_permission_denied";
+    } else if (errorCode.includes('not-found')) {
+      errorKey = "project_error_not_found";
+    } else if (errorCode.includes('unauthenticated')) {
+      errorKey = "project_error_user_not_authenticated";
+    }
+    
+    // Create an error object with the translation key
+    const translatedError = new Error(errorKey);
+    // Add the original error code as a property for debugging
+    (translatedError as any).code = errorCode;
+    // Add a flag to indicate this is a translation key, not a direct message
+    (translatedError as any).isTranslationKey = true;
+    
+    throw translatedError;
   }
 };
 
 const editProject = async (projectId: string, name: string, description: string, githubUrl: string) => {
   try {
+    // Validate input parameters
+    if (!projectId || projectId.trim() === '') {
+      const errorKey = "project_error_id_required";
+      const translatedError = new Error(errorKey);
+      (translatedError as any).isTranslationKey = true;
+      throw translatedError;
+    }
+    
+    if (!name || name.trim() === '') {
+      const errorKey = "project_error_name_required";
+      const translatedError = new Error(errorKey);
+      (translatedError as any).isTranslationKey = true;
+      throw translatedError;
+    }
+    
     const currentUser = auth.currentUser;
     if (currentUser) {
       const lastUpdatedOn = Timestamp.now();
@@ -169,16 +310,61 @@ const editProject = async (projectId: string, name: string, description: string,
           return { success: true, projectData: { name: name, description: description, githubUrl: githubUrl, lastUpdatedOn: lastUpdatedOn } };
         });
     } else {
-      throw new Error("User not authenticated");
+      const errorKey = "project_error_user_not_authenticated";
+      const translatedError = new Error(errorKey);
+      (translatedError as any).isTranslationKey = true;
+      throw translatedError;
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error editing project:", error);
-    throw error;
+    
+    // If it's already a translated error, just rethrow it
+    if (error && (error as any).isTranslationKey) {
+      throw error;
+    }
+    
+    // Handle specific Firebase errors
+    const errorCode = error?.code || '';
+    let errorKey = "project_error_unknown";
+    
+    if (errorCode.includes('permission-denied')) {
+      errorKey = "project_error_permission_denied";
+    } else if (errorCode.includes('not-found')) {
+      errorKey = "project_error_not_found";
+    } else if (errorCode.includes('unauthenticated')) {
+      errorKey = "project_error_user_not_authenticated";
+    } else if (errorCode.includes('invalid-argument')) {
+      errorKey = "project_error_invalid_argument";
+    }
+    
+    // Create an error object with the translation key
+    const translatedError = new Error(errorKey);
+    // Add the original error code as a property for debugging
+    (translatedError as any).code = errorCode;
+    // Add a flag to indicate this is a translation key, not a direct message
+    (translatedError as any).isTranslationKey = true;
+    
+    throw translatedError;
   }
 };
 
 const removeUserFromProject = async (projectId: string, userId: string) => {
   try {
+    // Validate input parameters
+    if (!projectId || projectId.trim() === '') {
+      const errorKey = "project_error_id_required";
+      const translatedError = new Error(errorKey);
+      (translatedError as any).isTranslationKey = true;
+      throw translatedError;
+    }
+    
+    if (!userId || userId.trim() === '') {
+      const errorKey = "project_error_user_id_required";
+      const translatedError = new Error(errorKey);
+      (translatedError as any).isTranslationKey = true;
+      throw translatedError;
+    }
+    
     const currentUser = auth.currentUser;
     if (currentUser) {
       await db
@@ -189,40 +375,150 @@ const removeUserFromProject = async (projectId: string, userId: string) => {
         })
         .then(() => {
           console.log("success removing user from project!");
+          return { success: true };
         });
+    } else {
+      const errorKey = "project_error_user_not_authenticated";
+      const translatedError = new Error(errorKey);
+      (translatedError as any).isTranslationKey = true;
+      throw translatedError;
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error removing user from project!:", error);
-    throw error;
+    
+    // If it's already a translated error, just rethrow it
+    if (error && (error as any).isTranslationKey) {
+      throw error;
+    }
+    
+    // Handle specific Firebase errors
+    const errorCode = error?.code || '';
+    let errorKey = "project_error_unknown";
+    
+    if (errorCode.includes('permission-denied')) {
+      errorKey = "project_error_permission_denied";
+    } else if (errorCode.includes('not-found')) {
+      errorKey = "project_error_not_found";
+    } else if (errorCode.includes('unauthenticated')) {
+      errorKey = "project_error_user_not_authenticated";
+    }
+    
+    // Create an error object with the translation key
+    const translatedError = new Error(errorKey);
+    // Add the original error code as a property for debugging
+    (translatedError as any).code = errorCode;
+    // Add a flag to indicate this is a translation key, not a direct message
+    (translatedError as any).isTranslationKey = true;
+    
+    throw translatedError;
   }
 };
 
 const deleteProject = async (projectId: string) => {
   try {
+    // Validate input parameters
+    if (!projectId || projectId.trim() === '') {
+      const errorKey = "project_error_id_required";
+      const translatedError = new Error(errorKey);
+      (translatedError as any).isTranslationKey = true;
+      throw translatedError;
+    }
+    
     // NOTE: batch deletes are limited to 500 writes, so only 499 tasks.
-    // this should be fine for now but should be re-considered for future scalability
     const currentUser = auth.currentUser;
-    if (!currentUser) return;
-
+    if (!currentUser) {
+      const errorKey = "project_error_user_not_authenticated";
+      const translatedError = new Error(errorKey);
+      (translatedError as any).isTranslationKey = true;
+      throw translatedError;
+    }
+    
+    // Verify user is a manager of the project
+    const projectDoc = await db.collection("projects").doc(projectId).get();
+    if (!projectDoc.exists) {
+      const errorKey = "project_error_not_found";
+      const translatedError = new Error(errorKey);
+      (translatedError as any).isTranslationKey = true;
+      throw translatedError;
+    }
+    
+    const projectData = projectDoc.data();
+    if (!projectData?.members?.[currentUser.uid]?.isManager) {
+      const errorKey = "project_error_not_manager";
+      const translatedError = new Error(errorKey);
+      (translatedError as any).isTranslationKey = true;
+      throw translatedError;
+    }
+    
+    // Get all releases for this project
+    const releasesSnapshot = await db.collection("releases").where("project_id", "==", projectId).get();
+    
+    // Get all tasks for each release
     const batch = db.batch();
-    const projectRef = db.collection("projects").doc(projectId);
-    const tasksSnapshot = await db.collection("tasks").where("project_id", "==", projectId).get();
-
-    // Add each task deletion to the batch
-    tasksSnapshot.forEach((doc) => {
-      batch.delete(doc.ref);
-    });
-
-    // Delete the project itself
-    batch.delete(projectRef);
-
-    // Commit the batch (atomic operation)
-    await batch.commit();
-
-    console.log("Project and all associated tasks deleted successfully.");
-  } catch (error) {
+    let operationCount = 0;
+    
+    // Delete all tasks for each release
+    for (const releaseDoc of releasesSnapshot.docs) {
+      const tasksSnapshot = await db.collection("tasks").where("release_id", "==", releaseDoc.id).get();
+      
+      for (const taskDoc of tasksSnapshot.docs) {
+        batch.delete(taskDoc.ref);
+        operationCount++;
+        
+        if (operationCount >= 499) {
+          // If we're approaching the batch limit, commit the current batch and create a new one
+          await batch.commit();
+          console.log(`Committed batch with ${operationCount} operations`);
+          operationCount = 0;
+          // Create a new batch
+          const newBatch = db.batch();
+        }
+      }
+      
+      // Delete the release
+      batch.delete(releaseDoc.ref);
+      operationCount++;
+    }
+    
+    // Delete the project
+    batch.delete(db.collection("projects").doc(projectId));
+    operationCount++;
+    
+    // Commit any remaining operations
+    if (operationCount > 0) {
+      await batch.commit();
+      console.log(`Committed final batch with ${operationCount} operations`);
+    }
+    
+    return { success: true };
+  } catch (error: any) {
     console.error("Error deleting project:", error);
-    throw error;
+    
+    // If it's already a translated error, just rethrow it
+    if (error && (error as any).isTranslationKey) {
+      throw error;
+    }
+    
+    // Handle specific Firebase errors
+    const errorCode = error?.code || '';
+    let errorKey = "project_error_unknown";
+    
+    if (errorCode.includes('permission-denied')) {
+      errorKey = "project_error_permission_denied";
+    } else if (errorCode.includes('not-found')) {
+      errorKey = "project_error_not_found";
+    } else if (errorCode.includes('unauthenticated')) {
+      errorKey = "project_error_user_not_authenticated";
+    }
+    
+    // Create an error object with the translation key
+    const translatedError = new Error(errorKey);
+    // Add the original error code as a property for debugging
+    (translatedError as any).code = errorCode;
+    // Add a flag to indicate this is a translation key, not a direct message
+    (translatedError as any).isTranslationKey = true;
+    
+    throw translatedError;
   }
 };
 
@@ -389,6 +685,13 @@ const createTask = async (
   subTaskdata: { key: string; label: string; completed: boolean }[]
 ) => {
   try {
+    // Validate that task name is not empty
+    if (!taskName || taskName.trim() === '') {
+      const error = new Error("task_error_name_required");
+      (error as any).isTranslationKey = true;
+      throw error;
+    }
+    
     const currentUser = auth.currentUser;
     if (currentUser) {
       let taskData = {
@@ -451,6 +754,13 @@ const editTask = async (
 
 const createRelease = async (projectId: string, releaseName: string, releaseDescription: string, plannedEndDate: Date) => {
   try {
+    // Validate that release name is not empty
+    if (!releaseName || releaseName.trim() === '') {
+      const error = new Error("release_error_name_required");
+      (error as any).isTranslationKey = true;
+      throw error;
+    }
+
     const currentUser = auth.currentUser;
     if (currentUser) {
       const releaseData = {

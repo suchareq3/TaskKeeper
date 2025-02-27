@@ -20,9 +20,11 @@ import { PRIORITY_OPTIONS, TASK_TYPE_OPTIONS, TASK_STATUS_OPTIONS } from "@/comp
 import { getAuth } from "@react-native-firebase/auth";
 import { useTheme } from "@react-navigation/native";
 import { Fontisto, Ionicons } from "@expo/vector-icons";
+import { useError } from "@/components/ErrorContext";
 
 export default function CreateTask() {
   const { createTask } = useSession();
+  const { logError } = useError();
   const { projects } = useLocalSearchParams();
   const parsedProjects = projects ? JSON.parse(projects as string) : [];
 
@@ -307,14 +309,22 @@ export default function CreateTask() {
 
                   <Button
                     onPress={() => {
+                      // Client-side validation for empty task name
+                      if (!taskName || taskName.trim() === '') {
+                        const error = new Error("task_error_name_required");
+                        (error as any).isTranslationKey = true;
+                        logError(error, "Create Task");
+                        return;
+                      }
                       try {
                         createTask(selectedRelease!.value, selectedProject.value.projectId, taskName, taskDescription, priorityLevel.value, taskType.value, taskAssignee!.value, subtaskData).then(
                           () => {
                             router.back();
                           }
                         );
-                      } catch (e) {
-                        console.log("smth went wrong: ", e);
+                      } catch (error) {
+                        console.log("Error creating task:", error);
+                        logError(error, "Create Task");
                       }
                     }}
                   >

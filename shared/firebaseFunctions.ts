@@ -56,29 +56,49 @@ const someSharedFunction = () => {
   console.log(`Called from shared function! Project type: ${platform}`);
 };
 
-const logInWithPassword = (email: string, password: string) => {
+const logInWithPassword = async (email: string, password: string) => {
   if (email === "" || password === "") {
-    throw "email or password is empty!";
+    throw new Error("Email or password is empty");
   }
-  return signInWithEmailAndPassword(auth, email, password)
-    .then((userCredential) => {
-      console.log("lougged the fuck in! logged in user:" + userCredential.user);
-    })
-    .catch((error) => {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      console.log("error during login!: " + error.code + ", " + error.message);
-    });
+  
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    console.log("User logged in successfully");
+    return userCredential.user;
+  } catch (error: any) {
+    const errorCode = error.code;
+    const errorMessage = error.message;
+    
+    // Map Firebase error codes to user-friendly messages
+    let userFriendlyMessage = "Failed to sign in";
+    
+    if (errorCode === 'auth/invalid-email') {
+      userFriendlyMessage = "Invalid email address format";
+    } else if (errorCode === 'auth/user-disabled') {
+      userFriendlyMessage = "This account has been disabled";
+    } else if (errorCode === 'auth/user-not-found') {
+      userFriendlyMessage = "No account found with this email";
+    } else if (errorCode === 'auth/wrong-password') {
+      userFriendlyMessage = "Incorrect password";
+    } else if (errorCode === 'auth/too-many-requests') {
+      userFriendlyMessage = "Too many failed login attempts. Please try again later";
+    } else if (errorCode === 'auth/network-request-failed') {
+      userFriendlyMessage = "Network error. Please check your connection";
+    }
+    
+    console.error(`Login error: ${errorCode} - ${errorMessage}`);
+    throw new Error(userFriendlyMessage);
+  }
 };
 
-const logOutUser = () => {
-  return signOut(auth)
-    .then(() => {
-      console.log("logout successful!");
-    })
-    .catch((error) => {
-      console.log("something went uh-oh during logging out! oopsie woopsie! >w< " + error);
-    });
+const logOutUser = async () => {
+  try {
+    await signOut(auth);
+    console.log("Logout successful");
+  } catch (error: any) {
+    console.error("Error during logout:", error);
+    throw new Error("Failed to sign out. Please try again.");
+  }
 };
 
 const checkUserStatus = async () => {
@@ -96,35 +116,63 @@ const signUpUser = async (email: string, password: string, extraData: { [key: st
   let userCredential: any = null;
   try {
     if (!email || !password) {
-      throw new Error("Missing email or password.");
+      throw new Error("Email and password are required");
     }
+    
     extraData["fcm_token"] = await getToken(getMessaging());
 
     // Step 1: Create user in Auth
-    userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    try {
+      userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    } catch (authError: any) {
+      // Map Firebase auth error codes to user-friendly messages
+      if (authError.code === 'auth/email-already-in-use') {
+        throw new Error("An account with this email already exists");
+      } else if (authError.code === 'auth/invalid-email') {
+        throw new Error("Invalid email address format");
+      } else if (authError.code === 'auth/operation-not-allowed') {
+        throw new Error("Email/password accounts are not enabled");
+      } else if (authError.code === 'auth/weak-password') {
+        throw new Error("Password is too weak");
+      } else {
+        throw new Error("Failed to create account: " + authError.message);
+      }
+    }
+    
     const user_uid = userCredential.user.uid;
 
     // Step 2: Create user record in Firestore
-    await setDoc(doc(db, "users", user_uid), {
-      ...extraData,
-      created_on: Timestamp.now(),
-      last_updated_on: Timestamp.now(),
-    });
+    try {
+      await setDoc(doc(db, "users", user_uid), {
+        ...extraData,
+        created_on: Timestamp.now(),
+        last_updated_on: Timestamp.now(),
+      });
+    } catch (firestoreError) {
+      // Rollback: If the Firestore write fails after creating the Auth user, delete the Auth user
+      if (userCredential) {
+        try {
+          await userCredential.user.delete();
+          console.log("Rolled back auth user creation due to Firestore error");
+        } catch (deleteError) {
+          console.error("Failed to rollback auth user:", deleteError);
+        }
+      }
+      throw new Error("Failed to create user profile");
+    }
 
     await logInWithPassword(email, password);
     return { success: true, uid: user_uid };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error creating user:", error);
-    // Rollback: If the Firestore write fails after creating the Auth user, delete the Auth user.
-    if (userCredential) {
-      try {
-        await userCredential.user.delete();
-        console.log("Rolled back auth user creation due to Firestore error.");
-      } catch (deleteError) {
-        console.error("Failed to rollback auth user:", deleteError);
-      }
+    
+    // If it's already an Error object with a message, just rethrow it
+    if (error instanceof Error) {
+      throw error;
     }
-    throw new Error("Error creating new user: " + error);
+    
+    // Otherwise, create a new Error with a generic message
+    throw new Error("Failed to create account");
   }
 };
 
@@ -169,6 +217,14 @@ const signUpUserNoToken = async (email: string, password: string, extraData: { [
 // TODO: consider writing a separate onTrigger daily/weekly/monthly function for regenerating invite codes. users with invite code permissions should be able to see the remaining time until the invite code expires
 const createProject = async (name: string, description: string, githubUrl: string) => {
   try {
+    // Validate input parameters
+    if (!name || name.trim() === '') {
+      const errorKey = "project_error_name_required";
+      const translatedError = new Error(errorKey);
+      (translatedError as any).isTranslationKey = true;
+      throw translatedError;
+    }
+    
     const currentUser = auth.currentUser;
     console.log("currentUser:", currentUser);
     if (currentUser) {
@@ -176,30 +232,99 @@ const createProject = async (name: string, description: string, githubUrl: strin
       const createProjectFunction = httpsCallable(functions, "createProject");
       const result = await createProjectFunction({ name, description, githubUrl, uid });
       console.log(result);
+      return result;
     } else {
-      console.error("createProject - logged-in user not found!");
+      const errorKey = "project_error_user_not_authenticated";
+      const translatedError = new Error(errorKey);
+      (translatedError as any).isTranslationKey = true;
+      throw translatedError;
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error creating new project:", error);
-    throw error;
+    
+    // If it's already a translated error, just rethrow it
+    if (error && (error as any).isTranslationKey) {
+      throw error;
+    }
+    
+    // Handle specific Firebase errors
+    const errorCode = error?.code || '';
+    let errorKey = "project_error_unknown";
+    
+    if (errorCode.includes('permission-denied')) {
+      errorKey = "project_error_permission_denied";
+    } else if (errorCode.includes('not-found')) {
+      errorKey = "project_error_not_found";
+    } else if (errorCode.includes('already-exists')) {
+      errorKey = "project_error_already_exists";
+    } else if (errorCode.includes('unauthenticated')) {
+      errorKey = "project_error_user_not_authenticated";
+    } else if (errorCode.includes('invalid-argument')) {
+      errorKey = "project_error_invalid_argument";
+    }
+    
+    // Create an error object with the translation key
+    const translatedError = new Error(errorKey);
+    // Add the original error code as a property for debugging
+    (translatedError as any).code = errorCode;
+    // Add a flag to indicate this is a translation key, not a direct message
+    (translatedError as any).isTranslationKey = true;
+    
+    throw translatedError;
   }
 };
 
 const refreshProjectInviteCode = async (projectId: string) => {
   try {
+    if (!projectId || projectId.trim() === '') {
+      const errorKey = "project_error_id_required";
+      const translatedError = new Error(errorKey);
+      (translatedError as any).isTranslationKey = true;
+      throw translatedError;
+    }
+    
     const currentUser = auth.currentUser;
     console.log("currentUser:", currentUser);
     if (currentUser) {
       const uid = currentUser.uid;
-      const createProjectFunction = httpsCallable(functions, "refreshProjectInviteCode");
-      const result = await createProjectFunction({ projectId });
+      const refreshInviteCodeFunction = httpsCallable(functions, "refreshProjectInviteCode");
+      const result = await refreshInviteCodeFunction({ projectId });
       console.log(result);
+      return result;
     } else {
-      console.error("createProject - logged-in user not found!");
+      const errorKey = "project_error_user_not_authenticated";
+      const translatedError = new Error(errorKey);
+      (translatedError as any).isTranslationKey = true;
+      throw translatedError;
     }
-  } catch (error) {
-    console.error("Error creating new project:", error);
-    throw error;
+  } catch (error: any) {
+    console.error("Error refreshing project invite code:", error);
+    
+    // If it's already a translated error, just rethrow it
+    if (error && (error as any).isTranslationKey) {
+      throw error;
+    }
+    
+    // Handle specific Firebase errors
+    const errorCode = error?.code || '';
+    let errorKey = "project_error_unknown";
+    
+    if (errorCode.includes('permission-denied')) {
+      errorKey = "project_error_permission_denied";
+    } else if (errorCode.includes('not-found')) {
+      errorKey = "project_error_not_found";
+    } else if (errorCode.includes('unauthenticated')) {
+      errorKey = "project_error_user_not_authenticated";
+    }
+    
+    // Create an error object with the translation key
+    const translatedError = new Error(errorKey);
+    // Add the original error code as a property for debugging
+    (translatedError as any).code = errorCode;
+    // Add a flag to indicate this is a translation key, not a direct message
+    (translatedError as any).isTranslationKey = true;
+    
+    throw translatedError;
   }
 };
 
@@ -415,6 +540,13 @@ const createTask = async (
   subTaskdata: { key: string; label: string; completed: boolean }[]
 ) => {
   try {
+    // Validate that task name is not empty
+    if (!taskName || taskName.trim() === '') {
+      const error = new Error("task_error_name_required");
+      (error as any).isTranslationKey = true;
+      throw error;
+    }
+
     const currentUser = auth.currentUser;
     if (currentUser) {
       let taskData = {
@@ -477,6 +609,13 @@ const editTask = async (
 
 const createRelease = async (projectId: string, releaseName: string, releaseDescription: string, plannedEndDate: Date) => {
   try {
+    // Validate that release name is not empty
+    if (!releaseName || releaseName.trim() === '') {
+      const error = new Error("release_error_name_required");
+      (error as any).isTranslationKey = true;
+      throw error;
+    }
+
     const currentUser = auth.currentUser;
     if (currentUser) {
       const releaseData = {

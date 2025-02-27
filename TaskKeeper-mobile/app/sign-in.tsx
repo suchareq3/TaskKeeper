@@ -1,5 +1,5 @@
 import { router, useRouter } from "expo-router";
-import { KeyboardAvoidingView, TextInput, View } from "react-native";
+import { KeyboardAvoidingView, TextInput, View, ActivityIndicator } from "react-native";
 import { useSession } from "@/components/AuthContext";
 import { fbFunctions } from "../../shared/firebaseFunctions";
 import { useState } from "react";
@@ -9,11 +9,54 @@ import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
 import Logo from "@/components/Logo";
 import i18n from "@/components/translations";
+import { useError } from "@/components/ErrorContext";
 
 export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const { signIn } = useSession();
+  const { showError } = useError();
+
+  const validateForm = () => {
+    if (!email.trim()) {
+      showError(i18n.t("app_signIn_error_emailRequired") || "Email is required");
+      return false;
+    }
+    
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      showError(i18n.t("app_signIn_error_invalidEmail") || "Please enter a valid email address");
+      return false;
+    }
+    
+    if (!password.trim()) {
+      showError(i18n.t("app_signIn_error_passwordRequired") || "Password is required");
+      return false;
+    }
+    
+    return true;
+  };
+
+  const handleSignIn = async () => {
+    if (!validateForm()) {
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      await signIn(email, password);
+      router.replace("/");
+    } catch (error) {
+      // Error is already logged and displayed by the error context
+      // No need to do anything else here
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <KeyboardAvoidingView className="flex-1 flex-col justify-between items-center bg-background h-full py-20">
       <View className="flex">
@@ -40,18 +83,20 @@ export default function SignIn() {
           aria-errormessage="inputError"
         />
         <Button
-          onPress={() => {
-            //TODO: implement proper error handling with user-facing alerts
-            signIn(email, password);
-            // Navigate after signing in.
-            // TODO: You may want to tweak this to ensure sign-in is successful before navigating.
-            router.replace("/");
-          }}
+          onPress={handleSignIn}
+          disabled={isLoading}
         >
-          <Text>{i18n.t("app_signIn_button_signIn")}</Text>
+          {isLoading ? (
+            <ActivityIndicator color="#fff" size="small" />
+          ) : (
+            <Text>{i18n.t("app_signIn_button_signIn")}</Text>
+          )}
         </Button>
-        <Button onPress={() => router.navigate("/sign-up")}>
-          <Text>{i18n.t("app_signIn_button_signUp")}</Text>
+        <Button
+          onPress={() => router.push("/sign-up")}
+          disabled={isLoading}
+        >
+          <Text>{i18n.t("app_signIn_button_createAccount")}</Text>
         </Button>
       </View>
     </KeyboardAvoidingView>
