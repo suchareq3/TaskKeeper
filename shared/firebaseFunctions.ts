@@ -34,7 +34,7 @@ import {
   getDownloadURL,
   deleteObject,
   connectStorageEmulator,
-} from "../taskkeeper-web2/exportedModules.js";
+} from "../TaskKeeper-web/exportedModules.js";
 import firebaseConfig from "./firebaseWebConfig";
 import { appStartInfo, platform } from "./shared";
 import { FirebaseFunctions } from "./firebaseInterface";
