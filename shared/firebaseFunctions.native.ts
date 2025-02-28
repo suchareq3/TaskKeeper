@@ -15,6 +15,7 @@ import {
   firestore,
   Timestamp,
   FirebaseAuthTypes,
+  getStorage,
 } from "../TaskKeeper-mobile/exportedModules.js";
 import { platform } from "./shared";
 import { FirebaseFunctions } from "./firebaseInterface";
@@ -26,6 +27,7 @@ app.firestore().settings({
   persistence: true,
 });
 const functions = getFunctions();
+const storage = getStorage();
 
 // TODO: DEV-ONLY! remove these lines when deploying to production
 auth.useEmulator("http://localhost:9099");
@@ -998,6 +1000,154 @@ const getUserNotifications = async () => {
   }
 };
 
+const signUpUserNoToken = async (email: string, password: string, extraData: { [key: string]: any }) => {
+  try {
+    if (!email || !password) {
+      throw new Error("Missing email or password.");
+    }
+
+    extraData["fcm_token"] = "";
+
+    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+    const user_uid = userCredential.user.uid;
+
+    await db
+      .collection("users")
+      .doc(user_uid)
+      .set({
+        ...extraData,
+        created_on: Timestamp.now(),
+        last_updated_on: Timestamp.now(),
+      });
+
+    return { success: true, uid: user_uid };
+  } catch (error) {
+    console.error("Error signing up user:", error);
+    throw error;
+  }
+};
+
+const getAllUsers = async () => {
+  const snapshot = await db.collection("users").get();
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+};
+
+const getUserById = async (userId: string) => {
+  const snapshot = await db.collection("users").doc(userId).get();
+  return snapshot.exists ? { id: snapshot.id, ...snapshot.data() } : null;
+};
+
+const updateUserDetails = async (userId: string, data: { [key: string]: any }) => {
+  await db.collection("users").doc(userId).update(data);
+};
+
+const deleteUserById = async (userId: string) => {
+  await db.collection("users").doc(userId).delete();
+};
+
+const getAllProjects = async () => {
+  const snapshot = await db.collection("projects").get();
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+};
+
+const getProjectById = async (projectId: string) => {
+  const snapshot = await db.collection("projects").doc(projectId).get();
+  return snapshot.exists ? { id: snapshot.id, ...snapshot.data() } : null;
+};
+
+const editProjectWithMembers = async (
+  projectId: string,
+  updatedFields: Partial<{
+    name: string;
+    description: string;
+    github_url: string;
+    members: Record<string, { isManager: boolean }>;
+  }>
+) => {
+  await db.collection("projects").doc(projectId).update(updatedFields);
+};
+
+const getReleaseById = async (releaseId: string) => {
+  const snapshot = await db.collection("releases").doc(releaseId).get();
+  return snapshot.exists ? { id: snapshot.id, ...snapshot.data() } : null;
+};
+
+const getAllNotifications = async () => {
+  const snapshot = await db.collection("notifications").get();
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+};
+
+const createCustomNotification = async (title: string, body: string, userUids: string[]) => {
+  await db.collection("notifications").add({
+    title,
+    body,
+    userUids,
+    created_on: Timestamp.now(),
+  });
+};
+
+const getNotificationById = async (notificationId: string) => {
+  const snapshot = await db.collection("notifications").doc(notificationId).get();
+  return snapshot.exists ? { id: snapshot.id, ...snapshot.data() } : null;
+};
+
+const deleteNotificationById = async (notificationId: string) => {
+  await db.collection("notifications").doc(notificationId).delete();
+};
+
+const getAllTemplates = async () => {
+  const snapshot = await db.collection("templates").get();
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+};
+
+const getTables = async () => {
+  return ["users", "projects", "tasks", "releases", "notifications", "templates"];
+};
+
+const getTableFields = async (table: string) => {
+  const snapshot = await db.collection("tableFields").doc(table).get();
+  return snapshot.exists ? snapshot.data() : null;
+};
+
+const uploadTemplate = async (name: string, table: string, fields: string[], file: File) => {
+  await db.collection("templates").add({
+    name,
+    table,
+    fields,
+    filePath: file.name,
+    created_on: Timestamp.now(),
+  });
+};
+
+const handleDelete = async (templateId: string) => {
+  await db.collection("templates").doc(templateId).delete();
+};
+
+const handleDownload = async (filePath: string): Promise<void> => {
+  const url = await storage.ref(filePath).getDownloadURL();
+  window.open(url, "_blank");
+};
+
+const getDownloadUrlForPath = async (filePath: string): Promise<string> => {
+  return await storage.ref(filePath).getDownloadURL();
+};
+
+const getAllTableRecords = async (table: string) => {
+  const snapshot = await db.collection(table).get();
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+};
+
+const getAllTasks = async () => {
+  const snapshot = await db.collection("tasks").get();
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+};
+
+const getTaskById = async (taskId: string) => {
+  const snapshot = await db.collection("tasks").doc(taskId).get();
+  return snapshot.exists ? { id: snapshot.id, ...snapshot.data() } : null;
+};
+
+
 export const fbFunctions: FirebaseFunctions = {
   someSharedFunction,
   logInWithPassword,
@@ -1005,7 +1155,15 @@ export const fbFunctions: FirebaseFunctions = {
   checkUserStatus,
   checkUserLoginStatus,
   signUpUser,
+  signUpUserNoToken, // Dodano
+  getAllUsers, // Dodano
+  getUserById, // Dodano
+  updateUserDetails, // Dodano
+  deleteUserById, // Dodano
   createProject,
+  getAllProjects, // Dodano
+  getProjectById, // Dodano
+  editProjectWithMembers, // Dodano
   editProject,
   removeUserFromProject,
   deleteProject,
@@ -1014,18 +1172,33 @@ export const fbFunctions: FirebaseFunctions = {
   loadReleaseTasks,
   deleteTask,
   addUserToProjectViaInviteCode,
-  refreshProjectInviteCode,
   updateProjectMemberManagerStatus,
   createTask,
   editTask,
   createRelease,
   getProjectReleases,
+  getAllReleases,
+  getReleaseById, // Dodano
   deleteRelease,
   deleteReleaseWithTasks,
   editRelease,
-  getAllReleases,
   startRelease,
   finishRelease,
   revertRelease,
   getUserNotifications,
+  getAllNotifications, // Dodano
+  createCustomNotification, // Dodano
+  getNotificationById, // Dodano
+  deleteNotificationById, // Dodano
+  getAllTemplates, // Dodano
+  getTables, // Dodano
+  getTableFields, // Dodano
+  uploadTemplate, // Dodano
+  handleDelete, // Dodano
+  handleDownload, // Dodano
+  getDownloadUrlForPath, // Dodano
+  getAllTableRecords, // Dodano
+  refreshProjectInviteCode,
+  getAllTasks,
+  getTaskById,
 };

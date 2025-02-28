@@ -4,6 +4,7 @@ export { default as firestore, getFirestore, runTransaction, arrayUnion, arrayRe
 
 export { getFunctions, httpsCallable } from "@react-native-firebase/functions";
 export { default as messaging } from "@react-native-firebase/messaging";
+export { getStorage } from "@react-native-firebase/storage"
 
 //import firestore from '@react-native-firebase/firestore';
 //export default firestore;
