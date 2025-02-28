@@ -111,14 +111,12 @@ export function SessionProvider({ children }: PropsWithChildren) {
 
   // Sign out the current user
   const signOut = async () => {
-    setIsLoading(true);
     try {
       await fbFunctions.logOutUser();
+      setSession(null);
+      // Clear any project-related state here
     } catch (error) {
-      logError(error, "Sign Out");
-      throw error; // Re-throw the error so the calling component knows the operation failed
-    } finally {
-      setIsLoading(false);
+      console.error('Error signing out:', error);
     }
   };
 
