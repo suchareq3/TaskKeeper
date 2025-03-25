@@ -22,11 +22,9 @@ import { DateTimePickerAndroid, DateTimePickerEvent } from "@react-native-commun
 import { Timestamp } from "@react-native-firebase/firestore";
 import { Textarea } from "@/components/ui/textarea";
 import ReleaseTile from "@/components/ReleaseTile";
-import { useError } from "@/components/ErrorContext";
 
 export default function ProjectReleases() {
   const { getProjectReleases, createRelease } = useSession();
-  const { logError } = useError();
 
   const { projectId } = useLocalSearchParams();
 
@@ -193,25 +191,10 @@ export default function ProjectReleases() {
           </Text>
           <Button
             disabled={!isManager}
-            onPress={async () => {
-              try {
-                // Client-side validation
-                if (!releaseName || releaseName.trim() === '') {
-                  // Create an error with a translation key
-                  const error = new Error("release_error_name_required");
-                  (error as any).isTranslationKey = true;
-                  throw error;
-                }
-                
-                await createRelease(projectId as string, releaseName, releaseDescription, plannedEndDate);
-                // Only navigate back if successful
-                ToastAndroid.show(i18n.t("app_innerScreens_projectReleases_toast_releaseCreated"), ToastAndroid.SHORT);
+            onPress={() => {
+              createRelease(projectId as string, releaseName, releaseDescription, plannedEndDate).then(() => {
                 router.back();
-              } catch (error) {
-                console.error("Error creating release:", error);
-                logError(error, "Create Release");
-                // Don't navigate back on error
-              }
+              });
             }}
           >
             <Text>{i18n.t("app_innerScreens_projectReleases_button_createNewRelease")}</Text>

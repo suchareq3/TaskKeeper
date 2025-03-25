@@ -3,7 +3,7 @@ import { View, StyleSheet, KeyboardAvoidingView, ToastAndroid } from "react-nati
 import { fbFunctions } from "../../../shared/firebaseFunctions";
 import { useSession } from "@/components/AuthContext";
 import { Text } from "@/components/ui/text";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import React from "react";
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import { Input } from "@/components/ui/input";
@@ -20,16 +20,11 @@ import { useHeaderDropdown } from "@/components/utilityFunctions";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "~/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useTheme } from "@react-navigation/native";
-import { useError } from "@/components/ErrorContext";
 
 export default function EditProject() {
-  // All hooks at the top level in a consistent order
-  const { editProject, removeUserFromProject, deleteProject, refreshProjectInviteCode } = useSession();
+  const { editProject, isLoading, refreshProjectInviteCode } = useSession();
+
   const { projectId } = useLocalSearchParams();
-  const { logError } = useError();
-  const auth = getAuth();
-  const currentUserUid = auth.currentUser!.uid;
-  const theme = useTheme();
 
   const [projectName, setProjectName] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
@@ -37,56 +32,8 @@ export default function EditProject() {
   const [inviteCode, setInviteCode] = useState("");
   const [projectMembers, setProjectMembers] = useState({});
   const [isManager, setIsManager] = useState(false);
-
-  // Handle errors in callbacks, not during render
-  const handleLeaveProject = useCallback(async () => {
-    try {
-      await removeUserFromProject(projectId as string, getAuth().currentUser!.uid);
-      // Only navigate back if successful
-      router.back();
-    } catch (error) {
-      console.log("Error leaving project: ", error);
-      logError(error, "Leave Project");
-      // Don't navigate back on error
-    }
-  }, [projectId, logError]);
-
-  const handleDeleteProject = useCallback(async () => {
-    try {
-      await deleteProject(projectId as string);
-      // Only navigate back if successful
-      router.back();
-    } catch (error) {
-      console.log("Error deleting project: ", error);
-      logError(error, "Delete Project");
-      // Don't navigate back on error
-    }
-  }, [projectId, logError]);
-
-  const handleEditProject = useCallback(async () => {
-    try {
-      await editProject(projectId as string, projectName, projectDescription, githubUrl);
-      // Only navigate back if successful
-      router.back();
-    } catch (error) {
-      console.log("Error editing project: ", error);
-      logError(error, "Edit Project");
-      // Don't navigate back on error
-    }
-  }, [projectId, projectName, projectDescription, githubUrl, editProject, logError]);
-
-  const handleRefreshInviteCode = useCallback(async () => {
-    try {
-      const newInviteCode = await refreshProjectInviteCode(projectId as string);
-      setInviteCode(newInviteCode);
-      ToastAndroid.show(i18n.t("app_innerScreens_editProject_toast_inviteCodeRefreshed"), ToastAndroid.SHORT);
-      // No navigation back here - we stay on the same screen
-    } catch (error) {
-      console.log("Error refreshing invite code: ", error);
-      logError(error, "Refresh Invite Code");
-      // Don't navigate back on error
-    }
-  }, [projectId, refreshProjectInviteCode, logError]);
+  const auth = getAuth();
+  const currentUserUid = auth.currentUser!.uid;
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -109,7 +56,7 @@ export default function EditProject() {
       }
     };
     fetchProject();
-  }, [projectId, currentUserUid]);
+  }, []);
 
   useHeaderDropdown([
     {
@@ -139,7 +86,10 @@ export default function EditProject() {
                 {/* TODO: implement onTrigger (or periodical?) logic for firebase that removes projects with no members in them */}
                 <Button
                   variant={"destructive"}
-                  onPress={handleLeaveProject}
+                  onPress={() => {
+                    // TODO: use AuthProvider/AuthContext instead!
+                    fbFunctions.removeUserFromProject(projectId as string, getAuth().currentUser!.uid).then(() => router.back());
+                  }}
                 >
                   <Text>{i18n.t("app_innerScreens_editProject_button_leaveProjectConfirm")}</Text>
                 </Button>
@@ -179,7 +129,10 @@ export default function EditProject() {
                 {/* TODO: implement onTrigger (or periodical?) logic for firebase that removes projects with no members in them */}
                 <Button
                   variant={"destructive"}
-                  onPress={handleDeleteProject}
+                  onPress={() => {
+                    // TODO: use AuthProvider/AuthContext instead!
+                    fbFunctions.deleteProject(projectId as string).then(() => router.back());
+                  }}
                 >
                   <Text>{i18n.t("app_innerScreens_editProject_button_deleteProjectConfirm")}</Text>
                 </Button>
@@ -219,7 +172,17 @@ export default function EditProject() {
             editable={isManager}
           />
           <Button
-            onPress={handleEditProject}
+            onPress={() => {
+              //TODO: implement proper error handling with user-facing alerts
+              try {
+                editProject(projectId as string, projectName, projectDescription, githubUrl).then(() => {
+                  //TODO: navigate to the 'projects' tab!
+                  router.back();
+                });
+              } catch (e) {
+                console.log("smth went wrong: ", e);
+              }
+            }}
             disabled={!isManager}
           >
             <Text>{i18n.t("app_innerScreens_editProject_button_editProject")}</Text>
@@ -265,8 +228,7 @@ export default function EditProject() {
                           console.log("updated manager status!");
                         })
                         .catch((error) => {
-                          console.error("Failed to update manager status: ", error);
-                          logError(error, "Update Manager Status");
+                          console.error("Failed to update manager status:", error);
                           // Revert local state if update fails
                         });
                     }}
@@ -277,10 +239,7 @@ export default function EditProject() {
                   variant={"destructive"}
                   disabled={!isManager || getAuth().currentUser?.uid === uid}
                   size={"icon"}
-                  onPress={() => {
-                    removeUserFromProject(projectId as string, uid)
-                      .catch(error => logError(error, "Remove User From Project"));
-                  }}
+                  onPress={() => fbFunctions.removeUserFromProject(projectId as string, uid)}
                 >
                   <MaterialIcons
                     name="delete"
@@ -314,7 +273,7 @@ export default function EditProject() {
                     className="absolute right-2 opacity-50"
                     name="content-copy"
                     size={17}
-                    color={theme.colors.card}
+                    color={useTheme().colors.card}
                   />
                 </Button>
                 <Dialog>
@@ -330,14 +289,14 @@ export default function EditProject() {
                         className="p-4 text-primary"
                         name="refresh-ccw"
                         size={20}
-                        color={theme.colors.card}
+                        color={useTheme().colors.card}
                       />
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="!text-lg">
                     <DialogHeader>
                       <DialogTitle className="!text-[20px]">{i18n.t("app_innerScreens_editProject_dialogTitle_refreshInviteCode")}</DialogTitle>
-                      <DialogDescription className="!text-[16px]">{i18n.t("app_innerScreens_editProject_dialogText_refreshInviteCode")}</DialogDescription>
+                      <DialogDescription className="!text-[16px]">{i18n.t("app_innerScreens_editProject_dialogDescription_refreshInviteCode")}</DialogDescription>
                     </DialogHeader>
                     <DialogFooter className="flex flex-row justify-between mt-5">
                       <DialogClose asChild>
@@ -346,9 +305,13 @@ export default function EditProject() {
                         </Button>
                       </DialogClose>
                       <DialogClose asChild>
+                        {/* TODO: implement onTrigger (or periodical?) logic for firebase that removes projects with no members in them */}
                         <Button
                           variant={"destructive"}
-                          onPress={handleRefreshInviteCode}
+                          onPress={() => {
+                            // TODO: actually REFRESH the data you get back from firebase instead of using router.back()!
+                            refreshProjectInviteCode(projectId as string).then(() => router.back());
+                          }}
                         >
                           <Text>{i18n.t("app_innerScreens_editProject_button_refreshInviteCodeConfirm")}</Text>
                         </Button>
