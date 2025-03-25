@@ -1,12 +1,12 @@
 export interface FirebaseFunctions {
   someSharedFunction: () => void;
-  logInWithPassword: (email: string, password: string) => Promise<any>;
+  logInWithPassword: (email: string, password: string) => Promise<void>;
   logOutUser: () => Promise<void>;
   checkUserStatus: () => Promise<string>;
   checkUserLoginStatus: (nextOrObserver: any) => any;
   signUpUser: (email: string, password: string, extraData: { [key: string]: any }) => any;
   signUpUserNoToken: (email: string, password: string, extraData: { [key: string]: any }) => any;
-  createProject: (name: string, description: string, githubUrl: string) => Promise<any>;
+  createProject: (name: string, description: string, githubUrl: string) => Promise<void>;
   editProject: (projectId: string, name: string, description: string, githubUrl: string) => Promise<any>;
   removeUserFromProject: (projectId: string, userId: string) => Promise<any>;
   deleteProject: (projectId: string) => Promise<any>;
@@ -76,5 +76,4 @@ export interface FirebaseFunctions {
   handleDelete: (templateId: string) => void;
   handleDownload: (templateId: string) => void;
   getAllTableRecords: (params: any) => Promise<any>;
-  getDownloadUrlForPath: (filePath: string) => Promise<string>;
 }
