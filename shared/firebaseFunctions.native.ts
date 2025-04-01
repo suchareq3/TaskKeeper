@@ -17,7 +17,7 @@ import {
   FirebaseAuthTypes,
 } from "../TaskKeeper-mobile/exportedModules.js";
 import { platform } from "./shared";
-import { FirebaseFunctions } from "./firebaseInterface";
+import { Task, Subtask, Project, Release, User, Notification, AuthenticationUser } from "./firebaseTypes";
 
 const app = getApp(); // gets config from google-services.json
 const auth = getAuth();
@@ -37,7 +37,7 @@ const someSharedFunction = () => {
   console.log(`Called from shared function! Project type: ${platform}`);
 };
 
-const logInWithPassword = (email: string, password: string) => {
+const logInWithPassword = async (email: AuthenticationUser["email"], password: AuthenticationUser["password"]) => {
   if (email === "" || password === "") {
     throw "email or password is empty!";
   }
@@ -46,13 +46,11 @@ const logInWithPassword = (email: string, password: string) => {
       console.log("lougged the fuck in! logged in user:" + userCredential.user);
     })
     .catch((error) => {
-      const errorCode = error.code;
-      const errorMessage = error.message;
       console.log("error during login!: " + error.code + ", " + error.message);
     });
 };
 
-const logOutUser = () => {
+const logOutUser = async () => {
   return signOut(auth)
     .then(() => {
       console.log("logout successful!");
@@ -73,8 +71,9 @@ const checkUserLoginStatus = (nextOrObserver) => {
   return auth.onAuthStateChanged(nextOrObserver);
 };
 
-
-const signUpUser = async (email: string, password: string, extraData: { [key: string]: any }) => {
+// TODO: change 'extraData' here to instead explicitly specify what other variables what we're expecting to get
+// TODO: check if there's a better way of doing this cross-module (auth&firestore) user account creation """transaction"""
+const signUpUser = async (email: AuthenticationUser["email"], password: AuthenticationUser["password"], extraData: { [key: string]: any }) => {
   let user: FirebaseAuthTypes.UserCredential | null = null;
   try {
     if (!email || !password) {
@@ -114,7 +113,7 @@ const signUpUser = async (email: string, password: string, extraData: { [key: st
 
 // NOTE: this is a cloud function because it involves password generation, which is safer handled on the server
 // TODO: consider writing a separate onTrigger daily/weekly/monthly function for regenerating invite codes. users with invite code permissions should be able to see the remaining time until the invite code expires
-const createProject = async (name: string, description: string, githubUrl: string) => {
+const createProject = async (name: Project["name"], description: Project["description"], githubUrl: Project["github_url"]) => {
   try {
     const currentUser = auth.currentUser;
     console.log("currentUser:", currentUser);
@@ -132,7 +131,7 @@ const createProject = async (name: string, description: string, githubUrl: strin
   }
 };
 
-const refreshProjectInviteCode = async (projectId: string) => {
+const refreshProjectInviteCode = async (projectId: Project["id"]) => {
   try {
     const currentUser = auth.currentUser;
     console.log("currentUser:", currentUser);
@@ -150,23 +149,23 @@ const refreshProjectInviteCode = async (projectId: string) => {
   }
 };
 
-const editProject = async (projectId: string, name: string, description: string, githubUrl: string) => {
+const editProject = async (projectId: Project["id"], name: Project["name"], description: Project["description"], githubUrl: Project["github_url"]) => {
   try {
     const currentUser = auth.currentUser;
     if (currentUser) {
-      const lastUpdatedOn = Timestamp.now();
+      const last_updated_on: Project["last_updated_on"] = Timestamp.now();
       await db
         .collection("projects")
         .doc(projectId)
         .update({
-          name: name,
-          description: description,
+          name,
+          description,
           github_url: githubUrl,
-          last_updated_on: lastUpdatedOn,
+          last_updated_on,
         })
         .then((res) => {
           console.log("editProject response: ", res);
-          return { success: true, projectData: { name: name, description: description, githubUrl: githubUrl, lastUpdatedOn: lastUpdatedOn } };
+          return { success: true, projectData: { name: name, description: description, githubUrl: githubUrl, lastUpdatedOn: last_updated_on } };
         });
     } else {
       throw new Error("User not authenticated");
@@ -177,7 +176,7 @@ const editProject = async (projectId: string, name: string, description: string,
   }
 };
 
-const removeUserFromProject = async (projectId: string, userId: string) => {
+const removeUserFromProject = async (projectId: Project["id"], userId: User["id"]) => {
   try {
     const currentUser = auth.currentUser;
     if (currentUser) {
@@ -197,7 +196,7 @@ const removeUserFromProject = async (projectId: string, userId: string) => {
   }
 };
 
-const deleteProject = async (projectId: string) => {
+const deleteProject = async (projectId: Project["id"]) => {
   try {
     // NOTE: batch deletes are limited to 500 writes, so only 499 tasks.
     // this should be fine for now but should be re-considered for future scalability
@@ -294,7 +293,7 @@ const loadUserTasks = async () => {
   }
 };
 
-const loadReleaseTasks = async (releaseId: string) => {
+const loadReleaseTasks = async (releaseId: Release["id"]) => {
   try {
     const currentUser = auth.currentUser;
     if (currentUser) {
@@ -327,7 +326,7 @@ const loadReleaseTasks = async (releaseId: string) => {
   }
 };
 
-const deleteTask = async (taskId: string) => {
+const deleteTask = async (taskId: Task["id"]) => {
   try {
     const currentUser = auth.currentUser;
     if (!currentUser) {
@@ -343,7 +342,7 @@ const deleteTask = async (taskId: string) => {
   }
 };
 
-const addUserToProjectViaInviteCode = async (inviteCode: string) => {
+const addUserToProjectViaInviteCode = async (inviteCode: Project["invite_code"]) => {
   try {
     const currentUser = auth.currentUser;
     if (currentUser) {
@@ -364,7 +363,7 @@ const addUserToProjectViaInviteCode = async (inviteCode: string) => {
   }
 };
 
-const updateProjectMemberManagerStatus = async (projectId: string, userId: string, isManager: boolean) => {
+const updateProjectMemberManagerStatus = async (projectId: Project["id"], userId: User["id"], isManager: boolean) => {
   try {
     await db
       .collection("projects")
@@ -379,65 +378,73 @@ const updateProjectMemberManagerStatus = async (projectId: string, userId: strin
 };
 
 const createTask = async (
-  releaseId: string,
-  projectId: string,
-  taskName: string,
-  taskDescription: string,
-  priorityLevel: string,
-  taskType: string,
-  taskAssigneeUid: string,
-  subTaskdata: { key: string; label: string; completed: boolean }[]
-) => {
+  release_id: Task["release_id"],
+  project_id: Task["project_id"],
+  task_name: Task["task_name"],
+  task_description: Task["task_description"],
+  priority_level: Task["priority_level"],
+  task_type: Task["task_type"],
+  task_assignee_uid: Task["task_assignee_uid"],
+  subtasks: Task["subtasks"]
+): Promise<{ success: boolean; taskId: string }> => {
   try {
     const currentUser = auth.currentUser;
     if (currentUser) {
-      let taskData = {
-        release_id: releaseId,
-        project_id: projectId,
-        task_name: taskName,
-        task_description: taskDescription,
-        priority_level: priorityLevel,
-        task_type: taskType,
-        task_assignee_uid: taskAssigneeUid,
-        subtasks: subTaskdata,
-
-        task_status: "in-progress",
-        created_on: Timestamp.now(),
-        last_updated_on: Timestamp.now(),
-        assigned_user_uid: currentUser.uid,
+      const assigned_user_uid: Task["assigned_user_uid"] = currentUser.uid;
+      const taskRef = db.collection("tasks").doc();
+      const taskId: Task["id"] = taskRef.id;
+      const now: Timestamp = Timestamp.now();
+      
+      // Create a new Task object
+      const newTask: Task = {
+        task_assignee_uid,
+        assigned_user_uid,
+        created_on: now,
+        last_updated_on: now,
+        priority_level,
+        project_id,
+        release_id,
+        subtasks,
+        task_description,
+        task_name,
+        task_type,
+        task_status: "in-progress"
       };
 
-      await db.collection("tasks").add(taskData);
+      await taskRef.set(newTask);
+      return { success: true, taskId };
+    } else {
+      throw new Error("User not authenticated");
     }
   } catch (error) {
-    console.error("Error creating new task:", error);
+    console.error("Error creating task:", error);
     throw error;
   }
 };
 
 const editTask = async (
-  taskId: string,
-  name: string,
-  description: string,
-  status: string,
-  type: string,
-  priorityLevel: string,
-  assigneeUid: string,
-  subtasks: Array<{ key: string; label: string; completed: boolean }>
+  task_id: Task["id"],
+  task_name: Task["task_name"],
+  task_description: Task["task_description"],
+  task_status: Task["task_status"],
+  task_type: Task["task_type"],
+  priority_level: Task["priority_level"],
+  task_assignee_uid: Task["task_assignee_uid"],
+  subtasks: Task["subtasks"]
 ) => {
   try {
     const currentUser = auth.currentUser;
     if (currentUser) {
-      const lastUpdatedOn = Timestamp.now();
-      await db.collection("tasks").doc(taskId).update({
-        task_name: name,
-        task_description: description,
-        task_status: status,
-        task_type: type,
-        priority_level: priorityLevel,
-        task_assignee_uid: assigneeUid,
-        subtasks: subtasks,
-        last_updated_on: lastUpdatedOn,
+      const now = Timestamp.now();
+      await db.collection("tasks").doc(task_id).update({
+        task_name,
+        task_description,
+        task_status,
+        task_type,
+        priority_level,
+        task_assignee_uid,
+        subtasks,
+        last_updated_on: now,
       });
       console.log("Task updated successfully!");
     } else {
@@ -449,17 +456,20 @@ const editTask = async (
   }
 };
 
-const createRelease = async (projectId: string, releaseName: string, releaseDescription: string, plannedEndDate: Date) => {
+const createRelease = async (project_id: Release["project_id"], name: Release["name"], description: Release["description"], planned_end_date: Release["planned_end_date"]) => {
   try {
     const currentUser = auth.currentUser;
     if (currentUser) {
-      const releaseData = {
-        project_id: projectId,
-        name: releaseName,
-        description: releaseDescription,
-        created_on: Timestamp.now(),
-        last_updated_on: Timestamp.now(),
-        planned_end_date: Timestamp.fromDate(plannedEndDate),
+      const now = Timestamp.now();
+      const releaseData: Release = {
+        project_id,
+        name,
+        description,
+        start_date: null,
+        actual_end_date: null,
+        created_on: now,
+        last_updated_on: now,
+        planned_end_date,
         status: "planned",
       };
 
@@ -471,7 +481,7 @@ const createRelease = async (projectId: string, releaseName: string, releaseDesc
   }
 };
 
-const getProjectReleases = async (projectId: string) => {
+const getProjectReleases = async (projectId: Project["id"]) => {
   try {
     const releases = await db.collection("releases").where("project_id", "==", projectId).get();
     console.log(
@@ -530,7 +540,7 @@ const getAllReleases = async () => {
   }
 };
 
-const deleteRelease = async (releaseId: string) => {
+const deleteRelease = async (releaseId: Release["id"]) => {
   const currentUser = auth.currentUser;
   if (!currentUser) return;
   try {
@@ -542,7 +552,7 @@ const deleteRelease = async (releaseId: string) => {
   }
 };
 
-const deleteReleaseWithTasks = async (releaseId: string) => {
+const deleteReleaseWithTasks = async (releaseId: Release["id"]) => {
   const currentUser = auth.currentUser;
   if (!currentUser) return;
 
@@ -569,20 +579,26 @@ const deleteReleaseWithTasks = async (releaseId: string) => {
   }
 };
 
-const editRelease = async (releaseId: string, name: string, description: string, plannedEndDate: Date, status: string) => {
+const editRelease = async (
+  releaseId: Release["id"], 
+  name: Release["name"], 
+  description: Release["description"], 
+  plannedEndDate: Date, 
+  status: Release["status"]
+) => {
   try {
     const currentUser = auth.currentUser;
     if (currentUser) {
-      const lastUpdatedOn = Timestamp.now();
+      const last_updated_on = Timestamp.now();
       await db
         .collection("releases")
         .doc(releaseId)
         .update({
-          name: name,
-          description: description,
+          name,
+          description,
           planned_end_date: Timestamp.fromDate(plannedEndDate),
-          status: status,
-          last_updated_on: lastUpdatedOn,
+          status,
+          last_updated_on,
         });
       console.log("Release updated successfully!");
       return;
@@ -595,17 +611,18 @@ const editRelease = async (releaseId: string, name: string, description: string,
   }
 };
 
-const revertRelease = async (releaseId: string) => {
+// TODO: rename to "revertReleaseToPlanned"
+const revertRelease = async (releaseId: Release["id"]) => {
   try {
     const currentUser = auth.currentUser;
     if (currentUser) {
-      const lastUpdatedOn = Timestamp.now();
+      const last_updated_on = Timestamp.now();
       await db.collection("releases").doc(releaseId).update({
         status: "planned",
         start_date: null,
         actual_end_date: null,
-        last_updated_on: lastUpdatedOn,
-      });
+        last_updated_on,
+      } satisfies { status: Release["status"], start_date: null, actual_end_date: null, last_updated_on: Timestamp });
       console.log("Release status reverted to planned successfully!");
       return;
     } else {
@@ -617,7 +634,7 @@ const revertRelease = async (releaseId: string) => {
   }
 };
 
-const startRelease = async (releaseId: string, projectId: string) => {
+const startRelease = async (releaseId: Release["id"], projectId: Project["id"]) => {
   try {
     const currentUser = auth.currentUser;
     if (currentUser) {
@@ -626,13 +643,13 @@ const startRelease = async (releaseId: string, projectId: string) => {
       if (!startedReleasesQuery.empty) {
         throw new Error("Cannot start release - another release is already in progress");
       }
-      const lastUpdatedOn = Timestamp.now();
+      const last_updated_on = Timestamp.now();
       await db.collection("releases").doc(releaseId).update({
-        status: "started",
+        status: "in-progress",
         start_date: Timestamp.now(),
         actual_end_date: null,
-        last_updated_on: lastUpdatedOn,
-      });
+        last_updated_on,
+      } satisfies { status: Release["status"], start_date: Timestamp, actual_end_date: null, last_updated_on: Timestamp });
       console.log("Release started successfully!");
       return;
     } else {
@@ -644,16 +661,16 @@ const startRelease = async (releaseId: string, projectId: string) => {
   }
 };
 
-const finishRelease = async (releaseId: string) => {
+const finishRelease = async (releaseId: Release["id"]) => {
   try {
     const currentUser = auth.currentUser;
     if (currentUser) {
-      const lastUpdatedOn = Timestamp.now();
+      const last_updated_on = Timestamp.now();
       await db.collection("releases").doc(releaseId).update({
         status: "finished",
         actual_end_date: Timestamp.now(),
-        last_updated_on: lastUpdatedOn,
-      });
+        last_updated_on,
+      } satisfies { status: Release["status"], actual_end_date: Timestamp, last_updated_on: Timestamp });
       console.log("Release finished successfully!");
       return;
     } else {
@@ -669,16 +686,22 @@ const getUserNotifications = async () => {
   try {
     const currentUser = auth.currentUser;
     if (currentUser) {
-      const userNotifications = await db.collection("notifications").where("user_uids", "array-contains", currentUser.uid).orderBy("created_on", "desc").get();
+      const userNotifications = await db.collection("notifications")
+        .where("user_uids", "array-contains", currentUser.uid)
+        .orderBy("created_on", "desc")
+        .get();
+      
       const userNotificationsData = userNotifications.docs.map((doc) => {
         const data = doc.data();
         return {
-          notificationId: doc.id,
+          id: doc.id,
           title: data.title,
           body: data.body,
-          createdOn: data.created_on,
-        };
+          created_on: data.created_on,
+          user_uids: data.user_uids
+        } satisfies Notification;
       });
+      
       console.log("Success loading user notifications:", userNotificationsData);
       return userNotificationsData;
     }
@@ -688,7 +711,7 @@ const getUserNotifications = async () => {
   }
 };
 
-export const fbFunctions: FirebaseFunctions = {
+export const fbFunctions = {
   someSharedFunction,
   logInWithPassword,
   logOutUser,
@@ -703,11 +726,11 @@ export const fbFunctions: FirebaseFunctions = {
   loadUserTasks,
   loadReleaseTasks,
   deleteTask,
+  editTask,
   addUserToProjectViaInviteCode,
   refreshProjectInviteCode,
   updateProjectMemberManagerStatus,
   createTask,
-  editTask,
   createRelease,
   getProjectReleases,
   deleteRelease,
@@ -717,5 +740,5 @@ export const fbFunctions: FirebaseFunctions = {
   startRelease,
   finishRelease,
   revertRelease,
-  getUserNotifications,
+  getUserNotifications
 };
