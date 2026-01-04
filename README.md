@@ -22,15 +22,12 @@ Mobile (Android) task management app for small dev teams, designed to fill a gap
 <img height="400" alt="image" src="https://github.com/user-attachments/assets/c8427cbf-3e5d-47ea-8ad1-7da0d1fb21d5" />
 <img height="100" alt="image" src="https://github.com/user-attachments/assets/15eca76f-eab8-4db4-83b5-89522e12f6ec" />
 
-
-
-
 # web app (admin panel) - React + Vite
-cd TaskKeeper-web
-npm run dev
+"cd TaskKeeper-web" ==> "npm run dev"
 
 # mobile app (target app) - React Native + Expo
-cd TaskKeeper-mobile
-npm run android
-or
-npx expo start
+"cd TaskKeeper-mobile" ==> "npm run android"
+
+**OR**
+
+"npx expo start"
